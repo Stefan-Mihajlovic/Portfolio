@@ -668,7 +668,6 @@ input[type="submit"]{
 .contact .formWrapper{
     background-color: var(--tamnoPlava);
     border-top: 1px solid var(--tamnoPlavaBack);
-    border-bottom: 1px solid var(--tamnoPlavaBack);
     width: 100%;
     display: flex;
     align-items: center;
@@ -918,6 +917,7 @@ footer{
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     padding: 7.5px;
+    border-top: 1px solid var(--tamnoPlavaBack);
     padding-top: 25px;
     position: relative;
 }
