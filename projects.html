@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stefan Mihajlović - Projects</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/transitions.css">
+    <script src="js/index.js" defer></script>
+    <link rel="icon" href="images/MainLogo.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
+    <!-- Flickity CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <!-- Flickity JavaScript -->
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+</head>
+<body onload="setTransition();">
+
+    <div class="transitionDiv transition-1 is-active">
+        <img src="images/MainLogo.png">
+    </div>
+    
+    <div class="wrap">
+        <header>
+            <div>
+                <a class="tLink" href="aboutme.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
+                <a class="tLink" href="index.html#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">SKILLS</a>
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <a class="tLink activeNavLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
+                <a class="tLink" href="index.html#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+            </div>
+            <div class="smallScreenHeader">
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <i id="navButton" onclick="openNavBarBig(this)" class="bi bi-list" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></i>
+            </div>
+        </header>
+    
+        <nav>
+            <p>
+                <i class="bi bi-x-circle"></i>
+                &nbsp;Tap anywhere to close&nbsp;
+                <i class="bi bi-x-circle"></i>
+            </p>
+            <div onclick="closeMobileNav();" class="closeMobileNav"></div>
+            <a class="tLink" href="projects.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Projects</a>
+            <a class="tLink" href="index.html#skills" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Skills</a>
+            <a class="tLink" href="aboutme.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">About Me</a>
+            <a class="tLink" href="index.html#contact" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Contact Me</a>
+        </nav>
+    
+        <main class="projectMain">
+            <h1 class="mainTitle" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <i class="bi bi-arrow-down-circle"></i>
+                PROJECTS
+                <i class="bi bi-arrow-down-circle"></i>
+            </h1>
+            <section class="projectItem" id="drippyDrift">
+                <img class="projectBanner2" src="images/drippyDriftBanner.png" alt="Drippy Drift">
+                <div class="projectAbout">
+                    <h1>DRIPPY DRIFT</h1>
+                    <p>This is a drifting video game that focuses on cartoonish
+                        style and effects. Score enough DriftPoints, beat the level. That easy...
+                        Or is it?
+                    </p>
+                    <div class="projectTags">
+                        <span class="UnityTag tag">Unity</span>
+                        <span class="CSTag tag">C#</span>
+                        <span class="ANTag tag">Android</span>
+                        <span class="LevelDesignTag tag">Level&nbsp;Design</span>
+                    </div>
+                    <div class="projectButtons">
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Try demo</button>
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Watch video</button>
+                    </div>
+                </div>
+            </section>
+            <section class="projectItemReverse" id="crimsonMusic">
+                <img class="projectBanner2" src="images/crimsonMusicBanner.png" alt="Drippy Drift">
+                <div class="projectAbout">
+                    <h1>CRIMSON MUSIC</h1>
+                    <p>Your NEXT GEN Musical companion. Stream music non stop without using up
+                        all your cellular data.
+                    </p>
+                    <div class="projectTags">
+                        <span class="JSTag tag">JavaScript</span>
+                        <span class="FBTag tag">Firebase</span>
+                        <span class="WebTag tag">Web&nbsp;App</span>
+                    </div>
+                    <div class="projectButtons">
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View site</button>
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View code</button>
+                    </div>
+                </div>
+            </section>
+            <section class="projectItem" id="wallQ">
+                <img class="projectBanner2" src="images/wallqBanner.png" alt="Drippy Drift">
+                <div class="projectAbout">
+                    <h1>WALLQ WALLPAPERS</h1>
+                    <p>Find the wallpapers you NEED in an instant while also being
+                        able to share them with your friend and family 
+                        ( Can be downloaded on the Google Play Store )!
+                    </p>
+                    <div class="projectTags">
+                        <span class="JATag tag">Java</span>
+                        <span class="ANTag tag">Android</span>
+                    </div>
+                    <div class="projectButtons">
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Download</button>
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Watch video</button>
+                    </div>
+                </div>
+            </section>
+            <section class="projectItemReverse" id="someElse">
+                <img class="projectBanner2" src="images/img-4.jpg" alt="Drippy Drift">
+                <div class="projectAbout">
+                    <h1>SOME OTHER APP</h1>
+                    <p>HAPPY EASTER AND ALL GUYS. No app here, no eggs for you!
+                        Hope you enjoy the day!
+                    </p>
+                    <div class="projectTags">
+                        <span class="WebTag tag">Web&nbsp;App</span>
+                        <span class="UnityTag tag">Unity</span>
+                        <span class="CSTag tag">C#</span>
+                        <span class="CPPTag tag">C++</span>
+                        <span class="JSTag tag">JavaScript</span>
+                        <span class="JATag tag">Java</span>
+                        <span class="ANTag tag">Android</span>
+                        <span class="FBTag tag">Firebase</span>
+                        <span class="UETag tag">Unreal&nbsp;Engine</span>
+                        <span class="LevelDesignTag tag">Level&nbsp;Design</span>
+                    </div>
+                    <div class="projectButtons">
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View site</button>
+                        <button onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View code</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    
+        <footer>
+            <div class="socialsWrapper">
+                <h3>Socials</h3>
+                <div class="socials" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://github.com/Stefan-Mihajlovic"><i class="bi bi-github"></i></a>
+                    <a href="https://www.instagram.com/stefi_mihajlovic_/"><i class="bi bi-instagram"></i></a>
+                    <a href="https://discord.com/users/H3art4ttack#6784"><i class="bi bi-discord"></i></a>
+                </div>
+            </div>
+            <p>Copyright © <span id="currentYearSpan"></span> &nbsp;|&nbsp; <span class="highlightSpan">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
+        </footer>
+    
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+
+</body>
+</html>

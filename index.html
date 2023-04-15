@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stefan Mihajlović - Your Web Desinger</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/transitions.css">
+    <script src="js/index.js" defer></script>
+    <link rel="icon" href="images/MainLogo.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
+    <!-- Flickity CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <!-- Flickity JavaScript -->
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <!-- SMTP JS -->
+    <script src="https://smtpjs.com/v3/smtp.js">
+    </script>
+</head>
+<body onload="setTransition(); setSkillValues(); startCarousel();">
+    
+    <div class="transitionDiv transition-1 is-active">
+        <img src="images/MainLogo.png">
+    </div>
+
+    <div class="wrap">
+        <header>
+            <div>
+                <a class="tLink" href="aboutme.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
+                <a href="#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">&nbsp;SKILLS&nbsp;&nbsp;</a>
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <a class="tLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
+                <a href="#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+            </div>
+            <div class="smallScreenHeader">
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <i id="navButton" onclick="openNavBarBig(this)" class="bi bi-list" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></i>
+            </div>
+        </header>
+    
+        <nav>
+            <p>
+                <i class="bi bi-x-circle"></i>
+                &nbsp;Tap anywhere to close&nbsp;
+                <i class="bi bi-x-circle"></i>
+            </p>
+            <div onclick="closeMobileNav();" class="closeMobileNav"></div>
+            <a class="tLink" href="projects.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Projects</a>
+            <a href="#skills" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Skills</a>
+            <a class="tLink" href="aboutme.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">About Me</a>
+            <a href="#contact" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Contact Me</a>
+        </nav>
+    
+        <main>
+            <section class="mainHeaderText hidden">
+                <p>Hi, I am <span class="highlightSpan" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Stefan Mihajlović</span> 
+                    and<br> I will help <span class="highlightSpan" style="font-size: 70px;" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">YOU</span> 
+                    make <span class="highlightSpan" style="font-size: 70px;" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">YOUR</span> world truly yours!</p>
+            </section>
+    
+            <section id="aboutme" class="aboutMe projects" onclick="window.location.href = '#aboutme'">
+                <h1 id="jiggleText" class="clickableLinkText" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Little About Me
+                    <i class="bi bi-arrow-down-circle"></i>
+                </h1>
+                <div>
+                    <h3 class="hidden5">Hi! As you already know my name is Stefan Mihajlović and 
+                        I am a <span class="highlightSpan">PROGRAMMER</span>. I was
+                        born in beautiful Belgrade, Serbia and have been coding since
+                        I was 14!</h3>
+                    <h3 class="hidden5">I know many languages in quite a few sectors of programming
+                        like <span class="highlightSpan">WEB</span> and 
+                        <span class="highlightSpan">GAME</span> development.</h3>
+                    <h3 class="hidden5">I am very passionate about programming
+                        and always strive to learn and improve my skills. If you are eager to 
+                        learn more about me and my past, click the button bellow!
+                    </h3>
+                </div>
+                <button id="viewAllProjects" onclick="window.location.href = 'aboutme.html'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+            </section>
+    
+            <section class="projects">
+                <h1 onclick="window.location.href = '#proIndex'" class="clickableLinkText" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Some Past Projects
+                    <i class="bi bi-arrow-down-circle"></i>
+                </h1>
+    
+                <div class="sliderWrapper" id="proIndex">
+                    <div class="main-carousel carousel">
+                        <div class="itemWrapper carousel-cell">
+                            <img src="images/drippyDriftBanner.png" alt="Project Image" class="bannerImg">
+                            <div class="itemText">
+                                <h1>Drippy Drift</h1>
+                                <p>This is a drifting video game that focuses on cartoonish
+                                    style and effects. Score enough DriftPoints, beat the level. That easy...
+                                    Or is it?
+                                </p>
+                                <p class="projectType">Unity Game</p>
+                                <button onclick="window.location.href = 'projects.html#drippyDrift'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                            </div>
+                        </div>
+                        <div class="itemWrapper carousel-cell">
+                            <img src="images/crimsonMusicBanner.png" alt="Project Image" class="bannerImg">
+                            <div class="itemText">
+                                <h1>Crimson Music</h1>
+                                <p>Your NEXT GEN Musical companion. Stream music non stop without using up
+                                    all your cellular data.
+                                </p>
+                                <p class="projectType">Web Application</p>
+                                <button onclick="window.location.href = 'projects.html#crimsonMusic'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                            </div>
+                        </div>
+                        <div class="itemWrapper carousel-cell">
+                            <img src="images/wallqBanner.png" alt="Project Image" class="bannerImg">
+                            <div class="itemText">
+                                <h1>WallQ - 4K Wallpapers</h1>
+                                <p>Find the wallpapers you NEED in an instant while also being
+                                    able to share them with your friend and family 
+                                    ( Can be downloaded on the Google Play Store )!
+                                </p>
+                                <p class="projectType">Android Application</p>
+                                <button onclick="window.location.href = 'projects.html#wallQ'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                            </div>
+                        </div>
+                        <div class="itemWrapper carousel-cell">
+                            <img src="images/img-4.jpg" alt="Project Image" class="bannerImg">
+                            <div class="itemText">
+                                <h1>Drippy Drift</h1>
+                                <p>This is a drifting video game, where the player
+                                    drifts and scores points...
+                                </p>
+                                <p class="projectType">Unity Game</p>
+                                <button onclick="window.location.href = 'projects.html#someElse'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="viewAllProjects" onclick="window.location.href = 'projects.html'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View All Projects</button>
+    
+                </div>
+                    
+            </section>
+    
+            <section class="skills">
+                <h1 id="skills" style="cursor: pointer;" onclick="window.location.href = '#skills'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Skills
+                    <i class="bi bi-arrow-down-circle"></i>
+                </h1>
+                <div class="skillsHolder">
+                    <div class="skillItem hidden3">
+                        <h1><i style="margin-right: 10px;" class="bi bi-joystick"></i>Systems</h1>
+                        <p class="skillTitle"><i class="bi bi-boxes"></i> Unreal Engine</p>
+                        <div class="progressBarShell">
+                            <div id="UnrealEngine" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">1 year of Experience</p>
+                        <p class="skillTitle"><i class="bi bi-unity"></i> Unity</p>
+                        <div class="progressBarShell">
+                            <div id="Unity" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">2+ years of Experience</p>
+                        <p class="skillTitle"><i class="bi bi-android2"></i> Android / Java</p>
+                        <div class="progressBarShell">
+                            <div id="Android" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">1 year of Experience</p>
+                    </div>
+                    <div class="skillItem hidden2">
+                        <h1><i style="margin-right: 10px;" class="bi bi-file-code"></i>Coding</h1>
+                        <p class="skillTitle"><i class="bi bi-filetype-cs"></i> C# / .NET MVC</p>
+                        <div class="progressBarShell">
+                            <div id="C#" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">2+ years of Experience</p>
+                        <p class="skillTitle"><i class="bi bi-filetype-cs"></i> C++</p>
+                        <div class="progressBarShell">
+                            <div id="C++" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">2+ years of Experience</p>
+                        <p class="skillTitle"><i class="bi bi-filetype-js"></i> HTML - CSS - JavaScript</p>
+                        <div class="progressBarShell">
+                            <div id="hcj" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">3+ years of Experience</p>
+                    </div>
+                </div>
+                <div class="skillsHolder2">
+                    <div class="skillItem hidden3">
+                        <h1><i style="margin-right: 10px;" class="bi bi-translate"></i>Languages</h1>
+                        <p class="skillTitle"><i class="bi bi-card-text"></i> Serbian</p>
+                        <div class="progressBarShell">
+                            <div id="Serbian" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc"><i class="bi bi-star-half"></i> 10 / 10 Native Speaker</p>
+                        <p class="skillTitle"><i class="bi bi-card-text"></i> English</p>
+                        <div class="progressBarShell">
+                            <div id="English" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc"><i class="bi bi-star-half"></i> 7 / 10 Quite Fluent</p>
+                    </div>
+                    <div class="skillItem hidden2">
+                        <h1><i style="margin-right: 10px;" class="bi bi-person-workspace"></i>Abilities</h1>
+                        <p class="skillTitle"><i class="bi bi-people-fill"></i> Teamwork</p>
+                        <div class="progressBarShell">
+                            <div id="Teamwork" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">Teamplayer and can adapt quickly</p>
+                        <p class="skillTitle"><i class="bi bi-fast-forward-fill"></i> Fast Learner</p>
+                        <div class="progressBarShell">
+                            <div id="QuickLearn" class="progressBarValue hidden4"></div>
+                        </div>
+                        <p class="skillDesc">Great ability to listen and learn</p>
+                    </div>
+                </div>
+            </section>
+    
+            <section class="contact">
+                <h1 id="contact" style="cursor: pointer;" onclick="window.location.href = '#contact'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <i class="bi bi-arrow-down-circle"></i>
+                    Contact
+                    <i class="bi bi-arrow-down-circle"></i>
+                </h1>
+                <div class="formWrapper">
+                    <form id="contactForm" onsubmit="sendEmail(event);" data-netlify="true">
+                        <h2><i class="bi bi-chat-fill"></i> Get in Contact</h2>
+                        <div>
+                            <label class="classicLabel" for="coName">Your Name&nbsp;*</label><br><br>
+                            <input id="contactName" class="classicInput" name="coName" placeholder="Enter your name" type="text">
+                        </div>
+                        <div>
+                            <label class="classicLabel" for="coEmail">Your Email&nbsp;*</label><br><br>
+                            <input id="contactEmail" class="classicInput" name="coName" placeholder="Enter your email" type="email">
+                        </div>
+                        <div>
+                            <label class="classicLabel" for="coSub">Subject</label><br><br>
+                            <input id="contactSubject" class="classicInput" name="coSub" placeholder="Enter the subject" type="text">
+                        </div>
+                        <div>
+                            <label class="classicLabel" for="coMessage">Message</label><br><br>
+                            <textarea id="contactMessage" class="classicTextA" name="coMessage" placeholder="Enter your message"></textarea>
+                        </div>
+                        <input type="submit" value="Send" class="classicSubmit" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    </form>
+                </div>
+            </section>
+
+        </main>
+
+        <div class="popupMessageWrapper" id="popupMessage">
+            <div class="exitPopupBig" onclick="closePopupMessage()"></div>
+            <div class="popupMessage">
+                <h1 id="popupMessageText">Email sent!</h1>
+                <button onclick="closePopupMessage()" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Close</button>
+            </div>
+        </div>
+    
+        <footer>
+            <div class="socialsWrapper">
+                <h3>Socials</h3>
+                <div class="socials" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://github.com/Stefan-Mihajlovic"><i class="bi bi-github"></i></a>
+                    <a href="https://www.instagram.com/stefi_mihajlovic_/"><i class="bi bi-instagram"></i></a>
+                    <a href="https://discord.com/users/H3art4ttack#6784"><i class="bi bi-discord"></i></a>
+                </div>
+            </div>
+            <p>Copyright © <span id="currentYearSpan"></span> &nbsp;|&nbsp; <span class="highlightSpan">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
+        </footer>
+    
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+
+</body>
+</html>

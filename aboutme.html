@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stefan Mihajlović - Projects</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/transitions.css">
+    <script src="js/index.js" defer></script>
+    <link rel="icon" href="images/MainLogo.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
+    <!-- Flickity CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <!-- Flickity JavaScript -->
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+</head>
+<body onload="setTransition();">
+
+    <div class="transitionDiv transition-1 is-active">
+        <img src="images/MainLogo.png">
+    </div>
+    
+    <div class="wrap">
+        <header>
+            <div>
+                <a class="activeNavLink" href="#" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
+                <a class="tLink" href="index.html#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">SKILLS</a>
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <a class="tLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
+                <a class="tLink" href="index.html#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+            </div>
+            <div class="smallScreenHeader">
+                <img class="tLink" onclick="window.location.href = 'index.html'" src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <i id="navButton" onclick="openNavBarBig(this)" class="bi bi-list" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></i>
+            </div>
+        </header>
+    
+        <nav>
+            <p>
+                <i class="bi bi-x-circle"></i>
+                &nbsp;Tap anywhere to close&nbsp;
+                <i class="bi bi-x-circle"></i>
+            </p>
+            <div onclick="closeMobileNav();" class="closeMobileNav"></div>
+            <a class="tLink" href="projects.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Projects</a>
+            <a class="tLink" href="index.html#skills" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Skills</a>
+            <a href="#" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">About Me</a>
+            <a class="tLink" href="index.html#contact" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Contact Me</a>
+        </nav>
+    
+        <div class="bigGradient"></div>
+        <div class="bigGradient2"></div>
+
+        <main class="aboutMain">
+
+            <section class="aboutText">
+                <div class="aboutInner">
+                    <h1>ABOUT ME</h1>
+                    <p>Well... How do I start this?</p>
+                    <p>Hey there! I'm Stefan Mihajlovic, a programming enthusiast from Belgrade, Serbia. I've been coding since I was 14, and I've developed a serious passion for creating beautiful responsive websites and immersive video games.</p>
+                    <p>I love programming because it allows me to dive into complex problems and come up with creative solutions. It's like a puzzle that never gets old, and I'm always excited to see what I can come up with next.</p>
+                    <p>One of my favorite things about programming is collaboration. I firmly believe that great things can be achieved when people work together, and I'm always excited to collaborate with others on a project. Whether it's brainstorming ideas, writing code, or playtesting a game, I'm happy to contribute and work towards a shared goal.</p>
+                </div>
+                <div class="iconsWrapper">
+                    <img src="images/csIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/cppIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/cIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/javaIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/jsIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/htmlIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img src="images/reactIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                </div>
+            </section>
+
+        </main>
+    
+        <footer>
+            <div class="socialsWrapper">
+                <h3>Socials</h3>
+                <div class="socials" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://github.com/Stefan-Mihajlovic"><i class="bi bi-github"></i></a>
+                    <a href="https://www.instagram.com/stefi_mihajlovic_/"><i class="bi bi-instagram"></i></a>
+                    <a href="https://discord.com/users/H3art4ttack#6784"><i class="bi bi-discord"></i></a>
+                </div>
+            </div>
+            <p>Copyright © <span id="currentYearSpan"></span> &nbsp;|&nbsp; <span class="highlightSpan">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
+        </footer>
+    
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+
+</body>
+</html>
