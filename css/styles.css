@@ -47,6 +47,7 @@ body{
 
 .wrap{
     overflow: hidden;
+    position: relative;
 }
 
 /* HEADER */
@@ -1054,6 +1055,136 @@ footer{
     margin-inline: 10px;
 }
 
+.thisCode{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px;
+    padding-inline: 30px;
+}
+
+.thisCode h2{
+    font-size: 30px;
+    font-weight: 400;
+    text-align: center;
+}
+
+.thisCode button{
+    background: var(--highlightGrad);
+    border: none;
+    font-size: 16px;
+    padding-block: 15px;
+    width: 250px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all .2s linear;
+}
+
+.thisCode button:hover{
+    transform: scale(1.05) rotate(2deg);
+}
+
+.bigGradient3{
+    z-index: -1;
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    bottom: -400px;
+    left: 30vw;
+    background: rgba(128, 128, 215, 0.4);
+    filter: blur(250px);
+}
+
+.bigGradient4{
+    z-index: -1;
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    top: -300px;
+    left: -30vw;
+    background: rgba(128, 128, 215, 0.3);
+    filter: blur(250px);
+}
+
+.bigGradient5{
+    z-index: -1;
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    top: 600px;
+    right: -40vw;
+    background: rgba(128, 128, 215, 0.3);
+    filter: blur(250px);
+}
+
+.bigGradient6{
+    z-index: -1;
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    top: 1600px;
+    right: -40vw;
+    background: rgba(128, 128, 215, 0.3);
+    filter: blur(250px);
+}
+
+.bigGradient7{
+    z-index: -1;
+    position: absolute;
+    width: 900px;
+    height: 900px;
+    top: 2500px;
+    left: -40vw;
+    background: rgba(128, 128, 215, 0.3);
+    filter: blur(250px);
+}
+
+@media screen and (max-width: 1200px) {
+    .bigGradient4{
+        width: 600px;
+        height: 700px;
+        top: -300px;
+    }
+    .bigGradient5{
+        width: 600px;
+        height: 700px;
+        top: 600px;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .bigGradient6{
+        width: 700px;
+        height: 700px;
+        top: 1600px;
+        right: -40vw;
+        background: rgba(128, 128, 215, 0.3);
+    }
+    
+    .bigGradient7{
+        width: 700px;
+        height: 700px;
+        top: 3300px;
+        left: -40vw;
+        background: rgba(128, 128, 215, 0.3);
+    }
+}
+
+@media screen and (max-width: 850px) {
+    .bigGradient4{
+        width: 300px;
+        height: 300px;
+        top: -300px;
+        background: rgba(128, 128, 215, 1);
+    }
+    .bigGradient5{
+        width: 300px;
+        height: 300px;
+        top: 600px;
+        background: rgba(128, 128, 215, 1);
+    }
+}
+
 @media screen and (max-width: 1580px) {
     .projectBanner2{
         width: 60%;
@@ -1167,6 +1298,12 @@ footer{
         margin-top: 0px;
         margin-bottom: 5px;
         font-weight: 500;
+    }
+    .thisCode{
+        margin-top: 0px;
+    }
+    .thisCode h2{
+        margin-top: 5px;
     }
 }
 
@@ -1336,6 +1473,7 @@ footer{
 }
 
 .bigGradient{
+    z-index: -1;
     position: fixed;
     width: 800px;
     height: 800px;
@@ -1346,6 +1484,7 @@ footer{
 }
 
 .bigGradient2{
+    z-index: -1;
     position: fixed;
     width: 800px;
     height: 800px;
