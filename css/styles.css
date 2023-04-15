@@ -6,7 +6,7 @@
 
 :root{
     --tamnoPlava: rgb(18, 16, 29);
-    --tamnoPlavaSeeThrough: rgba(18, 16, 29, 0.8);
+    --tamnoPlavaSeeThrough: rgba(18, 16, 29, 0.5);
     --tamnoPlavaBack: rgb(31, 28, 49);
     --highlightGrad: #8080D7;
     --descColor: rgb(204, 204, 204);
