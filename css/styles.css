@@ -289,13 +289,7 @@ main{
 .highlightSpan{
     font-weight: 800;
     color: var(--highlightGrad);
-    animation: backgroundStrobe 7s linear infinite;
-}
-
-@keyframes backgroundStrobe {
-    0% { background-position: left; }
-    50% { background-position: right; }
-    100% { background-position: left; }
+    cursor:default;
 }
 
 .projects{
