@@ -1077,107 +1077,6 @@ footer{
     transform: scale(1.05) rotate(2deg);
 }
 
-.bigGradient3{
-    z-index: -1;
-    position: absolute;
-    width: 800px;
-    height: 800px;
-    bottom: -400px;
-    left: 30vw;
-    background: rgba(128, 128, 215, 0.4);
-    filter: blur(250px);
-}
-
-.bigGradient4{
-    z-index: -1;
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    top: -300px;
-    left: -30vw;
-    background: rgba(128, 128, 215, 0.3);
-    filter: blur(250px);
-}
-
-.bigGradient5{
-    z-index: -1;
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    top: 600px;
-    right: -40vw;
-    background: rgba(128, 128, 215, 0.3);
-    filter: blur(250px);
-}
-
-.bigGradient6{
-    z-index: -1;
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    top: 1600px;
-    right: -40vw;
-    background: rgba(128, 128, 215, 0.3);
-    filter: blur(250px);
-}
-
-.bigGradient7{
-    z-index: -1;
-    position: absolute;
-    width: 900px;
-    height: 900px;
-    top: 2500px;
-    left: -40vw;
-    background: rgba(128, 128, 215, 0.3);
-    filter: blur(250px);
-}
-
-@media screen and (max-width: 1200px) {
-    .bigGradient4{
-        width: 600px;
-        height: 700px;
-        top: -300px;
-    }
-    .bigGradient5{
-        width: 600px;
-        height: 700px;
-        top: 600px;
-    }
-}
-
-@media screen and (max-width: 1000px) {
-    .bigGradient6{
-        width: 700px;
-        height: 700px;
-        top: 1600px;
-        right: -40vw;
-        background: rgba(128, 128, 215, 0.3);
-    }
-    
-    .bigGradient7{
-        width: 700px;
-        height: 700px;
-        top: 3300px;
-        left: -40vw;
-        background: rgba(128, 128, 215, 0.3);
-    }
-}
-
-@media screen and (max-width: 850px) {
-    .bigGradient4{
-        width: 300px;
-        height: 300px;
-        top: -300px;
-        background: rgba(128, 128, 215, 1);
-    }
-    .bigGradient5{
-        width: 300px;
-        height: 300px;
-        top: 600px;
-        background: rgba(128, 128, 215, 1);
-    }
-}
-
 @media screen and (max-width: 1580px) {
     .projectBanner2{
         width: 60%;
@@ -1463,28 +1362,6 @@ footer{
 
 .iconsWrapper img:nth-child(7):hover{
     transform: rotate(0deg) scale(1.1);
-}
-
-.bigGradient{
-    z-index: -1;
-    position: fixed;
-    width: 800px;
-    height: 800px;
-    left: calc(50% - 800px/2 + 739px);
-    top: -52px;
-    background: rgba(128, 128, 215, 0.4);
-    filter: blur(250px);
-}
-
-.bigGradient2{
-    z-index: -1;
-    position: fixed;
-    width: 800px;
-    height: 800px;
-    left: calc(50% - 800px/2 - 862px);
-    top: 141px;
-    background: rgba(128, 128, 215, 0.4);
-    filter: blur(250px);
 }
 
 @media screen and (max-width: 1490px) {
