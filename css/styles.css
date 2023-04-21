@@ -336,7 +336,7 @@ main{
     flex-direction: column;
     align-items: center;
     border-radius: 25px;
-    filter:saturate(0) brightness(0.2);
+    filter: blur(2px) saturate(0) brightness(0.2);
     overflow: hidden;
 }
 
@@ -437,7 +437,7 @@ input[type="submit"]{
 
 .carousel-cell.is-selected {
     background: rgb(22, 22, 37);
-    filter: saturate(1) brightness(1);
+    filter: blur(0px) saturate(1) brightness(1);
 }
 
 @media screen and (max-width: 1000px) {
