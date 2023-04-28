@@ -77,7 +77,7 @@ header div{
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 80px;
+    gap: 50px;
 }
 
 header div img{
@@ -121,6 +121,7 @@ header div a{
     text-transform: uppercase;
     position: relative;
     border-radius: 10px;
+    color: white;
 }
 
 .containerA a::before{
@@ -323,15 +324,39 @@ main{
     top: -800px;
     width: calc(100% + 40px);
     height: 1550px;
-    opacity: 0.4;
+    opacity: 0.2;
     filter: blur(20px);
     left: -20px;
     object-fit: cover;
 }
 
+@media screen and (max-width: 1337px) {
+    .myNameDuhh{
+        font-size: 100px;
+    }
+    .mainHeaderText{
+        padding-inline: 30px;
+    }
+}
+
+@media screen and (max-width: 1095px) {
+    .myNameDuhh{
+        font-size: 80px;
+    }
+    .mainHeaderText{
+        padding-inline: 25px;
+    }
+}
+
 @media screen and (max-width: 670px) {
+    .myNameDuhh{
+        font-size: 10vw;
+    }
     .mainHeaderText{
         padding-inline: 20px;
+    }
+    .otherMainText{
+        font-size: 4vw;
     }
 }
 
