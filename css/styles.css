@@ -9,6 +9,7 @@
     --tamnoPlavaSeeThrough: rgba(18, 16, 29, 0.65);
     --tamnoPlavaBack: rgb(31, 28, 49);
     --highlightGrad: #8080D7;
+    --highlightGrad2: #ffaf02;
     --descColor: rgb(204, 204, 204);
     --descColor2:rgb(190, 196, 233);
     --textWhite: white;
@@ -28,21 +29,17 @@
     --tagOrange2: rgba(221, 194, 38, 0.4);
 }
 
+::selection{
+    background: var(--highlightGrad2);
+}
+
 body{
     width: 100vw;
     height: 100vh;
-    background-color: var(--tamnoPlava);
+    background-color: rgb(22, 9, 37);
     padding: 0;
     margin: 0;
     font-family: 'Barlow', sans-serif;
-    background: 
-      radial-gradient(farthest-side at -33.33% 50%,#0000 52%,var(--backgroundAccent2) 54% 57%,#0000 59%) 0 calc(160px/2),
-      radial-gradient(farthest-side at 50% 133.33%,#0000 52%,var(--backgroundAccent2) 54% 57%,#0000 59%) calc(160px/2) 0,
-      radial-gradient(farthest-side at 133.33% 50%,#0000 52%,var(--backgroundAccent2) 54% 57%,#0000 59%),
-      radial-gradient(farthest-side at 50% -33.33%,#0000 52%,var(--backgroundAccent2) 54% 57%,#0000 59%),
-      var(--backgroundAccent);
-    background-size: calc(160px/4.667) 160px,160px calc(160px/4.667);;
-    background-attachment: fixed;
     overflow-x: hidden;
 }
 
@@ -58,7 +55,7 @@ header{
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--tamnoPlava);
+    background-color: var(--tamnoPlavaSeeThrough);
     height: 80px;
     font-size: 25px;
     font-weight: 300;
@@ -104,11 +101,56 @@ header div a{
     text-decoration: none;
     font-size: 20px;
     transition: all .2s linear;
+    position: relative;
+    padding: 5px;
+    padding-inline: 10px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.containerA{
+    position: relative;
+    display: inline-block;
+    padding: 0px 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding-bottom: 7px;
+}
+
+.containerA a{
+    text-transform: uppercase;
+    position: relative;
+    border-radius: 10px;
+}
+
+.containerA a::before{
+    content: attr(data-text);
+    position: absolute;
+    color: #fff;
+    width: 0;
+    overflow: hidden;
+    transition: 0.6s;
+    border-radius: 10px;
+}
+
+.containerA::before{
+    content: "";
+    width: 0%;
+    height: 100%;
+    position: absolute;
+    background: var(--highlightGrad);
+    right: 0;
+    top: 0;
+    transition: 0.45s;
+    border-radius: 10px;
+}
+
+.containerA:hover a::before,.containerA:hover::before{
+    width: 100%;
 }
 
 header div a:hover{
-    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
-    transform: rotate(2deg) scale(1.1);
+    font-weight: 500;
 }
 
 .activeNavLink{
@@ -262,16 +304,33 @@ main{
 .mainHeaderText{
     position: relative;
     text-align: center;
-    font-size: 50px;
+    font-size: 25px;
     padding-block: 26vh;
     padding-inline: 10px;
     transform-style: preserve-3d;
     margin-top: 95px;
 }
 
+.myNameDuhh{
+    font-weight: 700;
+    letter-spacing: 5px;
+    font-size: 125px;
+}
+
+.mainHeaderImage{
+    z-index: -99;
+    position: absolute;
+    top: -800px;
+    width: calc(100% + 40px);
+    height: 1550px;
+    opacity: 0.4;
+    filter: blur(20px);
+    left: -20px;
+    object-fit: cover;
+}
+
 @media screen and (max-width: 670px) {
     .mainHeaderText{
-        font-size: 40px;
         padding-inline: 20px;
     }
 }
@@ -492,8 +551,6 @@ input[type="submit"]{
 .skillsHolder{
     display: flex;
     flex-direction: row;
-    background-color: var(--tamnoPlavaSeeThrough);
-    border: 1px solid var(--tamnoPlavaBack);
     border-bottom: none;
     padding: 20px;
     padding-bottom: 10px;
@@ -503,8 +560,6 @@ input[type="submit"]{
 .skillsHolder2{
     display: flex;
     flex-direction: row;
-    background-color: var(--tamnoPlavaSeeThrough);
-    border: 1px solid var(--tamnoPlavaBack);
     border-top: none;
     padding: 20px;
     padding-top: 10px;
@@ -1427,6 +1482,7 @@ footer{
 .dot2{
     top: 300px;
     right: -800px;
+    background-image: radial-gradient(closest-side, rgba(255, 175, 2, 0.2), transparent);
 }
 
 .dot3{
@@ -1437,6 +1493,7 @@ footer{
 .dot4{
     top: 2250px;
     left: -800px;
+    background-image: radial-gradient(closest-side, rgba(255, 175, 2, 0.2), transparent);
 }
 
 .dot5{

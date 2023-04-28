@@ -28,11 +28,19 @@
     <div class="wrap">
         <header id="home">
             <div>
-                <a class="tLink" href="aboutme.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
-                <a href="#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">&nbsp;SKILLS&nbsp;&nbsp;</a>
-                <a href="#"><img src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></a>
-                <a class="tLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
-                <a href="#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+                <div class="containerA">
+                    <a class="tLink" href="aboutme.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
+                </div>
+                <div class="containerA">
+                    <a href="#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">&nbsp;SKILLS&nbsp;&nbsp;</a>
+                </div>
+                <a class="mainLogoA" href="#"><img src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></a>
+                <div class="containerA">
+                    <a class="tLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
+                </div>
+                <div class="containerA">
+                    <a href="#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+                </div>
             </div>
             <div class="smallScreenHeader">
                 <a href="#"><img src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></a>
@@ -55,9 +63,11 @@
     
         <main>
             <section class="mainHeaderText hidden">
-                <p>Hi, I am <span class="highlightSpan" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Stefan Mihajlović</span> 
-                    and<br> I will help <span class="highlightSpan" style="font-size: 70px;" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">YOU</span> 
-                    make <span class="highlightSpan" style="font-size: 70px;" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">YOUR</span> world truly yours!</p>
+                <img src="images/backgroundImageBody.jpg" alt="backgroundImage" class="mainHeaderImage">
+                <p><span class="myNameDuhh" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">STEFAN MIHAJLOVIĆ</span>
+                    <br><br>
+                    <span class="otherMainText">SOFTWARE ENGINEER&nbsp;&nbsp;<i style="font-size: 17px;color: var(--highlightGrad);" class="bi bi-fast-forward-circle-fill"></i>&nbsp;&nbsp;WEB & GAME DEVELOPER</span>
+                </p>
             </section>
     
             <section id="aboutme" class="aboutMe projects" onclick="window.location.href = '#aboutme'">
