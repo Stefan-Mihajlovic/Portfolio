@@ -9,7 +9,6 @@
     --tamnoPlavaSeeThrough: rgba(18, 16, 29, 0.65);
     --tamnoPlavaBack: rgb(31, 28, 49);
     --highlightGrad: #8080D7;
-    --highlightGrad2: #bebebe;
     --descColor: rgb(204, 204, 204);
     --descColor2:rgb(190, 196, 233);
     --textWhite: white;
@@ -30,7 +29,7 @@
 }
 
 ::selection{
-    background: var(--highlightGrad2);
+    background: var(--highlightGrad);
     color: black;
 }
 
@@ -124,6 +123,7 @@ header div a{
     cursor: pointer;
     border-radius: 10px;
     padding-bottom: 7px;
+    transition: all .2s linear;
 }
 
 .containerA a{
@@ -159,10 +159,10 @@ header div a{
     width: 100%;
 }
 
-header div a:hover{
+.containerA:hover{
+    transform: rotate(1deg) scale(1.07);
     font-weight: 500;
 }
-
 .activeNavLink{
     color: var(--highlightGrad);
     animation: backgroundStrobe 7s linear infinite;
@@ -316,16 +316,8 @@ main{
     font-size: 125px;
 }
 
-.mainHeaderImage{
-    z-index: -99;
-    position: absolute;
-    top: -800px;
-    width: calc(100% + 40px);
-    height: 1550px;
-    opacity: 0.95;
-    filter: blur(20px) brightness(0.3) saturate(1) hue-rotate(-40deg);
-    left: -20px;
-    object-fit: cover;
+.otherMainText{
+    padding-top: 20px;
 }
 
 @media screen and (max-width: 1337px) {
@@ -354,7 +346,7 @@ main{
         padding-inline: 20px;
     }
     .otherMainText{
-        font-size: 4vw;
+        font-size: 2.9vw;
     }
 }
 
@@ -418,6 +410,8 @@ main{
     border-radius: 25px;
     filter: blur(2px) saturate(0) brightness(0.2);
     overflow: hidden;
+    box-sizing: border-box;
+    border: 2px solid var(--tamnoPlavaBack);
 }
 
 .bannerImg{
@@ -1505,7 +1499,6 @@ footer{
 .dot2{
     top: 300px;
     right: -800px;
-    background-image: radial-gradient(closest-side, rgba(252, 252, 252, 0.2), transparent);
 }
 
 .dot3{
@@ -1516,7 +1509,6 @@ footer{
 .dot4{
     top: 2250px;
     left: -800px;
-    background-image: radial-gradient(closest-side, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .dot5{
