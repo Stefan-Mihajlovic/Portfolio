@@ -1349,6 +1349,7 @@ footer{
     aspect-ratio: 1 / 1;
     position: absolute;
     transition: all .3s ease-in-out;
+    cursor: pointer;
 }
 
 .iconsWrapper img:hover{
@@ -1423,6 +1424,148 @@ footer{
 
 .iconsWrapper img:nth-child(7):hover{
     transform: rotate(0deg) scale(1.1);
+}
+
+.languageWindow{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    z-index: 999999999;
+    align-items: center;
+    justify-content: center;
+    display: none;
+}
+
+.languageWindowOpen{
+    display: flex !important;
+}
+
+.innerLW{
+    width: 50%;
+    height: 500px;
+    background-color: rgba(8, 8, 15, 0.95);
+    border: 2px solid var(--highlightGrad);
+    overflow-y: scroll;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.5);
+}
+
+.innerLW::-webkit-scrollbar{
+    visibility: hidden;
+    width: 0px;
+}
+
+.languageWindowMaximized .innerLW{
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+.windowsTitleBar{
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+    background-color: #0d0914;
+    position: relative;
+}
+
+.windowsTitleBar h3{
+    color: white;
+    position: absolute;
+    left: 7.5px;
+    font-size: 15px;
+    font-weight: 400;
+    top: 7.5px;
+    margin: 0;
+}
+
+.windowsTitleBar button{
+    width: 40px;
+    height: 35px;
+    margin-left: -5px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    transition: 0.2s;
+}
+
+.windowsTitleBar button svg {
+    width: 13px;
+    height: 13px;
+}
+
+.windowsTitleBar button svg path, 
+.windowsTitleBar button svg rect, 
+.windowsTitleBar button svg polygon {
+  fill: #ffffff;
+}
+.closeBtn:hover {
+    background-color: #e81123;
+}
+  
+.maximizeBtn:hover {
+    background-color: #ad9cb6;
+}
+  
+.minimizeBtn:hover {
+    background-color: #ad9cb6;
+}
+
+.windowsInnerApp{
+    padding: 10px;
+}
+
+.windowsInnerApp p{
+    color: white;
+    margin: 0;
+    font-weight: 600;
+    font-family: Consolas,monaco,monospace; 
+}
+
+.lightGreenCode{
+    color: rgb(125, 182, 99);
+}
+
+.greenCode{
+    color: rgb(94, 238, 27);
+}
+
+.purpleCode{
+    color: rgb(174, 0, 255);
+}
+
+.grayCode{
+    color: rgb(172, 172, 172);
+}
+
+.blueCode{
+    color: rgb(68, 101, 248);
+}
+
+.lightBlueCode{
+    color: rgb(125, 192, 255);
+}
+
+.redCode{
+    color: rgb(255, 0, 85);
+}
+
+.yellowCode{
+    color: rgb(255, 206, 47);
+}
+
+.orangeCode{
+    color: rgb(255, 157, 45);
+}
+
+.grayCode{
+    color: rgb(172, 172, 172);
+}
+
+.transparentCode{
+    color: transparent;
 }
 
 @media screen and (max-width: 1490px) {

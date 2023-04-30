@@ -346,3 +346,36 @@ function closeMobileNav(){
 
   navBarOpen = false;
 }
+
+/* Program Code Easter Egg */
+
+let codeArray = {
+  "C#": `<span class="purpleCode">namespace</span> <span class="blueCode">EasterEgg</span><br>{<br>&emsp;&emsp;<span class="purpleCode">class</span> <span class="blueCode">NothingImportant</span> {<br>&emsp;&emsp;&emsp;&emsp;<span class="purpleCode">static void</span> <span class="blueCode">Main</span>(<span class="purpleCode">string</span>[] args)<br>&emsp;&emsp;&emsp;&emsp;{<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;System.Console.WriteLine(<span class="lightGreenCode">"Hiyya partner!"</span>);<br>&emsp;&emsp;&emsp;&emsp;}<br>&emsp;&emsp;}<br>}`,
+  "C++": `C++`,
+  "Java": `Java`,
+  "JavaScript": `<span class="yellowCode">console</span>.log(<span class="lightGreenCode">'Only one line, hmmm? Are there hidden ones?'</span>)<br><span class="transparentCode">You found the hidden text congrats! The code is #FF005F</span>`,
+  "C": `<span class="greenCode">#include</span>&nbsp;<span class="blueCode">&lt;stdio.h&gt;</span><br><br>int main<span class="redCode">()</span><br><span class="yellowCode">{</span><br>&emsp;&emsp;&emsp;printf<span class="redCode">(</span><span class="yellowCode">"Curiosity killed the cat?!"</span><span class="redCode">);</span><br><br><span class="redCode">&emsp;&emsp;&emsp;return</span> 0<span class="redCode">;</span><br><span class="yellowCode">}</span>`,
+  "HTML": `<span class="grayCode">&lt;!</span>DOCTYPE <span class="lightBlueCode">html</span><span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>html <span class="lightBlueCode">lang</span><span class="grayCode">=</span><span class="orangeCode">"en"</span><span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>head<span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">charset</span><span class="grayCode">=</span><span class="orangeCode">"UTF-8"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">http-equiv</span><span class="grayCode">=</span><span class="orangeCode">"X-UA-Compatible"</span> <span class="lightBlueCode">content</span><span class="grayCode">=</span><span class="orangeCode">"IE=edge"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">name</span><span class="grayCode">=</span><span class="orangeCode">"viewport"</span> <span class="lightBlueCode">content</span><span class="grayCode">=</span><span class="orangeCode">"width=device-width, initial-scale=1.0"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>title<span class="grayCode">&gt;</span> <span class="grayCode">?</span> <span class="grayCode">&lt;/</span>title<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>head<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>body<span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>h1<span class="grayCode">&gt;</span> <span class="grayCode">You might as well see every code snippet, right? </span><span class="grayCode">&lt;/</span>h1<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>body<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>html<span class="grayCode">&gt;</span><br>`,
+  "REACT": `REACT`
+}
+
+function openProgramCode(language){
+  let languageWindow = document.getElementById('languageWindow');
+  let titleBarName = document.getElementById('titleBarName');
+  let innerCode = document.getElementById('innerCode');
+  titleBarName.innerHTML = "Easter egg: " + language;
+  languageWindow.classList.toggle('languageWindowOpen');
+
+  if(language === "HTML"){
+    innerCode.style.color = "rgb(0, 132, 255)";
+  }else{
+    innerCode.style.color = "white";
+  }
+
+  innerCode.innerHTML = codeArray[language];
+}
+
+function maximizeProgramCode(){
+  let languageWindow = document.getElementById('languageWindow');
+  languageWindow.classList.toggle('languageWindowMaximized');
+}

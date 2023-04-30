@@ -15,6 +15,12 @@
     <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
     <!-- Flickity JavaScript -->
     <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <style>
+        *::-webkit-scrollbar{
+            visibility: hidden;
+            width: 0px;
+        }
+    </style>
 </head>
 <body onload="setTransition();">
 
@@ -69,17 +75,37 @@
                     <p>One of my favorite things about programming is collaboration. I firmly believe that great things can be achieved when people work together, and I'm always excited to collaborate with others on a project. Whether it's brainstorming ideas, writing code, or playtesting a game, I'm happy to contribute and work towards a shared goal.</p>
                 </div>
                 <div class="iconsWrapper">
-                    <img src="images/csIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/cppIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/cIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/javaIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/jsIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/htmlIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
-                    <img src="images/reactIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('C#')" src="images/csIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('C++')" src="images/cppIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('C')" src="images/cIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('Java')" src="images/javaIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('JavaScript')" src="images/jsIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('HTML')" src="images/htmlIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                    <img onclick="openProgramCode('REACT')" src="images/reactIcon.svg" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
                 </div>
             </section>
 
         </main>
+
+        <div class="languageWindow" id="languageWindow">
+            <div class="innerLW">
+                <div class="windowsTitleBar">
+                    <h3 id="titleBarName">C App</h3>
+                    <button class="minimizeBtn">
+                        <svg x="0px" y="0px" viewBox="0 0 10.2 1"><rect x="0" y="50%" width="10.2" height="1"></rect></svg>
+                    </button>
+                    <button class="maximizeBtn" onclick="maximizeProgramCode()">
+                        <svg viewBox="0 0 10 10"><path d="M0,0v10h10V0H0z M9,9H1V1h8V9z"></path></svg>
+                    </button>
+                    <button class="closeBtn" id="closeLWBtn" onclick="openProgramCode('')">
+                        <svg viewBox="0 0 10 10"><polygon points="10.2,0.7 9.5,0 5.1,4.4 0.7,0 0,0.7 4.4,5.1 0,9.5 0.7,10.2 5.1,5.8 9.5,10.2 10.2,9.5 5.8,5.1"></polygon></svg>
+                    </button>
+                </div>
+                <div class="windowsInnerApp">
+                    <p id="innerCode"></p>
+                </div>
+            </div>
+        </div>
 
         <div class="bigBlurAccent dot6"></div>
         <div class="bigBlurAccent dot7"></div>
