@@ -112,7 +112,7 @@ header div a{
     position: relative;
     padding: 5px;
     padding-inline: 10px;
-    border-radius: 10px;
+    border-radius: 15px;
     box-sizing: border-box;
 }
 
@@ -121,7 +121,7 @@ header div a{
     display: inline-block;
     padding: 0px 10px;
     cursor: pointer;
-    border-radius: 10px;
+    border-radius: 15px;
     padding-bottom: 7px;
     transition: all .2s linear;
 }
@@ -140,7 +140,7 @@ header div a{
     width: 0;
     overflow: hidden;
     transition: 0.6s;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
 .containerA::before{
@@ -152,7 +152,7 @@ header div a{
     right: 0;
     top: 0;
     transition: 0.45s;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 .containerA:hover a::before,.containerA:hover::before{
@@ -306,7 +306,6 @@ main{
     font-size: 25px;
     padding-block: 26vh;
     padding-inline: 10px;
-    transform-style: preserve-3d;
     margin-top: 95px;
 }
 
@@ -460,7 +459,7 @@ main{
 .button{
     background: var(--highlightGrad);
     border: none;
-    border-radius: 25px;
+    border-radius: 15px;
     font-size: 17px;
     padding-block: 5px;
     padding-inline: 15px;
@@ -474,10 +473,12 @@ main{
 
 button{
     color: white !important;
+    border-radius: 15px !important;
 }
 
 input[type="submit"]{
     color: white !important;
+    border-radius: 15px !important;
 }
 
 .button:hover{
@@ -539,6 +540,10 @@ input[type="submit"]{
     .itemWrapper{
         filter: blur(0px) brightness(0.4);
     }
+}
+
+.itemText button{
+    border-radius: 10px !important;
 }
 
 /* SKILLS SECTION */
@@ -1489,6 +1494,7 @@ footer{
     outline: 0;
     background: transparent;
     transition: 0.2s;
+    border-radius: 0px !important;
 }
 
 .windowsTitleBar button svg {
