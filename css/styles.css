@@ -981,7 +981,7 @@ footer{
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
 
 .socialsWrapper h3{
@@ -993,18 +993,18 @@ footer{
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
 }
 
 .socials a{
     color: var(--textWhite);
     text-decoration: none;
-    font-size: 22.5px;
+    font-size: 25px;
     transition: all .2s linear;
 }
 
 .socials a:hover{
-    transform: scale(1.2) rotate(10deg);
+    transform: scale(1.12) rotate(2deg);
 }
 
 /* PROJECTS PAGE */
