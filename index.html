@@ -11,15 +11,15 @@
     <link rel="icon" href="images/MainLogo.png">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
-    <!-- Flickity CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
-    <!-- Flickity JavaScript -->
-    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
     <!-- SMTP JS -->
-    <script src="https://smtpjs.com/v3/smtp.js">
-    </script>
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
+    <!-- FLICKING JS -->
+    <script src="https://unpkg.com/@egjs/flicking/dist/flicking.pkgd.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@egjs/flicking/dist/flicking.css" crossorigin="anonymous" />
+    <script src="https://unpkg.com/@egjs/flicking@4.0.0-beta.4/dist/flicking.pkgd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@egjs/flicking@4.0.0/dist/flicking.css">
 </head>
-<body onload="setTransition(); setSkillValues(); startCarousel();">
+<body onload="setTransition(); setSkillValues();">
     
     <div class="transitionDiv transition-1 is-active">
         <img src="images/MainLogo.png">
@@ -28,23 +28,23 @@
     <div class="wrap">
         <header id="home">
             <div>
-                <div class="containerA">
-                    <a class="tLink" href="aboutme.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">ABOUT ME</a>
+                <div class="containerA" data-tilt data-tilt-max-glare="0.5">
+                    <a class="tLink" href="aboutme.html">ABOUT ME</a>
                 </div>
-                <div class="containerA">
-                    <a href="#skills" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">&nbsp;SKILLS&nbsp;&nbsp;</a>
+                <div class="containerA" data-tilt data-tilt-max-glare="0.5">
+                    <a href="#skills">&nbsp;SKILLS&nbsp;&nbsp;</a>
                 </div>
-                <a class="mainLogoA" href="#"><img src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></a>
-                <div class="containerA">
-                    <a class="tLink" href="projects.html" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">PROJECTS</a>
+                <a class="mainLogoA" href="#"><img src="images/MainLogo.png" alt="Logo"></a>
+                <div class="containerA" data-tilt data-tilt-max-glare="0.5">
+                    <a class="tLink" href="projects.html">PROJECTS</a>
                 </div>
-                <div class="containerA">
-                    <a href="#contact" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">CONTACT</a>
+                <div class="containerA" data-tilt data-tilt-max-glare="0.5">
+                    <a href="#contact">CONTACT</a>
                 </div>
             </div>
             <div class="smallScreenHeader">
-                <a href="#"><img src="images/MainLogo.png" alt="Logo" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></a>
-                <i id="navButton" onclick="openNavBarBig(this)" class="bi bi-list" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"></i>
+                <a href="#"><img src="images/MainLogo.png" alt="Logo"></a>
+                <i id="navButton" onclick="openNavBarBig(this)" class="bi bi-list"></i>
             </div>
         </header>
     
@@ -55,22 +55,22 @@
                 <i class="bi bi-x-circle"></i>
             </p>
             <div onclick="closeMobileNav();" class="closeMobileNav"></div>
-            <a class="tLink" href="projects.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"><i class="bi bi-dot"></i>&nbsp;Projects</a>
-            <a href="#skills" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"><i class="bi bi-dot"></i>&nbsp;Skills</a>
-            <a class="tLink" href="aboutme.html" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"><i class="bi bi-dot"></i>&nbsp;About Me</a>
-            <a href="#contact" onclick="closeMobileNav();" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)"><i class="bi bi-dot"></i>&nbsp;Contact Me</a>
+            <a class="tLink" href="projects.html" onclick="closeMobileNav();"><i class="bi bi-dot"></i>&nbsp;Projects</a>
+            <a href="#skills" onclick="closeMobileNav();"><i class="bi bi-dot"></i>&nbsp;Skills</a>
+            <a class="tLink" href="aboutme.html" onclick="closeMobileNav();"><i class="bi bi-dot"></i>&nbsp;About Me</a>
+            <a href="#contact" onclick="closeMobileNav();"><i class="bi bi-dot"></i>&nbsp;Contact Me</a>
         </nav>
     
         <main>
             <section class="mainHeaderText">
-                <p><span class="myNameDuhh" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">STEFAN MIHAJLOVIĆ</span>
+                <p><span class="myNameDuhh">STEFAN MIHAJLOVIĆ</span>
                     <br>
                     <span class="otherMainText">SOFTWARE ENGINEER&nbsp; <i style="font-size: 17px;color: var(--highlightGrad);" class="bi bi-fast-forward-circle-fill"></i>&nbsp; WEB & GAME DEVELOPER</span>
                 </p>
             </section>
     
             <section id="aboutme" class="aboutMe projects" onclick="window.location.href = '#aboutme'">
-                <h1 id="jiggleText" class="clickableLinkText" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <h1 id="jiggleText" class="clickableLinkText">
                     <i class="bi bi-arrow-down-circle"></i>
                     Little About Me
                     <i class="bi bi-arrow-down-circle"></i>
@@ -88,80 +88,81 @@
                         learn more about me and my past, click the button bellow!
                     </h3>
                 </div>
-                <button id="viewAllProjects" onclick="window.location.href = 'aboutme.html'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                <button data-tilt data-tilt-max-glare="1" id="viewAllProjects" onclick="window.location.href = 'aboutme.html'">Read More</button>
             </section>
     
             <section class="projects">
-                <h1 onclick="window.location.href = '#proIndex'" class="clickableLinkText" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <h1 onclick="window.location.href = '#proIndex'" class="clickableLinkText">
                     <i class="bi bi-arrow-down-circle"></i>
                     Some Past Projects
                     <i class="bi bi-arrow-down-circle"></i>
                 </h1>
     
-                <div class="sliderWrapper" id="proIndex">
-                    <div class="main-carousel carousel">
-                        <div class="itemWrapper carousel-cell">
-                            <img src="images/drippyDriftBanner.png" alt="Project Image" class="bannerImg">
-                            <div class="itemText">
-                                <h1>Drippy Drift</h1>
-                                <p>This is a drifting video game that focuses on cartoonish
-                                    style and effects. Score enough DriftPoints, beat the level. That easy...
-                                    Or is it?
-                                </p>
-                                <p class="projectType">Unity Game</p>
-                                <button onclick="window.location.href = 'projects.html#drippyDrift'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
+                <div class="sliderWrapper">
+                    <div class="sliderWr flicking-viewport" id="flick">
+                        <div class="flicking-camera">
+                            <div class="itemWrapper flicking-panel mr-2">
+                                <img src="images/drippyDriftBanner.png" alt="Project Image" class="bannerImg">
+                                <div class="itemText">
+                                    <h1>Drippy Drift</h1>
+                                    <p>This is a drifting video game that focuses on cartoonish
+                                        style and effects. Score enough DriftPoints, beat the level. That easy...
+                                        Or is it?
+                                    </p>
+                                    <p class="projectType">Unity Game</p>
+                                    <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#drippyDrift'" class="button">Read More</button>
+                                </div>
+                            </div>
+                            <div class="itemWrapper flicking-panel mr-2">
+                                <img src="images/crimsonMusicBanner.png" alt="Project Image" class="bannerImg">
+                                <div class="itemText">
+                                    <h1>Crimson Music</h1>
+                                    <p>Your NEXT GEN Musical companion. Stream music non stop without using up
+                                        all your cellular data.
+                                    </p>
+                                    <p class="projectType">Web Application</p>
+                                    <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#crimsonMusic'" class="button">Read More</button>
+                                </div>
+                            </div>
+                            <div class="itemWrapper flicking-panel mr-2">
+                                <img src="images/wallqBanner.png" alt="Project Image" class="bannerImg">
+                                <div class="itemText">
+                                    <h1>WallQ - 4K Wallpapers</h1>
+                                    <p>Find the wallpapers you NEED in an instant while also being
+                                        able to share them with your friend and family 
+                                        ( Can be downloaded on the Google Play Store )!
+                                    </p>
+                                    <p class="projectType">Android Application</p>
+                                    <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#wallQ'" class="button">Read More</button>
+                                </div>
+                            </div>
+                            <div class="itemWrapper flicking-panel mr-2">
+                                <img src="images/currentProjectUE5.png" alt="Project Image" class="bannerImg">
+                                <div class="itemText">
+                                    <h1>EVE'S ADVENTURE</h1>
+                                    <p>Well, I still don't know what to name this game, but I'll go with Eve's adventure. 
+                                        You play as a woman stranded in an alternate universe, who goes through a series of jaw-dropping obstacles.
+                                    </p>
+                                    <p class="projectType">Unreal Engine Game</p>
+                                    <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#someElse'" class="button">Read More</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="itemWrapper carousel-cell">
-                            <img src="images/crimsonMusicBanner.png" alt="Project Image" class="bannerImg">
-                            <div class="itemText">
-                                <h1>Crimson Music</h1>
-                                <p>Your NEXT GEN Musical companion. Stream music non stop without using up
-                                    all your cellular data.
-                                </p>
-                                <p class="projectType">Web Application</p>
-                                <button onclick="window.location.href = 'projects.html#crimsonMusic'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
-                            </div>
-                        </div>
-                        <div class="itemWrapper carousel-cell">
-                            <img src="images/wallqBanner.png" alt="Project Image" class="bannerImg">
-                            <div class="itemText">
-                                <h1>WallQ - 4K Wallpapers</h1>
-                                <p>Find the wallpapers you NEED in an instant while also being
-                                    able to share them with your friend and family 
-                                    ( Can be downloaded on the Google Play Store )!
-                                </p>
-                                <p class="projectType">Android Application</p>
-                                <button onclick="window.location.href = 'projects.html#wallQ'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
-                            </div>
-                        </div>
-                        <div class="itemWrapper carousel-cell">
-                            <img src="images/currentProjectUE5.png" alt="Project Image" class="bannerImg">
-                            <div class="itemText">
-                                <h1>EVE'S ADVENTURE</h1>
-                                <p>Well, I still don't know what to name this game, but I'll go with Eve's adventure. 
-                                    You play as a woman stranded in an alternate universe, who goes through a series of jaw-dropping obstacles.
-                                </p>
-                                <p class="projectType">Unreal Engine Game</p>
-                                <button onclick="window.location.href = 'projects.html#someElse'" class="button" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Read More</button>
-                            </div>
-                        </div>
+                        
+                        <button data-tilt data-tilt-max-glare="1" id="viewAllProjects" onclick="window.location.href = 'projects.html'">View All Projects</button>
                     </div>
-                    
-                    <button id="viewAllProjects" onclick="window.location.href = 'projects.html'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">View All Projects</button>
-    
                 </div>
                     
             </section>
     
             <section class="skills">
-                <h1 id="skills" style="cursor: pointer;" onclick="window.location.href = '#skills'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <h1 id="skills" style="cursor: pointer;" onclick="window.location.href = '#skills'">
                     <i class="bi bi-arrow-down-circle"></i>
                     Skills
                     <i class="bi bi-arrow-down-circle"></i>
                 </h1>
                 <div class="skillsHolder">
-                    <div class="skillItem hidden3">
+                    <div class="skillItem" data-tilt>
                         <h1><i style="margin-right: 10px;" class="bi bi-joystick"></i>Systems</h1>
                         <p class="skillTitle"><i class="bi bi-boxes"></i> Unreal Engine</p>
                         <div class="progressBarShell">
@@ -179,7 +180,7 @@
                         </div>
                         <p class="skillDesc">1 year of Experience</p>
                     </div>
-                    <div class="skillItem hidden2">
+                    <div class="skillItem" data-tilt>
                         <h1><i style="margin-right: 10px;" class="bi bi-file-code"></i>Coding</h1>
                         <p class="skillTitle"><i class="bi bi-filetype-cs"></i> C# / .NET MVC</p>
                         <div class="progressBarShell">
@@ -199,7 +200,7 @@
                     </div>
                 </div>
                 <div class="skillsHolder2">
-                    <div class="skillItem hidden3">
+                    <div class="skillItem" data-tilt>
                         <h1><i style="margin-right: 10px;" class="bi bi-translate"></i>Languages</h1>
                         <p class="skillTitle"><i class="bi bi-card-text"></i> Serbian</p>
                         <div class="progressBarShell">
@@ -212,7 +213,7 @@
                         </div>
                         <p class="skillDesc"><i class="bi bi-star-half"></i> 7 / 10 Quite Fluent</p>
                     </div>
-                    <div class="skillItem hidden2">
+                    <div class="skillItem" data-tilt>
                         <h1><i style="margin-right: 10px;" class="bi bi-person-workspace"></i>Abilities</h1>
                         <p class="skillTitle"><i class="bi bi-people-fill"></i> Teamwork</p>
                         <div class="progressBarShell">
@@ -229,7 +230,7 @@
             </section>
     
             <section class="contact">
-                <h1 id="contact" style="cursor: pointer;" onclick="window.location.href = '#contact'" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <h1 id="contact" style="cursor: pointer;" onclick="window.location.href = '#contact'">
                     <i class="bi bi-arrow-down-circle"></i>
                     Contact
                     <i class="bi bi-arrow-down-circle"></i>
@@ -253,7 +254,7 @@
                             <label class="classicLabel" for="coMessage">Message</label><br><br>
                             <textarea id="contactMessage" class="classicTextA" name="coMessage" placeholder="Enter your message"></textarea>
                         </div>
-                        <input type="submit" value="Send" class="classicSubmit" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                        <input data-tilt data-tilt-max-glare="1" type="submit" value="Send" class="classicSubmit">
                     </form>
                 </div>
             </section>
@@ -269,14 +270,14 @@
             <div class="exitPopupBig" onclick="closePopupMessage()"></div>
             <div class="popupMessage">
                 <h1 id="popupMessageText">Email sent!</h1>
-                <button onclick="closePopupMessage()" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">Close</button>
+                <button data-tilt data-tilt-max-glare="1" onclick="closePopupMessage()">Close</button>
             </div>
         </div>
     
         <footer>
             <div class="socialsWrapper">
                 <h3>Socials</h3>
-                <div class="socials" onmouseover="setCircleDevider(this)" onmouseleave="leaveCircleDevider(this)">
+                <div class="socials">
                     <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><i class="bi bi-linkedin"></i></a>
                     <a href="https://github.com/Stefan-Mihajlovic"><i class="bi bi-github"></i></a>
                     <a href="https://www.instagram.com/stefi_mihajlovic_/"><i class="bi bi-instagram"></i></a>
@@ -285,24 +286,15 @@
             </div>
             <p>Copyright © <span id="currentYearSpan"></span> &nbsp;|&nbsp; <span class="highlightSpan">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
         </footer>
-    
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
-        <div class="circle"></div>
     </div>
 
+    <script src="js/tilt.js/vanilla-titl.js"></script>
+    <script type="module" src="js/flicking.js"></script>
 
+    <script type="module">
+        import { loadCarousel } from "/js/flicking.js";
+        window.loadCarousel = loadCarousel;
+        loadCarousel();
+    </script>
 </body>
 </html>
