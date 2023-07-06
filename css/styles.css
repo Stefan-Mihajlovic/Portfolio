@@ -644,9 +644,6 @@ input[type="submit"]{
 }
 
 @media screen and (max-width: 500px) {
-    .skillItem{
-        padding-inline: 20px;
-    }
     .progressBarShell{
         width: 270px;
     }
