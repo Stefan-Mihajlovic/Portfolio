@@ -124,8 +124,6 @@ header div a{
     border-radius: 15px;
     padding-bottom: 7px;
     transition: all .2s linear;
-    transform-style: preserve-3d;
-    transform: perspective(1000px);
 }
 
 .containerA a{
@@ -133,7 +131,10 @@ header div a{
     position: relative;
     border-radius: 10px;
     color: white;
-    transform: translateZ(20px);
+    display: block;
+    transform: translateZ(0px);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
 }
 
 .containerA a::before{
@@ -1699,5 +1700,86 @@ footer{
         background-image: radial-gradient(closest-side, rgba(116, 116, 211, 0.25), transparent);
         top: 300px;
         right: -700px;
+    }
+}
+
+.codeSection{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 100px;
+}
+
+.codeSection input{
+    padding: 15px;
+    min-width: 800px;
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 10px;
+    color: white;
+    border: 1px solid gray;
+    transition: all .2s ease-in-out;
+    outline: none !important;
+    text-align: center;
+    font-size: 17px;
+}
+
+.codeSection input:focus{
+    border: 1px solid white;
+}
+
+.wrongCode{
+    background-color: rgba(255, 0, 0, 0.1) !important;
+    border: 1px solid red !important;
+    animation: inputShake .15s ease-in-out infinite .2s;
+    outline: none !important;
+}
+
+.wrongCode:focus{
+    border: 1px solid red !important;
+}
+
+.rightCode{
+    background-color: rgba(128, 128, 215, 0.1) !important;
+    border: 1px solid var(--highlightGrad) !important;
+    animation: inputShake .15s ease-in-out infinite .2s, inputRainbowText 2s ease-in-out infinite .2s;
+    outline: none !important;
+    font-size: 25px !important;
+}
+
+@keyframes inputShake {
+    0%{ transform: translateX(0px); }
+    25%{ transform: translateX(1px); }
+    50%{ transform: translateX(0px); }
+    75%{ transform: translateX(-1px); }
+    100%{ transform: translateX(0px); }
+}
+
+@keyframes inputRainbowText {
+    0%{ color: white; }
+    20%{ color: rgb(113, 113, 255); }
+    40%{ color: rgb(255, 255, 136); }
+    60%{ color: rgb(152, 255, 152); }
+    80%{ color: rgb(255, 153, 153); }
+    100%{ color: white; }
+}
+
+@media screen and (max-width: 982px) {
+    .codeSection input{
+        min-width: 600px;
+    }
+}
+
+@media screen and (max-width: 788px) {
+    .codeSection input{
+        min-width: 500px;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .codeSection{
+        display: none;
     }
 }

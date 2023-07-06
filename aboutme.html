@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlović - Projects</title>
+    <title>Stefan Mihajlović - About Me</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/transitions.css">
     <script src="js/index.js" defer></script>
@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
     <!-- Flickity JavaScript -->
     <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         *::-webkit-scrollbar{
             visibility: hidden;
@@ -83,6 +84,10 @@
                     <img data-tilt data-tilt-max-glare="1" onclick="openProgramCode('HTML')" src="images/htmlIcon.svg" >
                     <img data-tilt data-tilt-max-glare="1" onclick="openProgramCode('REACT')" src="images/reactIcon.svg" >
                 </div>
+            </section>
+
+            <section class="codeSection">
+                <input onkeypress="checkCode(event, this)" type="text" placeholder="Find the SECRET code and write it here:">
             </section>
 
         </main>

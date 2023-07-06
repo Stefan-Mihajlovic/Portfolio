@@ -235,7 +235,7 @@ let codeArray = {
   "C#": `<span class="purpleCode">namespace</span> <span class="blueCode">EasterEgg</span><br>{<br>&emsp;&emsp;<span class="purpleCode">class</span> <span class="blueCode">NothingImportant</span> {<br>&emsp;&emsp;&emsp;&emsp;<span class="purpleCode">static void</span> <span class="blueCode">Main</span>(<span class="purpleCode">string</span>[] args)<br>&emsp;&emsp;&emsp;&emsp;{<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;System.Console.WriteLine(<span class="lightGreenCode">"Hiyya partner!"</span>);<br>&emsp;&emsp;&emsp;&emsp;}<br>&emsp;&emsp;}<br>}`,
   "C++": `C++`,
   "Java": `Java`,
-  "JavaScript": `<span class="yellowCode">console</span>.log(<span class="lightGreenCode">'Only one line, hmmm? Are there hidden ones?'</span>)<br><span class="transparentCode">You found the hidden text congrats! The code is #FF005F</span>`,
+  "JavaScript": `<span class="yellowCode">console</span>.log(<span class="lightGreenCode">'Only one line, hmmm? Are there hidden ones?'</span>)<br><span class="transparentCode">// You found the hidden text congrats! The code is #FF005F</span>`,
   "C": `<span class="greenCode">#include</span>&nbsp;<span class="blueCode">&lt;stdio.h&gt;</span><br><br>int main<span class="redCode">()</span><br><span class="yellowCode">{</span><br>&emsp;&emsp;&emsp;printf<span class="redCode">(</span><span class="yellowCode">"Curiosity killed the cat?!"</span><span class="redCode">);</span><br><br><span class="redCode">&emsp;&emsp;&emsp;return</span> 0<span class="redCode">;</span><br><span class="yellowCode">}</span>`,
   "HTML": `<span class="grayCode">&lt;!</span>DOCTYPE <span class="lightBlueCode">html</span><span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>html <span class="lightBlueCode">lang</span><span class="grayCode">=</span><span class="orangeCode">"en"</span><span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>head<span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">charset</span><span class="grayCode">=</span><span class="orangeCode">"UTF-8"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">http-equiv</span><span class="grayCode">=</span><span class="orangeCode">"X-UA-Compatible"</span> <span class="lightBlueCode">content</span><span class="grayCode">=</span><span class="orangeCode">"IE=edge"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>meta <span class="lightBlueCode">name</span><span class="grayCode">=</span><span class="orangeCode">"viewport"</span> <span class="lightBlueCode">content</span><span class="grayCode">=</span><span class="orangeCode">"width=device-width, initial-scale=1.0"</span><span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>title<span class="grayCode">&gt;</span> <span class="grayCode">?</span> <span class="grayCode">&lt;/</span>title<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>head<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;</span>body<span class="grayCode">&gt;</span><br>&emsp;&emsp;<span class="grayCode">&lt;</span>h1<span class="grayCode">&gt;</span> <span class="grayCode">You might as well see every code snippet, right? </span><span class="grayCode">&lt;/</span>h1<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>body<span class="grayCode">&gt;</span><br><span class="grayCode">&lt;/</span>html<span class="grayCode">&gt;</span><br>`,
   "REACT": `REACT`
@@ -260,4 +260,55 @@ function openProgramCode(language){
 function maximizeProgramCode(){
   let languageWindow = document.getElementById('languageWindow');
   languageWindow.classList.toggle('languageWindowMaximized');
+}
+
+// ----- CHECK THE CODE ON THE ABOUT ME PAGE
+
+let confReady = true;
+
+function checkCode(e, input){
+  if(e.key == "Enter" && confReady){
+    if(input.value === "#FF005F"){
+      // IF YOU FOUND THE CODE IN HERE YOU ARE ONE CHEEKY HUMAN 😁
+      Confetti();
+      confReady = false;
+      input.classList.add("rightCode");
+      input.value = "😉 CONGRATULATIONS 😁";
+      input.readOnly = true;
+      setTimeout(() => {
+        confReady = true;
+        input.classList.remove("rightCode");
+        input.value = "#FF005F";
+        input.readOnly = false;
+      }, 6000);
+    }else{
+      input.classList.add("wrongCode");
+      setTimeout(() => {
+        input.classList.remove("wrongCode");
+      }, 500);
+    }
+  }
+}
+
+function Confetti(){
+  var duration = 7 * 1000;
+  var animationEnd = Date.now() + duration;
+  var defaults = { startVelocity: 20, spread: 360, ticks: 60, zIndex: 100 };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  var interval = setInterval(function() {
+    var timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    var particleCount = 50 * (timeLeft / duration);
+    // since particles fall down, start a bit higher than random
+    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+    confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+  }, 250);
 }
