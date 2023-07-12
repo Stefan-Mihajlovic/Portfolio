@@ -590,7 +590,7 @@ input[type="submit"]{
     }
     .itemWrapper{
         width: 85%;
-        filter: blur(0px) brightness(0.7);
+        filter: blur(1px) brightness(0.7);
         border: 2px solid var(--tamnoPlava);
     }
 }
