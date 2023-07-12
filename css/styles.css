@@ -462,6 +462,7 @@ main{
     overflow: hidden;
     box-sizing: border-box;
     border: 1px solid var(--tamnoPlavaBack);
+    transition: filter .2s ease-in-out, border .2s ease-in-out;
     margin: 5px;
     filter: blur(2px) brightness(0.5);
 }
