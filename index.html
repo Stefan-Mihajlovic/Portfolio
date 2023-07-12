@@ -9,15 +9,15 @@
     <link rel="stylesheet" href="css/transitions.css">
     <script src="js/index.js" defer></script>
     <link rel="icon" href="images/MainLogo.png">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
     <!-- SMTP JS -->
     <script src="https://smtpjs.com/v3/smtp.js"></script>
-    <!-- FLICKING JS -->
-    <script src="https://unpkg.com/@egjs/flicking/dist/flicking.pkgd.min.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@egjs/flicking/dist/flicking.css" crossorigin="anonymous" />
-    <script src="https://unpkg.com/@egjs/flicking@4.0.0-beta.4/dist/flicking.pkgd.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@egjs/flicking@4.0.0/dist/flicking.css">
+    <!-- FLICKITY CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <!-- FLICKITY JavaScript -->
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <script defer src="js/flickity.js"></script>
 </head>
 <body onload="setTransition(); setSkillValues();">
     
@@ -43,8 +43,8 @@
                 </div>
             </div>
             <div class="smallScreenHeader">
-                <a data-tilt data-tilt-max-glare="0.5" href="#"><img src="images/MainLogo.png" alt="Logo"></a>
-                <i data-tilt data-tilt-max-glare="0.5" id="navButton" onclick="openNavBarBig(this)" class="bi bi-list"></i>
+                <a data-tilt-max-glare="0.5" href="#"><img src="images/MainLogo.png" alt="Logo"></a>
+                <i data-tilt-max-glare="0.5" id="navButton" onclick="openNavBarBig(this)" class="bi bi-list"></i>
             </div>
         </header>
     
@@ -76,14 +76,14 @@
                     <i class="bi bi-arrow-down-circle"></i>
                 </h1>
                 <div>
-                    <h3 class="hidden5">Hi! As you already know my name is Stefan Mihajlović and 
+                    <h3>Hi! As you already know my name is Stefan Mihajlović and 
                         I am a <span class="highlightSpan">PROGRAMMER</span>. I was
                         born in beautiful Belgrade, Serbia and have been coding since
                         I was 14!</h3>
-                    <h3 class="hidden5">I know many languages in quite a few sectors of programming
+                    <h3>I know many languages in quite a few sectors of programming
                         like <span class="highlightSpan">WEB</span> and 
                         <span class="highlightSpan">GAME</span> development.</h3>
-                    <h3 class="hidden5">I am very passionate about programming
+                    <h3>I am very passionate about programming
                         and always strive to learn and improve my skills. If you are eager to 
                         learn more about me and my past, click the button bellow!
                     </h3>
@@ -99,9 +99,8 @@
                 </h1>
     
                 <div class="sliderWrapper">
-                    <div class="sliderWr flicking-viewport" id="flick">
-                        <div class="flicking-camera">
-                            <div class="itemWrapper flicking-panel mr-2">
+                    <div class="main-carousel">
+                            <div class="itemWrapper carousel-cell">
                                 <img src="images/drippyDriftBanner.png" alt="Project Image" class="bannerImg">
                                 <div class="itemText">
                                     <h1>Drippy Drift</h1>
@@ -113,7 +112,7 @@
                                     <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#drippyDrift'" class="button">Read More</button>
                                 </div>
                             </div>
-                            <div class="itemWrapper flicking-panel mr-2">
+                            <div class="itemWrapper carousel-cell">
                                 <img src="images/crimsonMusicBanner.png" alt="Project Image" class="bannerImg">
                                 <div class="itemText">
                                     <h1>Crimson Music</h1>
@@ -124,7 +123,7 @@
                                     <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#crimsonMusic'" class="button">Read More</button>
                                 </div>
                             </div>
-                            <div class="itemWrapper flicking-panel mr-2">
+                            <div class="itemWrapper carousel-cell">
                                 <img src="images/palettePilotBanner.png" alt="Project Image" class="bannerImg">
                                 <div class="itemText">
                                     <h1>PalettePilot</h1>
@@ -134,7 +133,7 @@
                                     <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#palettePilot'" class="button">Read More</button>
                                 </div>
                             </div>
-                            <div class="itemWrapper flicking-panel mr-2">
+                            <div class="itemWrapper carousel-cell">
                                 <img src="images/wallqBanner.png" alt="Project Image" class="bannerImg">
                                 <div class="itemText">
                                     <h1>WallQ - 4K Wallpapers</h1>
@@ -146,7 +145,7 @@
                                     <button data-tilt data-tilt-max-glare="1" onclick="window.location.href = 'projects.html#wallQ'" class="button">Read More</button>
                                 </div>
                             </div>
-                            <div class="itemWrapper flicking-panel mr-2">
+                            <div class="itemWrapper carousel-cell">
                                 <img src="images/currentProjectUE5.png" alt="Project Image" class="bannerImg">
                                 <div class="itemText">
                                     <h1>EVE'S ADVENTURE</h1>
@@ -158,9 +157,7 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <button data-tilt data-tilt-max-glare="1" id="viewAllProjects" onclick="window.location.href = 'projects.html'">View All Projects</button>
-                    </div>
                 </div>
                     
             </section>
@@ -176,17 +173,17 @@
                         <h1><i style="margin-right: 10px;" class="bi bi-joystick"></i>Systems</h1>
                         <p class="skillTitle"><i class="bi bi-boxes"></i> Unreal Engine</p>
                         <div class="progressBarShell">
-                            <div id="UnrealEngine" class="progressBarValue hidden4"></div>
+                            <div id="UnrealEngine" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">1 year of Experience</p>
                         <p class="skillTitle"><i class="bi bi-unity"></i> Unity</p>
                         <div class="progressBarShell">
-                            <div id="Unity" class="progressBarValue hidden4"></div>
+                            <div id="Unity" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">2+ years of Experience</p>
                         <p class="skillTitle"><i class="bi bi-android2"></i> Android / Java</p>
                         <div class="progressBarShell">
-                            <div id="Android" class="progressBarValue hidden4"></div>
+                            <div id="Android" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">1 year of Experience</p>
                     </div>
@@ -194,17 +191,17 @@
                         <h1><i style="margin-right: 10px;" class="bi bi-file-code"></i>Coding</h1>
                         <p class="skillTitle"><i class="bi bi-filetype-cs"></i> C# / .NET MVC</p>
                         <div class="progressBarShell">
-                            <div id="C#" class="progressBarValue hidden4"></div>
+                            <div id="C#" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">2+ years of Experience</p>
                         <p class="skillTitle"><i class="bi bi-filetype-cs"></i> C++</p>
                         <div class="progressBarShell">
-                            <div id="C++" class="progressBarValue hidden4"></div>
+                            <div id="C++" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">2+ years of Experience</p>
                         <p class="skillTitle"><i class="bi bi-filetype-js"></i> HTML - CSS - JavaScript</p>
                         <div class="progressBarShell">
-                            <div id="hcj" class="progressBarValue hidden4"></div>
+                            <div id="hcj" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">3+ years of Experience</p>
                     </div>
@@ -214,12 +211,12 @@
                         <h1><i style="margin-right: 10px;" class="bi bi-translate"></i>Languages</h1>
                         <p class="skillTitle"><i class="bi bi-card-text"></i> Serbian</p>
                         <div class="progressBarShell">
-                            <div id="Serbian" class="progressBarValue hidden4"></div>
+                            <div id="Serbian" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc"><i class="bi bi-star-half"></i> 10 / 10 Native Speaker</p>
                         <p class="skillTitle"><i class="bi bi-card-text"></i> English</p>
                         <div class="progressBarShell">
-                            <div id="English" class="progressBarValue hidden4"></div>
+                            <div id="English" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc"><i class="bi bi-star-half"></i> 7 / 10 Quite Fluent</p>
                     </div>
@@ -227,12 +224,12 @@
                         <h1><i style="margin-right: 10px;" class="bi bi-person-workspace"></i>Abilities</h1>
                         <p class="skillTitle"><i class="bi bi-people-fill"></i> Teamwork</p>
                         <div class="progressBarShell">
-                            <div id="Teamwork" class="progressBarValue hidden4"></div>
+                            <div id="Teamwork" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">Skilled collaborator</p>
                         <p class="skillTitle"><i class="bi bi-fast-forward-fill"></i> Rapid and Adaptive</p>
                         <div class="progressBarShell">
-                            <div id="QuickLearn" class="progressBarValue hidden4"></div>
+                            <div id="QuickLearn" class="progressBarValue"></div>
                         </div>
                         <p class="skillDesc">Great ability to listen and learn</p>
                     </div>
@@ -299,12 +296,5 @@
     </div>
 
     <script src="js/tilt.js/vanilla-tilt.js"></script>
-    <script type="module" src="js/flicking.js"></script>
-
-    <script type="module">
-        import { loadCarousel } from "/js/flicking.js";
-        window.loadCarousel = loadCarousel;
-        loadCarousel();
-    </script>
 </body>
 </html>

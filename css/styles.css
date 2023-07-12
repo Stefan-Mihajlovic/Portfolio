@@ -125,6 +125,8 @@ header div a{
     border-radius: 15px;
     padding-bottom: 7px;
     transition: all .2s linear;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
 }
 
 .containerA a{
@@ -133,9 +135,10 @@ header div a{
     border-radius: 10px;
     color: white;
     display: block;
-    transform: translateZ(0px);
     backface-visibility: hidden;
     -webkit-font-smoothing: subpixel-antialiased;
+    transform: translateZ(20px);
+    padding-top: 5px;
 }
 
 .containerA a::before{
@@ -167,6 +170,11 @@ header div a{
 .containerA:hover{
     transform: rotate(1deg) scale(1.07);
 }
+
+.containerA:hover a{
+    text-shadow: 0px 0px 10px black;
+}
+
 .activeNavLink{
     color: var(--highlightGrad);
     animation: backgroundStrobe 7s linear infinite;
@@ -393,22 +401,55 @@ main{
     background-color: var(--tamnoPlavaSeeThrough);
     border-top: 1px solid var(--tamnoPlavaBack);
     border-bottom: 1px solid var(--tamnoPlavaBack);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
     padding-block: 40px;
 }
 
-.sliderWr{
+.main-carousel{
     width: 80%;
+}
+
+/* smaller, dark, rounded square */
+.flickity-button {
+    background: var(--highlightGrad) !important;
+    transition: all .15s ease-in-out;
+}
+.flickity-button:hover {
+    background: rgb(94, 94, 173) !important;
+}
+  
+.flickity-prev-next-button {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+}
+/* icon color */
+.flickity-button-icon {
+    fill: white !important;
+}
+
+/* position dots up a bit */
+.flickity-page-dots {
+    bottom: -22px !important;
+    transition: all .15s ease-in-out !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    gap: 40px;
-    padding-bottom: 10px;
-}
+    gap: 5px;
+  }
+  /* dots are lines */
+  .flickity-page-dots .dot {
+    height: 7px !important;
+    width: 40px !important;
+    margin: 0 !important;
+    border-radius: 2px !important;
+    transition: all .15s ease-in-out;
+    background-color: var(--highlightGrad) !important;
+  }
 
 .itemWrapper{
     width: 50%;
@@ -420,9 +461,14 @@ main{
     border-radius: 25px;
     overflow: hidden;
     box-sizing: border-box;
-    border: 2px solid var(--tamnoPlavaBack);
+    border: 1px solid var(--tamnoPlavaBack);
     margin: 5px;
-    cursor: grab;
+    filter: blur(2px) brightness(0.5);
+}
+
+.carousel-cell.is-selected {
+    filter: blur(0px) brightness(1);
+    border: 2px solid var(--tamnoPlavaBack);
 }
 
 .bannerImg{
@@ -518,7 +564,7 @@ input[type="submit"]{
 }
 
 @media screen and (max-width: 1000px) {
-    .sliderWr{
+    .main-carousel{
         width: 90%;
     }
     .itemWrapper{
@@ -534,6 +580,17 @@ input[type="submit"]{
     }
     .itemText h1{
         margin-top: 15px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .main-carousel{
+        width: 100%;
+    }
+    .itemWrapper{
+        width: 85%;
+        filter: blur(0px) brightness(0.7);
+        border: 2px solid var(--tamnoPlava);
     }
 }
 
