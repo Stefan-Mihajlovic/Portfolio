@@ -453,7 +453,7 @@ main{
 
 .itemWrapper{
     width: 50%;
-    height: 550px;
+    height: 500px;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -462,14 +462,17 @@ main{
     overflow: hidden;
     box-sizing: border-box;
     border: 1px solid var(--tamnoPlavaBack);
-    transition: filter .2s ease-in-out, border .2s ease-in-out;
+    transition: filter .2s ease-in-out, border .2s ease-in-out, height .3s ease-in-out, background-color .2s ease-in-out;
     margin: 5px;
     filter: blur(2px) brightness(0.5);
+    background-color: rgba(146, 135, 214, 0.15);
 }
 
 .carousel-cell.is-selected {
+    height: 550px !important;
     filter: blur(0px) brightness(1);
     border: 2px solid var(--tamnoPlavaBack);
+    background-color: rgba(255, 255, 255, 0);
 }
 
 .bannerImg{
@@ -591,7 +594,6 @@ input[type="submit"]{
     .itemWrapper{
         width: 85%;
         filter: blur(1px) brightness(0.7);
-        border: 2px solid var(--tamnoPlava);
     }
 }
 
