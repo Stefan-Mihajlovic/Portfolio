@@ -413,6 +413,10 @@ main{
     width: 80%;
 }
 
+.flickity-viewport{
+    height: 560px !important;
+}
+
 /* smaller, dark, rounded square */
 .flickity-button {
     background: var(--highlightGrad) !important;
@@ -453,7 +457,7 @@ main{
 
 .itemWrapper{
     width: 50%;
-    height: 500px;
+    height: 550px;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -461,7 +465,7 @@ main{
     border-radius: 25px;
     overflow: hidden;
     box-sizing: border-box;
-    border: 1px solid var(--tamnoPlavaBack);
+    border: 2px solid var(--tamnoPlavaBack);
     transition: filter .2s ease-in-out, border .2s ease-in-out, height .3s ease-in-out, background-color .2s ease-in-out;
     margin: 5px;
     filter: blur(2px) brightness(0.5);
@@ -469,7 +473,6 @@ main{
 }
 
 .carousel-cell.is-selected {
-    height: 550px !important;
     filter: blur(0px) brightness(1);
     border: 2px solid var(--tamnoPlavaBack);
     background-color: rgba(255, 255, 255, 0);
