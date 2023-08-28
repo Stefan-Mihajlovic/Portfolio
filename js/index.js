@@ -247,3 +247,37 @@ function Confetti(){
     confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
   }, 250);
 }
+
+// ----- TITLE HOVER ANIM
+
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
+let isHoverable = true;
+
+document.querySelector('.myNameDuhh').onmouseover = event => {
+  if(isHoverable){
+    event.target.classList.add('myNameHover');
+    let i = 0;
+
+    const interval = setInterval(() => {
+      event.target.innerText = event.target.innerText.split("")
+      .map((letter, index) => {
+        if(index < i){
+          return event.target.dataset.value[index];
+        }
+
+        return letters[Math.floor(Math.random() * 35)]
+      })
+      .join("");
+
+      if(i >= event.target.dataset.value.length) clearInterval(interval);
+
+      i += 1 / 2;
+    }, 30);
+
+    isHoverable = false;
+    setTimeout(() => {
+      isHoverable = true;
+      event.target.classList.remove('myNameHover');
+    }, 1000);
+  }
+}

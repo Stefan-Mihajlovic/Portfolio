@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 *{
     scroll-behavior: smooth;
@@ -321,9 +322,18 @@ main{
 }
 
 .myNameDuhh{
+    font-family: 'Space Mono', monospace;
     font-weight: 700;
     letter-spacing: 5px;
-    font-size: 125px;
+    font-size: 6.5rem;
+    line-height: 6.5rem;
+    transition: all .2s ease-in;
+    cursor: default;
+}
+
+.myNameHover{
+    opacity: 0.7;
+    color: #b0b0e6;
 }
 
 .otherMainText{
@@ -332,7 +342,8 @@ main{
 
 @media screen and (max-width: 1337px) {
     .myNameDuhh{
-        font-size: 100px;
+        font-size: 5.5rem;
+        line-height: 5.5rem;
     }
     .mainHeaderText{
         padding-inline: 30px;
@@ -341,22 +352,39 @@ main{
 
 @media screen and (max-width: 1095px) {
     .myNameDuhh{
-        font-size: 80px;
+        font-size: 4.5rem;
+        line-height: 4.5rem;
     }
     .mainHeaderText{
         padding-inline: 25px;
     }
 }
 
+@media screen and (max-width: 886px) {
+    .myNameDuhh{
+        font-size: 3.5rem;
+        line-height: 3.5rem;
+    }
+}
+
+@media screen and (max-width: 750px) {
+    .myNameDuhh{
+        font-size: 3.2rem;
+        line-height: 3.2rem;
+    }
+}
+
 @media screen and (max-width: 670px) {
     .myNameDuhh{
-        font-size: 10vw;
+        font-size: 2.56rem;
+        line-height: 2.56rem;
     }
     .mainHeaderText{
         padding-inline: 20px;
     }
     .otherMainText{
-        font-size: 2.9vw;
+        font-size: 0.8rem;
+        line-height: 0.8rem;
     }
 }
 
