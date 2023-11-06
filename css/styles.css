@@ -1086,18 +1086,29 @@ footer{
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 25px;
+    gap: 10px;
 }
 
 .socials a{
+    padding: 5px;
+    width: 40px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
     color: var(--textWhite);
     text-decoration: none;
     font-size: 25px;
+    box-shadow: 0px 0px 0px rgba(255, 255, 255, 0.3);
     transition: all .2s linear;
 }
 
 .socials a:hover{
-    transform: scale(1.12) rotate(2deg);
+    transform: scale(1.12);
+    background-color: white;
+    color: black;
+    box-shadow: 0px 0px 30px rgba(255, 255, 255, 0.3);
 }
 
 /* PROJECTS PAGE */
