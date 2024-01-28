@@ -128,6 +128,7 @@ header div a{
     transition: all .2s linear;
     transform-style: preserve-3d;
     transform: perspective(1000px);
+    overflow: hidden;
 }
 
 .containerA a{
@@ -148,24 +149,25 @@ header div a{
     color: #fff;
     width: 0px;
     overflow: hidden;
-    transition: 0.6s;
+    transition: all 0.6s ease-in-out;
     border-radius: 12px;
 }
 
 .containerA::before{
     content: "";
-    width: 0%;
+    width: 100%;
+    transform: translateX(100%);
     height: 100%;
     position: absolute;
     background: var(--highlightGrad);
     right: 0;
     top: 0;
-    transition: 0.45s;
+    transition: all 0.3s ease-in-out;
     border-radius: 12px;
 }
 
 .containerA:hover a::before,.containerA:hover::before{
-    width: 100%;
+    transform: translateX(0%);
 }
 
 .containerA:hover{
@@ -226,7 +228,6 @@ nav{
     justify-content: center;
     margin: auto;
     position: fixed;
-    padding-left: 20px;
     gap: 5px;
     z-index: 99999999999999;
     backdrop-filter: blur(0px);
@@ -235,12 +236,16 @@ nav{
 }
 
 nav a{
+    width: 100%;
+    background-color: var(--backgroundAccent);
+    border-top: 1px solid var(--tamnoPlavaBack);
+    border-bottom: 1px solid var(--tamnoPlavaBack);
     animation: none;
     color: var(--textWhite);
     text-decoration: none;
-    font-size: 50px;
+    font-size: 30px;
     font-weight: 600;
-    padding: 0px;
+    padding: 10px;
     margin: 0px;
     text-align: left;
     transform: translateX(-200%);
@@ -249,7 +254,7 @@ nav a{
 
 nav a:hover{
     transition: all .2s linear;
-    transform: translateX(5px);
+    padding-left: 15px;
     color: var(--textPurple);
 }
 
@@ -265,7 +270,7 @@ nav a:hover{
 
 nav p{
     position: absolute;
-    width: 85%;
+    width: 100%;
     top: -50%;
     color: var(--textWhite);
     text-align: center;
