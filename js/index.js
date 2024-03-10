@@ -135,6 +135,7 @@ let navBarOpen = false;
 let navBar = document.querySelector("nav");
 
 function openNavBarBig(object){
+  document.querySelector('main').style.pointerEvents = 'none';
   if(navBarOpen){
     object.classList.remove("bi-x-circle");
     object.classList.remove("menuIconAnim");
@@ -155,6 +156,7 @@ function openNavBarBig(object){
 }
 
 function closeMobileNav(){
+  document.querySelector('main').style.pointerEvents = 'all';
   document.getElementById("navButton").classList.remove("bi-x-circle");
   document.getElementById("navButton").classList.remove("menuIconAnim");
   document.getElementById("navButton").classList.add("bi-list");

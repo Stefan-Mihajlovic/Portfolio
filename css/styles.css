@@ -202,22 +202,20 @@ header div a{
 }
 
 .menuIconAnim{
-    animation: animIconTransfer .2s linear;
+    animation: animIconTransfer .45s linear;
 }
 
 @keyframes animIconTransfer {
-    0%{ transform: translateY(0px) rotate(0deg); }
-    25%{ transform: translateY(3px) rotate(5deg); }
-    50%{ transform: translateY(0px) rotate(0deg); }
-    75%{ transform: translateY(-3px) rotate(-5deg); }
-    100%{ transform: translateY(0px) rotate(0deg); }
+    0%{ transform: scale(1) rotate(0deg); }
+    25%{ transform: scale(0.9) rotate(7deg); }
+    50%{ transform: scale(0.93) rotate(0deg); }
+    75%{ transform: scale(0.96) rotate(-3deg); }
+    100%{ transform: scale(1) rotate(0deg); }
 }
 
 nav{
-    opacity: 0;
     height: 100vh;
-    width: 250px;
-    min-width: 200px;
+    width: 100vw;
     left: 0;
     top: 0;
     pointer-events: none;
@@ -226,29 +224,26 @@ nav{
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    margin: auto;
+    background-color: var(--tamnoPlava) !important;
+    border-right: 1px solid var(--tamnoPlavaBack);
+    transform: translateX(-150vw);
     position: fixed;
     gap: 5px;
     z-index: 99999999999999;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
     background-color: rgba(0, 0, 0, 0);
 }
 
 nav a{
     width: 100%;
-    background-color: var(--backgroundAccent);
-    border-top: 1px solid var(--tamnoPlavaBack);
-    border-bottom: 1px solid var(--tamnoPlavaBack);
     animation: none;
     color: var(--textWhite);
     text-decoration: none;
-    font-size: 30px;
+    font-size: 35px;
     font-weight: 600;
-    padding: 10px;
+    padding: 5px;
+    padding-left: 25px;
     margin: 0px;
     text-align: left;
-    transform: translateX(-200%);
     transition: all .5s linear;
 }
 
@@ -259,35 +254,22 @@ nav a:hover{
 }
 
 .navBarOpen{
-    width: 100vw;
-    height: 100vh;
+    transform: translateX(0);
     pointer-events: all;
-    opacity: 1;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background-color: rgba(18, 17, 27, 0.8);
 }
 
 nav p{
     position: absolute;
     width: 100%;
-    top: -50%;
+    top: 0%;
     color: var(--textWhite);
     text-align: center;
     transition: all .3s linear;
-    animation: textJiggle 1.5s linear infinite;
     font-size: 13px;
 }
 
-.navBarOpen a{
-    transform: translateX(0%);
-}
-
-.navBarOpen p{
-    top: 0%;
-}
-
 .closeMobileNav{
+    z-index: -1;
     position: fixed;
     top: 0;
     right: 0;
