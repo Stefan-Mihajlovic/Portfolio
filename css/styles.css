@@ -1527,10 +1527,11 @@ footer{
 }
 
 .languageWindow{
-    position: absolute;
+    position: fixed;
     width: 100vw;
     height: 100vh;
     top: 0;
+    left: 0;
     z-index: 999999999;
     align-items: center;
     justify-content: center;
@@ -1541,15 +1542,21 @@ footer{
     display: flex !important;
 }
 
+.languageWindowMaximized{
+    top: 0 !important;
+    left: 0 !important;
+}
+
 .innerLW{
     width: 50%;
     height: 500px;
     background-color: rgba(8, 8, 15, 0.95);
-    border: 2px solid var(--highlightGrad);
+    border: 1px solid var(--tamnoPlavaBack);
     overflow-y: scroll;
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
     box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.5);
+    transition:  all .2s ease-in-out ,transform 0s !important;
 }
 
 .innerLW::-webkit-scrollbar{
@@ -1578,11 +1585,12 @@ footer{
     font-size: 15px;
     font-weight: 400;
     top: 7.5px;
+    pointer-events: none;
     margin: 0;
 }
 
 .windowsTitleBar button{
-    width: 40px;
+    width: 50px;
     height: 35px;
     margin-left: -5px;
     border: 0;
@@ -1607,11 +1615,11 @@ footer{
 }
   
 .maximizeBtn:hover {
-    background-color: #ad9cb6;
+    background-color: #6b6270b0;
 }
   
 .minimizeBtn:hover {
-    background-color: #ad9cb6;
+    background-color: #6b6270b0;
 }
 
 .windowsInnerApp{

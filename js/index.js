@@ -183,6 +183,7 @@ function openProgramCode(language){
   let titleBarName = document.getElementById('titleBarName');
   let innerCode = document.getElementById('innerCode');
   titleBarName.innerHTML = "Easter egg: " + language;
+  languageWindow.classList.remove('languageWindowMaximized');
   languageWindow.classList.toggle('languageWindowOpen');
 
   if(language === "HTML"){
@@ -255,31 +256,64 @@ function Confetti(){
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
 let isHoverable = true;
 
-document.querySelector('.myNameDuhh').onmouseover = event => {
-  if(isHoverable){
-    event.target.classList.add('myNameHover');
-    let i = 0;
+let myNameDuhh = document.querySelector('.myNameDuhh');
 
-    const interval = setInterval(() => {
-      event.target.innerText = event.target.innerText.split("")
-      .map((letter, index) => {
-        if(index < i){
-          return event.target.dataset.value[index];
-        }
-
-        return letters[Math.floor(Math.random() * 35)]
-      })
-      .join("");
-
-      if(i >= event.target.dataset.value.length) clearInterval(interval);
-
-      i += 1 / 2;
-    }, 30);
-
-    isHoverable = false;
-    setTimeout(() => {
-      isHoverable = true;
-      event.target.classList.remove('myNameHover');
-    }, 1000);
+if(myNameDuhh != null){
+  myNameDuhh.onmouseover = event => {
+    if(isHoverable){
+      event.target.classList.add('myNameHover');
+      let i = 0;
+  
+      const interval = setInterval(() => {
+        event.target.innerText = event.target.innerText.split("")
+        .map((letter, index) => {
+          if(index < i){
+            return event.target.dataset.value[index];
+          }
+  
+          return letters[Math.floor(Math.random() * 35)]
+        })
+        .join("");
+  
+        if(i >= event.target.dataset.value.length) clearInterval(interval);
+  
+        i += 1 / 2;
+      }, 30);
+  
+      isHoverable = false;
+      setTimeout(() => {
+        isHoverable = true;
+        event.target.classList.remove('myNameHover');
+      }, 1000);
+    }
   }
+}
+
+// ----- ABOUT ME WINDOWS MOVING
+
+let languageWindow = document.querySelector('.languageWindow');
+let languageWindowOffsetX, languageWindowOffsetY;
+let windowsTitleBar = document.querySelector('.windowsTitleBar');
+let windowMoveStarted = false;
+
+if(windowsTitleBar != null){
+  windowsTitleBar.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    languageWindowOffsetY = e.clientY - languageWindow.offsetTop;
+    languageWindowOffsetX = e.clientX - languageWindow.offsetLeft;
+    windowMoveStarted = true;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    e.preventDefault();
+    if(windowMoveStarted){
+      languageWindow.style.top = `${e.clientY - languageWindowOffsetY}px`;
+      languageWindow.style.left = `${e.clientX - languageWindowOffsetX}px`;
+    }
+  });
+
+  windowsTitleBar.addEventListener("mouseup", (e) => {
+    e.preventDefault();
+    windowMoveStarted = false;
+  });
 }
