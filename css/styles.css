@@ -1552,6 +1552,7 @@ footer{
     height: 500px;
     background-color: rgba(8, 8, 15, 0.95);
     border: 1px solid var(--tamnoPlavaBack);
+    border-radius: 10px;
     overflow-y: scroll;
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
@@ -1574,7 +1575,7 @@ footer{
     display: flex;
     justify-content: flex-end;
     gap: 5px;
-    background-color: #0d0914;
+    background-color: #140f1d;
     position: relative;
 }
 
