@@ -29,17 +29,19 @@ function setSkillValues(){
 
   onIndex = true;
 
-  const Unity = document.getElementById("Unity").style.width = "55%";
-  const UnrealEngine = document.getElementById("UnrealEngine").style.width = "30%";
-  const Cs = document.getElementById("C#").style.width = "85%";
-  const Cpp = document.getElementById("C++").style.width = "75%";
-  const HCJ = document.getElementById("hcj").style.width = "95%";
-  const Android = document.getElementById("Android").style.width = "25%";
+  if(document.getElementById("Unity") != null){
+    const Unity = document.getElementById("Unity").style.width = "55%";
+    const UnrealEngine = document.getElementById("UnrealEngine").style.width = "30%";
+    const Cs = document.getElementById("C#").style.width = "85%";
+    const Cpp = document.getElementById("C++").style.width = "75%";
+    const HCJ = document.getElementById("hcj").style.width = "95%";
+    const Android = document.getElementById("Android").style.width = "25%";
 
-  const Serbian = document.getElementById("Serbian").style.width = "100%";
-  const English = document.getElementById("English").style.width = "70%";
-  const QuickLearn = document.getElementById("QuickLearn").style.width = "79%";
-  const Teamwork = document.getElementById("Teamwork").style.width = "87%";
+    const Serbian = document.getElementById("Serbian").style.width = "100%";
+    const English = document.getElementById("English").style.width = "70%";
+    const QuickLearn = document.getElementById("QuickLearn").style.width = "79%";
+    const Teamwork = document.getElementById("Teamwork").style.width = "87%";
+  }
 }
 
 /* PAGE TRANSITIONS */
@@ -69,9 +71,9 @@ function setTransition(){
 
 window.addEventListener("scroll", () => {
   if(onIndex){
-    if(window.scrollY < 1){
+    if(window.scrollY < 1 && document.getElementById("jiggleText") != null){
       document.getElementById("jiggleText").style.animation = "textJiggle 0.7s linear infinite";
-    }else{
+    }else if(document.getElementById("jiggleText") != null){
       document.getElementById("jiggleText").style.animation = "none";
     }
   }

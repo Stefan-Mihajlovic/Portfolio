@@ -1733,6 +1733,74 @@ footer{
     }
 }
 
+/* PRIVACY POLICY PAGES */
+
+.ppMain{
+    padding-bottom: 125px;
+    width: 60vw;
+    margin: auto;
+}
+
+.ppHeader{
+    margin-top: 150px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.ppItem{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--tamnoPlavaSeeThrough);
+    border: 1px solid var(--tamnoPlavaBack);
+    padding-block: 20px;
+    padding-inline: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+.ppItem h2, .ppItem p{
+    margin: 0;
+}
+
+.ppItem p{
+    color: var(--descColor2);
+}
+
+.ppLink{
+    color: #8080D7;
+    font-weight: 600;
+}
+
+@media screen and (max-width: 1350px) {
+    .ppMain{
+        width: 80vw;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .ppMain{
+        width: 90vw;
+    }
+    .ppHeader{
+        margin-top: 125px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .ppMain{
+        width: 100vw;
+    }
+    .ppItem{
+        border-radius: 0px;
+        border-left: none;
+        border-right: none;
+        margin-bottom: 5px;
+    }
+}
+
 /* BIG BLUR DOT ACCENT */
 
 .bigBlurAccent{
