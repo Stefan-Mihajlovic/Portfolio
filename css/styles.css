@@ -747,7 +747,7 @@ input[type="submit"]{
 /* ABOUT ME SECTION */
 
 .aboutMe{
-    width: 70%;
+    width: 60%;
     margin: auto;
     margin-top: 30px;
     margin-bottom: 30px;
@@ -756,8 +756,8 @@ input[type="submit"]{
 .aboutMe div h3{
     background-color: var(--tamnoPlavaSeeThrough);
     border: 1px solid var(--tamnoPlavaBack);
-    padding-block: 20px;
-    padding-inline: 10px;
+    padding-block: 30px;
+    padding-inline: 30px;
     border-radius: 10px;
     text-align: center;
     font-weight: 400;
