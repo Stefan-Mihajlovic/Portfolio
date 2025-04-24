@@ -1791,6 +1791,13 @@ footer{
     font-weight: 600;
 }
 
+.noDeco{
+    text-decoration: none;
+}
+.noDeco:hover{
+    text-decoration: underline;
+}
+
 @media screen and (max-width: 1350px) {
     .ppMain{
         width: 80vw;
