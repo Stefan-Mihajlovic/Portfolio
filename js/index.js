@@ -30,17 +30,17 @@ function setSkillValues(){
   onIndex = true;
 
   if(document.getElementById("Unity") != null){
-    const Unity = document.getElementById("Unity").style.width = "55%";
-    const UnrealEngine = document.getElementById("UnrealEngine").style.width = "30%";
-    const Cs = document.getElementById("C#").style.width = "85%";
-    const Cpp = document.getElementById("C++").style.width = "75%";
-    const HCJ = document.getElementById("hcj").style.width = "95%";
-    const Android = document.getElementById("Android").style.width = "25%";
+    document.getElementById("Unity").style.width = "55%";
+    document.getElementById("UnrealEngine").style.width = "30%";
+    document.getElementById("C#").style.width = "85%";
+    document.getElementById("C++").style.width = "75%";
+    document.getElementById("hcj").style.width = "95%";
+    document.getElementById("Android").style.width = "25%";
 
-    const Serbian = document.getElementById("Serbian").style.width = "100%";
-    const English = document.getElementById("English").style.width = "70%";
-    const QuickLearn = document.getElementById("QuickLearn").style.width = "79%";
-    const Teamwork = document.getElementById("Teamwork").style.width = "87%";
+    document.getElementById("Serbian").style.width = "100%";
+    document.getElementById("English").style.width = "70%";
+    document.getElementById("QuickLearn").style.width = "79%";
+    document.getElementById("Teamwork").style.width = "87%";
   }
 }
 
@@ -95,7 +95,6 @@ function closePopupMessage(){
 function sendEmail(e){
   e.preventDefault();
 
-  const form = document.getElementById("contactForm");
   const name = document.getElementById("contactName");
   const email = document.getElementById("contactEmail");
   const subject = document.getElementById("contactSubject");
