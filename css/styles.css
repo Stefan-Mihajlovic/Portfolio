@@ -46,7 +46,7 @@ body{
       calc( .7*17px) calc( .7*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 40% 40%,#0000 75%,#0d0914 0),
       calc(-.3*17px) calc(-.3*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 40% 40%,#0000 75%,#0d0914 0),
       conic-gradient(from 90deg at 20% 20%,#120b1c 25%,#0d0914 0) 
-       0 0/17px 17px;
+       0 0/17px 17px, rgb(22, 9, 37);
     background-attachment: fixed;
     padding: 0;
     margin: 0;
@@ -87,6 +87,10 @@ header div{
     align-items: center;
     justify-content: center;
     gap: 50px;
+}
+
+header .liquidGlass-text, header .liquidGlass-wrapper{
+    width: 100%;
 }
 
 header div img{
@@ -287,9 +291,6 @@ nav p{
         width: 100vw;
         border-radius: 0px;
         margin: 0px;
-    }
-    header .liquidGlass-text, header .liquidGlass-wrapper{
-        width: 100%;
     }
     header .liquidGlass-text div:nth-child(1){
         display: none;
@@ -828,7 +829,7 @@ input[type="submit"]{
 }
 
 .contact .formWrapper{
-    background-color: var(--tamnoPlava);
+    background-color: var(--tamnoPlavaSeeThrough);
     border-top: 1px solid var(--tamnoPlavaBack);
     width: 100%;
     display: flex;
