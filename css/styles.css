@@ -41,7 +41,7 @@ body{
     height: 100vh;
     background-color: rgb(22, 9, 37);
     background:
-      calc( .9*17px) calc( .9*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 20% 20%,#0000 75%,#120b1c 0),
+      calc( .9*17px) calc( .9*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 20% 20%,#0000 75%,#1b112b 0),
       calc(-.1*17px) calc(-.1*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 20% 20%,#0000 75%,#120b1c 0),
       calc( .7*17px) calc( .7*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 40% 40%,#0000 75%,#0d0914 0),
       calc(-.3*17px) calc(-.3*17px)/calc(2*17px) calc(2*17px) conic-gradient(at 40% 40%,#0000 75%,#0d0914 0),
