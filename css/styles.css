@@ -16,19 +16,6 @@
     --textPurple: #8080D7;
     --backgroundAccent: #0e0c14;
     --backgroundAccent2: rgba(19, 17, 29, 0.6);
-
-    --tagBlue: rgba(0, 81, 255, 0.4);
-    --tagBlue2: rgba(0, 132, 255, 0.4);
-    --tagBlue3: rgba(87, 174, 255, 0.4);
-    --tagGreen: rgba(0, 128, 0, 0.4);
-    --tagGreen2: rgba(18, 224, 80, 0.4);
-    --tagRed: rgba(255, 0, 0, 0.4);
-    --tagRed2: rgba(214, 42, 99, 0.4);
-    --tagPurple: rgba(128, 0, 128, 0.4);
-    --tagPurple2: rgba(179, 69, 179, 0.4);
-    --tagOrange: rgba(255, 166, 0, 0.4);
-    --tagOrange2: rgba(221, 194, 38, 0.4);
-    --tagPink: rgba(225, 0, 106, 0.4);
 }
 
 ::selection{
@@ -237,7 +224,7 @@ nav{
 }
 
 nav a{
-    width: 100%;
+    width: fit-content;
     animation: none;
     color: var(--textWhite);
     text-decoration: none;
@@ -549,11 +536,14 @@ main{
 }
 
 .button{
+    color: white;
+    text-decoration: none;
     background: var(--highlightGrad);
     border: none;
     border-radius: 25px;
     font-size: 17px;
     padding-block: 5px;
+    padding-bottom: 7px;
     padding-inline: 15px;
     font-weight: 500;
     position: absolute;
@@ -578,12 +568,15 @@ input[type="submit"]{
 }
 
 #viewAllProjects{
+    color: white;
+    text-decoration: none;
     background: var(--highlightGrad);
     border: none;
     border-radius: 25px;
     font-size: 17px;
     padding-block: 15px;
-    padding-inline: 35px;
+    padding-bottom: 16px;
+    padding-inline: 50px;
     font-weight: 500;
     cursor: pointer;
     font-weight: 600;
@@ -1179,7 +1172,7 @@ footer{
 
 .projectAbout p{
     margin-bottom: 5px;
-    max-height: 200px;
+    max-height: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 200;
@@ -1199,7 +1192,10 @@ footer{
     justify-content: space-between;
 }
 
-.projectButtons button{
+.projectButtons a{
+    text-align: center;
+    color: white;
+    text-decoration: none;
     background: var(--highlightGrad);
     border: none;
     font-size: 16px;
@@ -1210,7 +1206,7 @@ footer{
     transition: all .2s linear;
 }
 
-.projectButtons button:hover{
+.projectButtons a:hover{
     transform: scale(1.05) rotate(2deg);
 }
 
@@ -1238,7 +1234,10 @@ footer{
     text-align: center;
 }
 
-.thisCode button{
+.thisCode a{
+    text-align: center;
+    color: white;
+    text-decoration: none;
     background: var(--highlightGrad);
     border: none;
     font-size: 16px;
@@ -1249,7 +1248,7 @@ footer{
     transition: all .2s linear;
 }
 
-.thisCode button:hover{
+.thisCode a:hover{
     transform: scale(1.05) rotate(2deg);
 }
 
@@ -1291,7 +1290,7 @@ footer{
     .projectBanner2{
         width: 50%;
     }
-    .projectButtons button{
+    .projectButtons a{
         font-size: 14px;
         width: 130px;
     }
@@ -1304,14 +1303,14 @@ footer{
     .projectItemReverse{
         width: 90%;
     }
-    .projectButtons button{
+    .projectButtons a{
         font-size: 14px;
         width: 120px;
     }
 }
 
 @media screen and (max-width: 789px) {
-    .projectButtons button{
+    .projectButtons a{
         font-size: 12px;
         width: 100px;
     }
@@ -1386,51 +1385,55 @@ footer{
 }
 
 .ExtensionTag{
-    background-color: var(--tagPink);
+    background-color: rgba(225, 0, 106, 0.8);
 }
 
 .CSTag{
-    background-color: var(--tagBlue);
+    background-color: rgba(0, 81, 255, 0.6);
 }
 
 .CPPTag{
-    background-color: var(--tagBlue2);
+    background-color: rgba(0, 132, 255, 0.6);
 }
 
 .JSTag{
-    background-color: var(--tagGreen);
+    background-color: rgba(0, 128, 0, 0.8);
 }
 
 .WebTag{
-    background-color: var(--tagOrange2);
+    background-color: rgba(221, 194, 38, 0.6);
 }
 
 .JATag{
-    background-color: var(--tagOrange);
+    background-color: rgba(255, 166, 0, 0.6);
 }
 
 .ANTag{
-    background-color: var(--tagGreen2);
+    background-color: rgba(18, 224, 80, 0.6);
 }
 
 .IOSTag{
-    background-color: var(--tagBlue3);
+    background-color:rgba(87, 174, 255, 0.6);
 }
 
 .UnityTag{
-    background-color: var(--tagRed2);
+    background-color: rgba(214, 42, 99, 0.6);
 }
 
 .UETag{
-    background-color: var(--tagPurple);
+    background-color: rgba(128, 0, 128, 0.6);
 }
 
 .LevelDesignTag{
-    background-color: var(--tagPurple2);
+    background-color: rgba(179, 69, 179, 0.6);
 }
 
 .FBTag{
-    background-color: var(--tagRed);
+    background-color: rgba(255, 0, 0, 0.6);
+}
+
+.CapTag{
+    background-color: rgba(17, 160, 255, 0.8);
 }
 
 
