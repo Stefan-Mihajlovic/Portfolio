@@ -1,0 +1,723 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Medula+One&family=Pattaya&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+:root {
+    --primary: #0F0B14;
+    --secondary: #17121D;
+    --accent1: #7033BD;
+    --accent2: #A579DE;
+
+    --text1: #FFFFFF;
+    --accentTextGradient: linear-gradient(90deg, #d3b2f0, #a969e0);
+
+    --white10: rgba(255, 255, 255, 0.1);
+    --white20: rgba(255, 255, 255, 0.2);
+    --white50: rgba(255, 255, 255, 0.5);
+    --white75: rgba(255, 255, 255, 0.75);
+
+    --black10: rgba(0, 0, 0, 0.1);
+    --black20: rgba(0, 0, 0, 0.2);
+    --black50: rgba(0, 0, 0, 0.5);
+    --black75: rgba(0, 0, 0, 0.75);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Lexend', sans-serif;
+    scroll-behavior: smooth;
+}
+
+::selection{
+    background: var(--accent2);
+    color: white;
+}
+
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: 'Lexend', sans-serif;
+    background-color: var(--primary);
+    background-image: url('images/noise-light.png');
+    color: var(--text1);
+    height: 100%;
+    overflow-x: hidden;
+}
+
+.background{
+    position: absolute;
+    width: 100%;
+    height: 85vh;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: -2;
+}
+
+.noise{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    top: 0;
+    left: 0;
+    background-image: url('images/noise-light.png');
+    opacity: 1;
+    z-index: 5;
+}
+
+.bg{
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0.15;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.gradient{
+    position: absolute;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    height: 60%;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    filter: blur(150px);
+    z-index: 2;
+}
+
+.darken{
+    position: absolute;
+    background: linear-gradient(180deg, transparent, var(--primary));
+    height: 70%;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 3;
+}
+
+.base{
+    position: absolute;
+    background-color: var(--primary);
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+/* CUSTOM CLASSES */
+
+.button{
+    position: relative;
+    background-image: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: var(--text1);
+    padding: 10px 30px;
+    border: none;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.button::before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 50px;
+    background-color: transparent;
+    z-index: 1;
+    transition: all 0.2s ease;
+}
+
+.button:hover::before{
+    background-color: var(--white20);
+}
+
+.accentText{
+    font-family: 'Pattaya', cursive;
+    letter-spacing: 2px;
+    background: var(--accentTextGradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 500;
+}
+
+/* HEADER */
+
+header{
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--primary);
+    --webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    padding: 17px;
+    padding-left: 35px;
+    top: 20px;
+    width: calc(100% - 40px);
+    max-width: 900px;
+    border-radius: 100px;
+    z-index: 100;
+}
+
+.scrollShadow{
+    position: fixed;
+    background: linear-gradient(180deg, var(--primary), transparent);
+    top: 0px;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 99;
+}
+
+.scrollShadow.active{
+    opacity: 1;
+}
+
+.logo{
+    font-family: 'Medula One', cursive;
+    font-size: 2.2rem;
+    color: var(--text1);
+    text-decoration: none;
+    padding: 0px 15px;
+    padding-bottom: 3px;
+    border-radius: 50px;
+    margin-left: -15px;
+    transition: all 0.2s ease;
+}
+
+.logo:hover{
+    background-color: var(--white10);
+}
+
+header nav{
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+header nav a{
+    position: relative;
+    color: var(--text1);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 17px;
+    border-radius: 50px;
+    transition: all 0.15s ease;
+}
+
+header nav a:hover{
+    background-color: var(--white10);
+}
+
+header nav a:nth-last-child(2){
+    margin-right: 15px;
+}
+
+header nav a.active::before{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    bottom: -20px;
+    left: 0;
+    border-radius: 50px;
+    background-color: white;
+    pointer-events: none;
+}
+
+header button{
+    background-color: transparent;
+    border: none;
+    border-radius: 50px;
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap:6px;
+    margin: -5px;
+    margin-right: 5px;
+    padding: 10px 15px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+header button:hover{
+    background-color: var(--white10);
+}
+
+header button span{
+    background-color: white;
+    width: 30px;
+    height: 3px;
+    transition: all 0.15s ease;
+    border-radius: 2px;
+}
+
+header button span:nth-child(1){
+    width: 20px;
+}
+
+header button.open span:nth-child(1){
+    width: 30px;
+    transform: rotate(45deg) translate(6px, 4px);
+}
+
+header button.open span:nth-child(2){
+    opacity: 0;
+    width: 0px;
+    transform: translateX(-20px);
+}
+
+header button.open span:nth-child(3){
+    transform: rotate(-45deg) translate(8px, -7px);
+}
+
+header .mobileMenu{
+    display: none;
+    position: absolute;
+    flex-direction: column;
+    top: 73px;
+    right: 35px;
+    width: 300px;
+    border-top: 2px solid var(--white10);
+    border-radius: 0px 0 20px 20px;
+    box-shadow: 0px 5px 40px var(--black50);
+    overflow: hidden;
+    pointer-events: all;
+    transform: scaleY(1);
+    opacity: 1;
+    transform-origin: top;
+    transition: all 0.2s ease;
+    will-change: transform;
+    background-color: var(--primary);
+}
+
+header .mobileMenu.closed{
+    pointer-events: none;
+    transform: scaleY(0);
+    opacity: 0;
+}
+
+header .mobileMenu a{
+    padding: 20px 20px;
+    border-bottom: 2px solid var(--white10);
+    color: white;
+    text-decoration: none;
+    text-align: right;
+    transition: all 0.15s ease, opacity 0.05s ease;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+header .mobileMenu.closed a{
+    opacity: 0;
+}
+
+header .mobileMenu a:nth-last-child(1){
+    border-bottom: none;
+}
+
+header .mobileMenu a:hover{
+    background-color: var(--white10);
+}
+
+/* MAIN */
+
+main{
+    min-height: 100vh;
+    width: calc(100% - 40px);
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 95px;
+}
+
+/* MAIN CONTENT */
+
+main .content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero{
+    font-size: 2.5rem;
+    font-weight: 500;
+    max-width: 750px;
+    margin-block: 150px;
+    text-align: center;
+    line-height: 3rem;
+}
+
+.hero .accentText{
+    font-size: 2.8rem;
+}
+
+.projects{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 100px;
+    margin-bottom: 100px;
+}
+
+.projects h2{
+    font-size: 2.25rem;
+    margin-bottom: -50px;
+}
+
+.projectCard{
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.projectCard img{
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 40px;
+    border: 15px solid var(--primary);
+    margin-bottom: 15px;
+    object-fit: cover;
+}
+
+.projectCard .aboutProject{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.projectCard .info{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.projectCard .info h3{
+    font-size: 2.5rem;
+    font-weight: 500;
+    width: fit-content;
+    font-family: 'Pattaya', cursive;
+    background: var(--accentTextGradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.projectCard .info p{
+    font-size: 1.1rem;
+    line-height: 1.6rem;
+    font-weight: 300;
+    color: var(--white75);
+}
+
+.projectCard .actions{
+    display: flex;
+    flex-shrink: 0;
+    gap: 15px;
+}
+
+/* PROJECT COLORS */
+
+.crimsonMusic{
+    --accent1: #7033BD;
+    --accent2: #A579DE;
+    --accentTextGradient: linear-gradient(90deg, #e2c2ff, #a164d6);
+}
+
+.roomRule{
+    --accent1: #FE3F01;
+    --accent2: #FD6F08;
+    --accentTextGradient: linear-gradient(90deg, #D5AC93, #ff5a23);
+}
+
+.uehsWebsite{
+    --accent1: #21c4b1;
+    --accent2: #0f7e74;
+    --accentTextGradient: linear-gradient(90deg, #4ed4c5, #0f7970);
+}
+
+/* DOODLES */
+
+.loop-doodle{
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    mix-blend-mode: soft-light;
+    pointer-events: none;
+}
+
+.crimsonMusic .loop-doodle{
+    width: 180px;
+    height: 180px;
+    top: -70px;
+    right: -60px;
+    transform: rotate(-18deg);
+}
+
+.roomRule .loop-doodle{
+    top: -70px;
+    left: -70px;
+    transform: rotate(-18deg);
+}
+
+.uehsWebsite .loop-doodle{
+    top: -70px;
+    right: -90px;
+    width: 210px;
+    height: 210px;
+    transform: rotate(18deg);
+}
+
+.loop-doodle path{
+    fill: none;
+    stroke: rgba(255,255,255,1);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation: loopDraw 2.6s ease-in-out infinite;
+}
+
+@keyframes loopDraw{
+    0%   { stroke-dashoffset: 420; opacity: 0.15; }
+    40%  { stroke-dashoffset: 0;   opacity: 0.45; }
+    60%  { stroke-dashoffset: 0;   opacity: 0.45; }
+    100% { stroke-dashoffset: -420; opacity: 0.15; }
+}
+
+/* MORE PROJECTS SECTION */
+
+.moreProjects{
+    position: relative;
+    font-size: 1.25rem;
+    font-weight: 400;
+    width: 100%;
+    background-color: var(--primary);
+    padding: 20px 20px 20px 30px;
+    border-radius: 999px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.moreProjects a{
+    font-size: 1rem;
+    padding: 15px 40px;
+}
+
+.arrow-doodle{
+    top: -100px;
+    right: -50px;
+    position: absolute;
+    width: 140px;
+    height: auto;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+}
+
+.arrow-path{
+    fill: none;
+    stroke: rgba(255,255,255,1);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation: arrowDraw 3s ease-in-out infinite;
+}
+
+@keyframes arrowDraw{
+    0%   { stroke-dashoffset: 520; opacity: 0.2; }
+    40%  { stroke-dashoffset: 0;   opacity: 0.6; }
+    60%  { stroke-dashoffset: 0;   opacity: 0.6; }
+    100% { stroke-dashoffset: -520; opacity: 0.2; }
+}
+
+/* FOOTER */
+
+footer{
+    background-color: var(--primary);
+    padding: 20px;
+    border-radius: 40px 40px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+footer div, footer p{
+    background-color: var(--secondary);
+    padding: 20px;
+    border-radius: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+footer div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+footer div a{
+    background-color: white;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    will-change: transform;
+    transition: all 0.2s ease;
+}
+
+footer div a:hover{
+    transform: translateY(-2px);
+    background-color: var(--accent1);
+}
+
+footer div a:hover svg path{
+    fill: white;
+}
+
+footer div a svg{
+    width: 20px;
+    height: 20px;
+}
+
+/* CURSOR DOT */
+
+.cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.cursor-dot {
+    width: 40px;
+    height: 40px;
+    background: var(--white20);
+    border: 2px solid white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                border-radius 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform, width, height, border-radius;
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+}
+
+ /* Sakri na mobilnim uređajima */
+@media (hover: none) and (pointer: coarse) {
+    .cursor, .particle {
+        display: none !important;
+    }
+    * {
+        cursor: auto !important;
+    }
+}
+
+/* RESPONSIVE FIX */
+
+@media screen and (max-width: 800px) {
+    header nav{
+        display: none;
+    }
+    header button{
+        display: flex;
+    }
+    header .mobileMenu{
+        display: flex;
+    }
+    .hero{
+        font-size: 1.75rem;
+        line-height: 2.25rem;
+        margin-block: 100px;
+    }
+    .projectCard .aboutProject{
+        flex-direction: column;
+        gap: 20px;
+    }
+    .moreProjects{
+        font-size: 0.9rem;
+    }
+    .moreProjects a{
+        font-size: 0.9rem;
+        padding: 12px 30px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .projectCard img{
+        border-radius: 25px;
+        border: 10px solid var(--primary);
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .button{
+        font-size: 0.9rem;
+    }
+    header .mobileMenu{
+        right: 35px;
+        width: calc(100% - 70px);
+    }
+    .hero{
+        font-size: 1.5rem;
+        padding-inline: 20px;
+        line-height: 2rem;
+        margin-block: 70px;
+    }
+    .hero .accentText{
+        font-size: 1.9rem;
+    }
+    .projectCard img{
+        border: 5px solid var(--primary);
+        border-radius: 20px;
+    }
+    .projectCard .info h3{
+        font-size: 2rem;
+    }
+    .projectCard .info p{
+        font-size: 1rem;
+    }
+    .moreProjects{
+        padding: 20px;
+        border-radius: 40px;
+        margin-block: -30px;
+        flex-direction: column;
+        align-items: center;
+    }
+    .arrow-doodle{
+        top: 20px;
+        right: 5%;
+        transform: rotate(70deg);
+    }
+    footer p{
+        font-size: 0.9rem;
+    }
+}

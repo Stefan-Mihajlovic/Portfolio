@@ -1,0 +1,157 @@
+.content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    margin-bottom: 100px;
+}
+
+.currentProject{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+}
+
+.currentProject > div{
+    position: relative;
+}
+
+.currentProject > div .loop-doodle{
+    width: 180px;
+    height: 180px;
+    top: -70px;
+    right: -60px;
+    transform: rotate(-18deg);
+}
+
+.currentProject img{
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 40px;
+    border: 15px solid var(--primary);
+}
+
+.currentProject > span{
+    width: 100%;
+    background-color: var(--primary);
+    color: var(--white75);
+    padding: 15px 20px;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    border-radius: 20px;
+    text-align: left;
+}
+
+.currentProject > span h3{
+    font-size: 2.25rem;
+    margin-top: -5px;
+    font-family: 'Pattaya', cursive;
+    font-weight: 500;
+    color: white;
+    width: fit-content;
+    background: linear-gradient(90deg, #2855ad, #6386cc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.currentProject .tags{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.currentProject .tags p{
+    background-color: var(--white10);
+    color: var(--white75);
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 300;
+}
+
+.currentProject > span .actions{
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.currentProject > span .actions a{
+    font-size: 1rem;
+}
+
+.currentProject > span .actions a:nth-child(1){
+    margin-right: 5px;
+}
+
+/* PROJECT SPECIFICS PLACEMENT */
+
+.crimsonMusic .loop-doodle{
+    top: -60px;
+    right: auto;
+    left: -50px;
+    transform: rotate(-10deg);
+}
+
+.crimsonMusic > span h3{
+    background: linear-gradient(90deg, #e2c2ff, #a164d6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.roomRule .loop-doodle{
+    top: -80px;
+    left: auto;
+    right: -70px;
+    transform: rotate(-25deg);
+}
+
+.roomRule > span h3{
+    background: linear-gradient(90deg, #d69064, #d84e20);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.uehsWebsite .loop-doodle{
+    top: -70px;
+    left: -60px;
+    right: auto;
+    transform: rotate(-5deg);
+}
+
+.uehsWebsite > span h3{
+    background: linear-gradient(90deg, #4ed4c5, #0f7970);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.browserExtensions{
+    --accent1: #FF006A;
+    --accent2: #4751E7;
+}
+
+.browserExtensions > span h3{
+    background: linear-gradient(-90deg, #4751E7, #FF006A);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.content .moreProjects{
+    margin-top: 50px;
+}
+
+/* MEDIA STUFF */
+
+@media screen and (max-width: 800px) {
+    .currentProject > span{
+        font-size: 1rem;
+    }
+}

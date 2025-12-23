@@ -1,0 +1,103 @@
+.content{
+    margin-bottom: 50px;
+}
+
+.shortBio{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.shortBio img{
+    max-width: 350px;
+    width: 100%;
+    border-radius: 32px;
+    border: 10px solid var(--primary);
+    will-change: transform, box-shadow;
+    animation: imgFloat 4s ease-in-out infinite;
+}
+
+@keyframes imgFloat {
+    0% { transform: translateY(0); box-shadow: 0px 10px 20px transparent; }
+    50% { transform: translateY(-7px); box-shadow: 0px 10px 20px var(--white10); }
+    100% { transform: translateY(0); box-shadow: 0px 10px 20px transparent; }
+}
+
+.shortBio .shortInfo{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.shortBio .shortInfo h2{
+    font-size: 2rem;
+}
+
+.detailedBio{
+    margin-top: 50px;
+    max-width: 800px;
+}
+
+.detailedBio p{
+    background-color: var(--primary);
+    color: var(--white75);
+    padding: 15px 20px;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.content .moreProjects{
+    margin-top: 50px;
+}
+
+.currentProject{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 50px;
+}
+
+.currentProject > div{
+    position: relative;
+}
+
+.currentProject > div .loop-doodle{
+    width: 180px;
+    height: 180px;
+    top: -70px;
+    right: -60px;
+    transform: rotate(-18deg);
+}
+
+.currentProject img{
+    width: 100%;
+    border-radius: 40px;
+    border: 15px solid var(--primary);
+}
+
+.currentProject p{
+    width: 100%;
+    background-color: var(--primary);
+    color: var(--white75);
+    padding: 15px 20px;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    border-radius: 20px;
+    text-align: center;
+}
+
+@media screen and (max-width: 800px) {
+    .currentProject p, .detailedBio p{
+        font-size: 1rem;
+    }
+}
