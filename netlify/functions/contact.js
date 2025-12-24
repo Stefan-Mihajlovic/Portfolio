@@ -1,4 +1,5 @@
 export async function handler(event) {
+    console.log("Yeah baby!");
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
@@ -7,6 +8,8 @@ export async function handler(event) {
   try {
     data = JSON.parse(event.body || "{}");
   } catch {}
+
+  console.log("Data: ", data);
 
   if (data.company) {
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
