@@ -20,12 +20,10 @@ export async function handler(event) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-    //   "X-Form-Token": process.env.FORM_TOKEN,
+      "X-Form-Token": process.env.FORM_TOKEN,
     },
     body: JSON.stringify(data),
   });
-
-  console.log("Res: ", res);
 
   if (!res.ok) {
     return { statusCode: 500, body: JSON.stringify({ ok: false }) };
