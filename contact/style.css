@@ -45,6 +45,7 @@ form input, form textarea{
     resize: vertical;
     max-height: 300px;
     background-color: var(--secondary);
+    background-image: url('../images/noise-light.webp');
     border: 1px solid var(--white10);
     color: white;
     font-size: 1rem;

@@ -39,6 +39,7 @@
     flex-direction: column-reverse;
     justify-content: space-between;
     background-color: var(--secondary);
+    background-image: url('../images/noise-light.webp');
     padding: 30px;
     gap: 70px;
     border-radius: 20px;

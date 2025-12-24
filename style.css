@@ -41,7 +41,7 @@ body{
     flex-direction: column;
     font-family: 'Lexend', sans-serif;
     background-color: var(--primary);
-    background-image: url('images/noise-light.png');
+    background-image: url('images/noise-light.webp');
     color: var(--text1);
     height: 100%;
     width: 100vw;
@@ -65,7 +65,7 @@ body{
     margin: 0;
     top: 0;
     left: 0;
-    background-image: url('images/noise-light.png');
+    background-image: url('images/noise-light.webp');
     opacity: 1;
     z-index: 5;
 }
@@ -577,6 +577,7 @@ footer div, footer p{
     border-radius: 20px;
     width: 100%;
     text-align: center;
+    background-image: url('images/noise-light.webp');
 }
 
 footer div{
@@ -687,6 +688,10 @@ footer div a svg{
 @media screen and (max-width: 500px) {
     .button{
         font-size: 0.9rem;
+    }
+    header{
+        top: 15px;
+        width: calc(100% - 30px);
     }
     header .mobileMenu{
         right: 35px;
