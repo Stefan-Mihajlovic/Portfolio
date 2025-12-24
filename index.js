@@ -1,4 +1,3 @@
-
 // MOBILE MENU TOGGLE
 
 const mobileMenuButton = document.getElementById('mobileMenuButton');
@@ -137,3 +136,31 @@ document.addEventListener('mouseenter', () => {
     cursor.style.opacity = '1';
 });
 
+// CONTACT FORM HANDLING
+
+document?.getElementById("contactForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const data = {
+    name: form.name.value.trim(),
+    email: form.email.value.trim(),
+    message: form.message.value.trim(),
+    website: form.website.value.trim(),
+  };
+
+  try {
+    const res = await fetch("/.netlify/functions/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+
+    if (!res.ok) throw new Error("Failed to send");
+
+    alert("Message sent!");
+    form.reset();
+  } catch (err) {
+    alert("Something went wrong. Please try again.");
+  }
+});
