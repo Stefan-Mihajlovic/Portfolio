@@ -11,7 +11,7 @@ export async function handler(event) {
 
   console.log("Data: ", data);
 
-  if (data.company) {
+  if (data.website) {
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   }
 
