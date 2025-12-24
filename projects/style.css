@@ -78,14 +78,13 @@
 .currentProject > span .actions{
     margin-top: 15px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
+    display: flex;
+    gap: 10px;
 }
 
 .currentProject > span .actions a{
     font-size: 1rem;
-}
-
-.currentProject > span .actions a:nth-child(1){
-    margin-right: 5px;
 }
 
 /* PROJECT SPECIFICS PLACEMENT */
@@ -145,7 +144,7 @@
 }
 
 .content .moreProjects{
-    margin-top: 50px;
+    margin-block: 50px;
 }
 
 /* MEDIA STUFF */
@@ -153,5 +152,38 @@
 @media screen and (max-width: 800px) {
     .currentProject > span{
         font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .currentProject img{
+        border-radius: 25px;
+        border: 10px solid var(--primary);
+    }
+}
+
+@media screen and (max-width: 500px) {
+    main .content{
+        gap: 20px;
+    }
+    .currentProject img{
+        border: 5px solid var(--primary);
+        border-radius: 20px;
+    }
+    .currentProject > span{
+        font-size: 0.9rem;
+    }
+    .currentProject > span h3{
+        font-size: 1.75rem;
+    }
+    .currentProject .tags p{
+        font-size: 0.8rem;
+    }
+    .currentProject > span .actions{
+        margin-top: 20px;
+    }
+    .currentProject > span .actions a{
+        font-size: 0.9rem;
+        padding: 7px 20px;
     }
 }

@@ -35,6 +35,7 @@
 
 .shortBio .shortInfo h2{
     font-size: 2rem;
+    line-height: 1.2;
 }
 
 .detailedBio{
@@ -64,6 +65,10 @@
     align-items: center;
     gap: 10px;
     margin-top: 50px;
+}
+
+.currentProject h2{
+    text-align: center;
 }
 
 .currentProject > div{
@@ -96,8 +101,29 @@
     text-align: center;
 }
 
+.moreProjects{
+    margin-bottom: 50px;
+}
+
 @media screen and (max-width: 800px) {
     .currentProject p, .detailedBio p{
         font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .shortBio .shortInfo h2{
+        font-size: 1.5rem;
+    }
+    .currentProject img{
+        border-radius: 25px;
+        border: 10px solid var(--primary);
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .currentProject img{
+        border: 5px solid var(--primary);
+        border-radius: 20px;
     }
 }
