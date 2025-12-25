@@ -69,6 +69,35 @@ form button{
     padding: 15px 40px !important;
 }
 
+#alertMessage{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -45%);
+    background-color: var(--black50);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--white10);
+    width: calc(100% - 40px);
+    max-width: 400px;
+    text-align: center;
+    padding: 25px;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 15px;
+    will-change: transform;
+    transition: all .3s ease;
+    z-index: 9999;
+}
+
+#alertMessage.open{
+    opacity: 1;
+    transform: translate(-50%, -50%);
+}
+
+#alertMessage .red{
+    --accentTextGradient: linear-gradient(90deg, #ff0040, #be547d);
+}
+
 @media screen and (max-width: 500px) {
     .megaHero h1{
         font-size: 1.75rem;

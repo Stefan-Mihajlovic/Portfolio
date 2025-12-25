@@ -141,6 +141,8 @@ document.addEventListener('mouseenter', () => {
 document?.getElementById("contactForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  const alertMessage = document.getElementById("alertMessage");
+
   const form = e.target;
   const data = {
     name: form.name.value.trim(),
@@ -158,9 +160,17 @@ document?.getElementById("contactForm")?.addEventListener("submit", async (e) =>
 
     if (!res.ok) throw new Error("Failed to send");
 
-    alert("Message sent!");
+    alertMessage.innerHTML = `<span class="accentText">Your message</span> was sent successfully! I'll be replying as soon as I can 😁`;
+    alertMessage.classList.add("open");
+    setTimeout(() => {
+        alertMessage.classList.remove("open");
+    }, 4500);
     form.reset();
   } catch (err) {
-    alert("Something went wrong. Please try again.");
+    alertMessage.innerHTML = `Your message was <span class="accentText red">not sent</span>! There was an error and now I'm sad 🥲`;
+    alertMessage.classList.add("open");
+    setTimeout(() => {
+        alertMessage.classList.remove("open");
+    }, 4500);
   }
 });
