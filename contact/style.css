@@ -86,7 +86,7 @@ form button{
     border-radius: 15px;
     will-change: transform;
     transition: all .3s ease;
-    z-index: 9999;
+    z-index: 99;
 }
 
 #alertMessage.open{

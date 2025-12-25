@@ -2,9 +2,14 @@
 
 const mobileMenuButton = document.getElementById('mobileMenuButton');
 mobileMenuButton.addEventListener('click', function() {
-    document.querySelector('header .mobileMenu').classList.toggle('closed');
+    document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
     mobileMenuButton.classList.toggle('open');
 });
+
+function closeMobileMenu(){
+    document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
+    mobileMenuButton.classList.toggle('open');
+}
 
 // HEADER SCROLL SHADOW
 
@@ -93,7 +98,7 @@ function animate() {
 
 animate();
 
-const hoverables = document.querySelectorAll('a, button, .skillCard p');
+const hoverables = document.querySelectorAll('a, button, .skillCard p, .closeMenuButton');
 
 hoverables.forEach(element => {
     element.addEventListener('mouseenter', () => {
