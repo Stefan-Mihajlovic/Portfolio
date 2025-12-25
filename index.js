@@ -1,14 +1,11 @@
 // MOBILE MENU TOGGLE
 
-const mobileMenuButton = document.getElementById('mobileMenuButton');
-mobileMenuButton.addEventListener('click', function() {
+document.getElementById('mobileMenuButton').addEventListener('click', function() {
     document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
-    mobileMenuButton.classList.toggle('open');
 });
 
 function closeMobileMenu(){
     document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
-    mobileMenuButton.classList.toggle('open');
 }
 
 // HEADER SCROLL SHADOW

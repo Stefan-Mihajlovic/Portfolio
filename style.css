@@ -269,25 +269,6 @@ header button span{
     border-radius: 2px;
 }
 
-header button span:nth-child(1){
-    width: 20px;
-}
-
-header button.open span:nth-child(1){
-    width: 30px;
-    transform: rotate(45deg) translate(6px, 4px);
-}
-
-header button.open span:nth-child(2){
-    opacity: 0;
-    width: 0px;
-    transform: translateX(-20px);
-}
-
-header button.open span:nth-child(3){
-    transform: rotate(-45deg) translate(8px, -7px);
-}
-
 .mobileMenuWrapper{
     display: none;
     position: fixed;
