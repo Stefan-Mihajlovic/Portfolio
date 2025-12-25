@@ -16,7 +16,7 @@ export async function handler(event) {
     return { statusCode: 400, body: JSON.stringify({ ok: false }) };
   }
 
-  const res = await fetch(process.env.N8N_WEBHOOK_URL, {
+  const res = await fetch(process.env.N8N_WEBHOOK_URL_TEST, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
