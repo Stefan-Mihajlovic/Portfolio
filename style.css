@@ -21,8 +21,6 @@
     --black20: rgba(0, 0, 0, 0.2);
     --black50: rgba(0, 0, 0, 0.5);
     --black75: rgba(0, 0, 0, 0.75);
-
-    --topInsetArea: env(safe-area-inset-top, 0px);
 }
 
 * {
@@ -31,6 +29,10 @@
     box-sizing: border-box;
     font-family: 'Lexend', sans-serif;
     scroll-behavior: smooth;
+}
+
+html{
+    background-color: var(--bodyBg);
 }
 
 ::selection{
@@ -44,7 +46,7 @@ body{
     align-items: center;
     flex-direction: column;
     font-family: 'Lexend', sans-serif;
-    background-color: var(--bodyBg);
+    background-color: transparent;
     background-image: url('images/noise-light.webp');
     color: var(--text1);
     height: 100%;
@@ -165,8 +167,6 @@ header{
     align-items: center;
     justify-content: space-between;
     background-color: var(--primary);
-    --webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
     padding: 17px;
     padding-left: 35px;
     top: 20px;
@@ -179,10 +179,10 @@ header{
 .scrollShadow{
     position: fixed;
     background: linear-gradient(180deg, var(--primary), transparent);
-    top: calc(0px - var(--topInsetArea));
+    top: 0;
     left: 0;
     width: 100%;
-    height: calc(120px + var(--topInsetArea));
+    height: 120px;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.5s ease;
