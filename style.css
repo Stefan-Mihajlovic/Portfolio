@@ -22,7 +22,7 @@
     --black50: rgba(0, 0, 0, 0.5);
     --black75: rgba(0, 0, 0, 0.75);
 
-    --topInsetArea: env(safe-area-inset-top);
+    --topInsetArea: env(safe-area-inset-top, 0px);
 }
 
 * {
@@ -179,11 +179,10 @@ header{
 .scrollShadow{
     position: fixed;
     background: linear-gradient(180deg, var(--primary), transparent);
-    top: 0;
+    top: calc(0px - var(--topInsetArea));
     left: 0;
     width: 100%;
     height: calc(120px + var(--topInsetArea));
-    padding-top: var(--topInsetArea);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.5s ease;
