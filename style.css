@@ -165,11 +165,9 @@ header{
     align-items: center;
     justify-content: space-between;
     background-color: var(--primary);
-    --webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
     padding: 17px;
     padding-left: 35px;
-    top: 20px;
+    top: calc(20px + var(--topInsetArea));
     width: calc(100% - 40px);
     max-width: 900px;
     border-radius: 100px;
@@ -179,7 +177,7 @@ header{
 .scrollShadow{
     position: fixed;
     background: linear-gradient(180deg, var(--primary), transparent);
-    top: calc(0px - var(--topInsetArea));
+    top: 0;
     left: 0;
     width: 100%;
     height: calc(120px + var(--topInsetArea));
