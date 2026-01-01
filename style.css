@@ -31,10 +31,6 @@
     scroll-behavior: smooth;
 }
 
-html{
-    background-color: var(--bodyBg);
-}
-
 ::selection{
     background: var(--accent2);
     color: white;
@@ -46,7 +42,7 @@ body{
     align-items: center;
     flex-direction: column;
     font-family: 'Lexend', sans-serif;
-    background-color: transparent;
+    background-color: var(--bodyBg);
     background-image: url('images/noise-light.webp');
     color: var(--text1);
     height: 100%;
