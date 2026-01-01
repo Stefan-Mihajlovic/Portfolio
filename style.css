@@ -687,6 +687,9 @@ footer div a svg{
     header button{
         display: flex;
     }
+    .scrollShadow{
+        display: none;
+    }
     .mobileMenuWrapper{
         display: block;
     }
