@@ -15,7 +15,9 @@
 }
 
 .currentProject h2{
-    text-align: center;
+    text-align: left;
+    width: 100%;
+    font-size: 1.75rem;
 }
 
 .currentProject > div{

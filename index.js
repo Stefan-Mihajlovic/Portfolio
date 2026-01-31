@@ -8,12 +8,17 @@ function closeMobileMenu(){
     document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
 }
 
-// HEADER SCROLL SHADOW
+// HEADER SCROLL SHADOW AND SCROLL TO TOP BUTTON
 
 const scrollShadow = document.querySelector('.scrollShadow');
 window.addEventListener('scroll', () => {
     if (window.scrollY > 10) {
         scrollShadow.classList.add('active');
+        if(window.scrollY > 50){
+            document.querySelector('.scrollToTop').classList.add('active');
+        }else{
+            document.querySelector('.scrollToTop').classList.remove('active');
+        }
     } else {
         scrollShadow.classList.remove('active');
     }
