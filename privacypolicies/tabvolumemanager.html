@@ -5,128 +5,104 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tab Volume Manager Privacy Policy</title>
-    <link rel="stylesheet" href="../css/styles.css">
-    <link rel="stylesheet" href="../css/transitions.css">
-    <script src="../js/index.js" defer></script>
-    <link rel="icon" href="../images/MainLogo.png">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
-    <!-- SMTP JS -->
-    <script src="https://smtpjs.com/v3/smtp.js"></script>
-    <!-- FLICKITY CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
-    <!-- FLICKITY JavaScript -->
-    <script src="https://kit.fontawesome.com/1d408b5acd.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
-    <script defer src="../js/flickity.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <script src="../index.js" defer></script>
+    <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
 </head>
 <body onload="setTransition(); setSkillValues();">
-    
-    <div class="transitionDiv transition-1 is-active">
-        <img src="../images/MainLogo.png">
-    </div>
 
-    <div class="wrap">
-        <header id="home">
-            <div>
-                <div class="containerA" data-tilt data-tilt-max-glare="1">
-                    <a class="tLink" href="../aboutme.html">ABOUT ME</a>
-                </div>
-                <div class="containerA" data-tilt data-tilt-max-glare="1">
-                    <a href="../index.html#skills">&nbsp;SKILLS&nbsp;&nbsp;</a>
-                </div>
-                <a data-tilt data-tilt-max-glare="0" class="mainLogoA" href="../index.html"><img src="../images/MainLogo.png" alt="Logo"></a>
-                <div class="containerA" data-tilt data-tilt-max-glare="1">
-                    <a class="tLink" href="../projects.html">PROJECTS</a>
-                </div>
-                <div class="containerA" data-tilt data-tilt-max-glare="1">
-                    <a href="../index.html#contact">CONTACT</a>
-                </div>
-            </div>
-            <div class="smallScreenHeader">
-                <a data-tilt-max-glare="1" href="#"><img src="../images/MainLogo.png" alt="Logo"></a>
-                <i data-tilt-max-glare="1" id="navButton" onclick="openNavBarBig(this)" class="bi bi-list"></i>
-            </div>
-        </header>
-    
+    <header>
+        <a href="../" class="logo">SM</a>
         <nav>
-            <p>
-                <i class="bi bi-x-circle"></i>
-                &nbsp;Tap anywhere to close&nbsp;
-                <i class="bi bi-x-circle"></i>
-            </p>
-            <div onclick="closeMobileNav();" class="closeMobileNav"></div>
-            <a class="tLink" href="../projects.html" onclick="closeMobileNav()">Projects</a>
-            <a href="#skills" onclick="closeMobileNav()">Skills</a>
-            <a class="tLink" href="../aboutme.html" onclick="closeMobileNav()">About Me</a>
-            <a href="#contact" onclick="closeMobileNav()">Contact Me</a>
+            <a href="../projects">Projects</a>
+            <a href="../about">About me</a>
+            <a href="../skills">Skills</a>
+            <a href="../contact" class="button">Get in contact</a>
         </nav>
-    
-        <main class="ppMain">
-            <h1 class="ppHeader"><a class="ppLink noDeco" href="#">Tab Volume Manager</a> Privacy Policy</h1>
+        <button id="mobileMenuButton">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+    <div class="mobileMenuWrapper closed">
+        <nav class="closed mobileMenu">
+            <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="#">Projects</a>
+            <a href="../about">About me</a>
+            <a href="../skills">Skills</a>
+            <a href="../contact">Get in contact</a>
+        </nav>
+        <span class="closeMenu" onclick="closeMobileMenu()"></span>
+    </div>
+    <span class="scrollShadow"></span>
 
-            <div class="ppItem">
-                <p><b><i>Tab Volume Manager</i></b> is a browser extension that allows users to control the volume and apply audio effects (such as bass boost and voice clarity) on a per-tab basis. We take user privacy seriously and aim to be fully transparent about the data we collect, store, and use.</p>
+    <main>
+        <section class="content policyContent">
+            <h1 class="hero"><a class="accentText" href="#">Tab Volume Manager</a> Privacy Policy</h1>
+
+            <div>
+                <p><i class="accentText">Tab Volume Manager</i> is a browser extension that allows users to control the volume and apply audio effects (such as bass boost and voice clarity) on a per-tab basis. We take user privacy seriously and aim to be fully transparent about the data we collect, store, and use.</p>
             </div>
         
-            <div class="ppItem">
+            <div>
                 <h2>1. Information We Collect</h2>
                 <p>Tab Volume Manager does not collect or transmit any personal data or browsing history to any external servers or third-party services. All data used by the extension is stored locally on the user's device using Chrome’s built-in storage.local API.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>2. How We Use Information</h2>
                 <p>The information stored is solely used to: Restore user preferences for each website, Apply volume and audio effects across sessions, Maintain a consistent user experience (e.g., dark mode). We do not track, log, or monitor user activity in any way.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>3. Data Sharing</h2>
                 <p>We do not share, sell, or transmit any data to third parties. All data remains strictly local to your browser.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>3. Data Sharing</h2>
                 <p>We do not share, sell, or transmit any data to third parties. All data remains strictly local to your browser.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>4. Access to Source Code:</h2>
-                <p>The source code for Tab Volume Manager is available on GitHub. You can view the code repository <a class="ppLink" href="https://github.com/Stefan-Mihajlovic/Tab-Volume-Manager">here</a>.</p>
+                <p>The source code for Tab Volume Manager is available on GitHub. You can view the code repository <a href="https://github.com/Stefan-Mihajlovic/Tab-Volume-Manager">here</a>.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>5. Changes to This Policy</h2>
                 <p>We may update this policy to reflect product changes or legal requirements. We recommend reviewing it periodically. Any changes will be posted on the extension’s official listing page.</p>
             </div>
 
-            <div class="ppItem">
+            <div>
                 <h2>6. Contact:</h2>
-                <p>If you have any questions or concerns regarding this privacy policy or the use of Tab Volume Manager, please contact me at <a class="ppLink" href="mailto:stef.mihajlovicc@gmail.com">stef.mihajlovicc@gmail.com</a>.</p>
+                <p>If you have any questions or concerns regarding this privacy policy or the use of Tab Volume Manager, please contact me at <a href="mailto:stefan@optiflowz.com">stefan@optiflowz.com</a>.</p>
             </div>
-        </main>
+        </section>
 
-        <div class="bigBlurAccent dot1"></div>
-        <div class="bigBlurAccent dot2"></div>
-        <div class="bigBlurAccent dot3"></div>
-        <div class="bigBlurAccent dot4"></div>
-    
         <footer>
-            <div class="socialsWrapper">
-                <h3>Socials</h3>
-                <div class="socials">
-                    <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><i class="bi bi-linkedin"></i></a>
-                    <a href="https://github.com/Stefan-Mihajlovic"><i class="bi bi-github"></i></a>
-                    <a href="https://www.instagram.com/stefi_mihajlovic_/"><i class="bi bi-instagram"></i></a>
-                    <a href="https://stefanmihajlovic.itch.io/"><i class="fa-brands fa-itch-io"></i></a>
-                    <a href="https://discord.com/users/H3art4ttack#6784"><i class="bi bi-discord"></i></a>
-                </div>
+            <div class="socials">
+                <a href="https://www.linkedin.com/in/stefanmihajlovic-in/"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_11_590)"><path d="M22.2234 0H1.77187C0.792187 0 0 0.773438 0 1.72969V22.2656C0 23.2219 0.792187 24 1.77187 24H22.2234C23.2031 24 24 23.2219 24 22.2703V1.72969C24 0.773438 23.2031 0 22.2234 0ZM7.12031 20.4516H3.55781V8.99531H7.12031V20.4516ZM5.33906 7.43438C4.19531 7.43438 3.27188 6.51094 3.27188 5.37187C3.27188 4.23281 4.19531 3.30937 5.33906 3.30937C6.47813 3.30937 7.40156 4.23281 7.40156 5.37187C7.40156 6.50625 6.47813 7.43438 5.33906 7.43438ZM20.4516 20.4516H16.8937V14.8828C16.8937 13.5562 16.8703 11.8453 15.0422 11.8453C13.1906 11.8453 12.9094 13.2937 12.9094 14.7891V20.4516H9.35625V8.99531H12.7687V10.5609H12.8156C13.2891 9.66094 14.4516 8.70938 16.1813 8.70938C19.7859 8.70938 20.4516 11.0813 20.4516 14.1656V20.4516Z" fill="black"/></g><defs><clipPath id="clip0_11_590"><rect width="24" height="24" fill="white"/></clipPath></defs></svg></a>
+                <a href="https://github.com/Stefan-Mihajlovic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_522_3)"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0099 0C5.36875 0 0 5.40833 0 12.0992C0 17.4475 3.43994 21.9748 8.21205 23.5771C8.80869 23.6976 9.02724 23.3168 9.02724 22.9965C9.02724 22.716 9.00757 21.7545 9.00757 20.7527C5.6667 21.474 4.97099 19.3104 4.97099 19.3104C4.43409 17.9082 3.63858 17.5478 3.63858 17.5478C2.54511 16.8066 3.71823 16.8066 3.71823 16.8066C4.93117 16.8868 5.56763 18.0486 5.56763 18.0486C6.64118 19.8913 8.37111 19.3707 9.06706 19.0501C9.16638 18.2688 9.48473 17.728 9.82275 17.4276C7.15817 17.1471 4.35469 16.1055 4.35469 11.458C4.35469 10.1359 4.8316 9.05428 5.58729 8.21304C5.46807 7.91263 5.0504 6.67043 5.70677 5.00787C5.70677 5.00787 6.72083 4.6873 9.00732 6.24981C9.98625 5.98497 10.9958 5.85024 12.0099 5.84911C13.024 5.84911 14.0577 5.98948 15.0123 6.24981C17.299 4.6873 18.3131 5.00787 18.3131 5.00787C18.9695 6.67043 18.5515 7.91263 18.4323 8.21304C19.2079 9.05428 19.6652 10.1359 19.6652 11.458C19.6652 16.1055 16.8617 17.1269 14.1772 17.4276C14.6148 17.8081 14.9924 18.5292 14.9924 19.6711C14.9924 21.2936 14.9727 22.5957 14.9727 22.9962C14.9727 23.3168 15.1915 23.6976 15.7879 23.5774C20.56 21.9745 23.9999 17.4475 23.9999 12.0992C24.0196 5.40833 18.6312 0 12.0099 0Z" fill="black"/></g><defs><clipPath id="clip0_522_3"><rect width="24" height="24" fill="white"/></clipPath></defs></svg></a>
+                <a href="https://www.instagram.com/stefi_mihajlovic_/"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.3952 7.02212C17.6005 7.02368 16.9543 6.3802 16.9528 5.58548C16.9512 4.79076 17.5947 4.14457 18.3898 4.14302C19.1848 4.14146 19.831 4.78531 19.8326 5.58004C19.8338 6.37476 19.1903 7.02057 18.3952 7.02212Z" fill="black"/><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0115 18.161C8.60909 18.1676 5.8451 15.4149 5.8385 12.0117C5.83188 8.60923 8.58536 5.84481 11.9878 5.8382C15.3909 5.83159 18.1553 8.5859 18.1619 11.9879C18.1685 15.3912 15.4143 18.1544 12.0115 18.161ZM11.992 8.00035C9.78365 8.00424 7.99594 9.79858 7.99983 12.0074C8.0041 14.2166 9.79882 16.0039 12.0072 15.9996C14.2164 15.9954 16.0041 14.2014 15.9998 11.9922C15.9955 9.78302 14.2008 7.99608 11.992 8.00035Z" fill="black"/><path fill-rule="evenodd" clip-rule="evenodd" d="M4.1192 0.646479C4.88126 0.347876 5.75333 0.143362 7.03015 0.0830982C8.31011 0.0216726 8.71872 0.00767102 11.9769 0.00145262C15.2358 -0.00476578 15.6444 0.00766862 16.9244 0.0644334C18.2016 0.119643 19.0741 0.321049 19.8377 0.616544C20.6277 0.920974 21.298 1.33078 21.966 1.99603C22.6339 2.66205 23.0453 3.33002 23.3536 4.1189C23.6518 4.88174 23.8563 5.75306 23.917 7.03068C23.9776 8.31023 23.9924 8.71847 23.9986 11.9771C24.0048 15.2353 23.9916 15.6443 23.9356 16.925C23.88 18.2014 23.679 19.0743 23.3835 19.8375C23.0783 20.6276 22.6693 21.2979 22.004 21.9659C21.3388 22.6342 20.6701 23.0452 19.8812 23.3539C19.1184 23.6517 18.2471 23.8562 16.9702 23.9173C15.6903 23.9779 15.2817 23.9923 12.0224 23.9985C8.76459 24.0048 8.35598 23.9923 7.07605 23.9359C5.79882 23.88 4.92597 23.6789 4.16275 23.3838C3.37271 23.0782 2.70242 22.6696 2.03446 22.004C1.36611 21.3383 0.954386 20.67 0.646458 19.8811C0.347858 19.1186 0.144107 18.2469 0.0830727 16.9705C0.0220359 15.6901 0.00765506 15.2811 0.00143906 12.0229C-0.00480094 8.76435 0.00803667 8.35611 0.0640167 7.07616C0.1204 5.79855 0.320637 4.92606 0.61613 4.16206C0.921328 3.37239 1.33035 2.70248 1.99637 2.03413C2.6616 1.36616 3.33033 0.954017 4.1192 0.646479ZM4.94154 21.3679C5.36494 21.5308 6.00023 21.7252 7.17014 21.7761C8.43607 21.8309 8.81514 21.843 12.0185 21.8368C15.223 21.8309 15.6021 21.8173 16.8676 21.7579C18.0363 21.7022 18.6716 21.5055 19.0939 21.3407C19.6541 21.1218 20.0531 20.8601 20.4722 20.4406C20.8913 20.0195 21.1506 19.6194 21.3676 19.0591C21.5309 18.6354 21.7249 17.9996 21.7758 16.8297C21.8314 15.5646 21.8431 15.1851 21.8368 11.9809C21.831 8.77757 21.8174 8.3981 21.7572 7.13254C21.7019 5.96339 21.5056 5.32808 21.3404 4.90623C21.1215 4.34519 20.8606 3.94705 20.4399 3.52753C20.0192 3.10801 19.6191 2.84945 19.0581 2.6325C18.6355 2.46881 17.9994 2.27518 16.8303 2.22426C15.5643 2.16865 15.1849 2.15737 11.9808 2.1636C8.77743 2.16982 8.39836 2.18264 7.13281 2.24253C5.9633 2.29812 5.32877 2.49447 4.90575 2.65972C4.34587 2.87861 3.94696 3.13872 3.52746 3.5598C3.10871 3.98087 2.84938 4.38018 2.63244 4.94161C2.46993 5.36464 2.27434 6.00072 2.2242 7.16987C2.16898 8.43581 2.15733 8.81529 2.16355 12.0187C2.16939 15.2228 2.18298 15.6023 2.24248 16.8671C2.29729 18.037 2.49518 18.6715 2.65966 19.0949C2.87855 19.6544 3.13944 20.0533 3.55973 20.4729C3.98081 20.8908 4.38088 21.1509 4.94154 21.3679Z" fill="black"/></svg></a>
+                <a href="https://www.threads.com/@stefi_mihajlovic_"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6921 11.1235C17.5887 11.074 17.4837 11.0263 17.3774 10.9806C17.1921 7.56728 15.327 5.61312 12.1952 5.59312C12.181 5.59304 12.1669 5.59304 12.1528 5.59304C10.2795 5.59304 8.72164 6.39261 7.76275 7.84759L9.48512 9.0291C10.2014 7.94229 11.3257 7.7106 12.1536 7.7106C12.1631 7.7106 12.1727 7.7106 12.1822 7.71069C13.2134 7.71726 13.9915 8.01708 14.4951 8.60175C14.8616 9.02741 15.1067 9.61563 15.2281 10.358C14.3139 10.2026 13.3251 10.1548 12.2681 10.2154C9.29059 10.3869 7.37639 12.1235 7.50495 14.5365C7.57019 15.7605 8.17996 16.8135 9.22188 17.5014C10.1028 18.0829 11.2374 18.3673 12.4165 18.3029C13.9738 18.2175 15.1954 17.6234 16.0476 16.537C16.6949 15.712 17.1042 14.6429 17.285 13.2957C18.0271 13.7436 18.5771 14.333 18.8809 15.0415C19.3974 16.2459 19.4275 18.225 17.8126 19.8385C16.3978 21.252 14.697 21.8635 12.1267 21.8824C9.27552 21.8612 7.11922 20.9469 5.71726 19.1646C4.40444 17.4958 3.72596 15.0852 3.70065 12C3.72596 8.91473 4.40444 6.5042 5.71726 4.83534C7.11922 3.05311 9.27549 2.13875 12.1266 2.11756C14.9985 2.13891 17.1924 3.05767 18.648 4.8485C19.3618 5.7267 19.8999 6.8311 20.2546 8.11879L22.273 7.58028C21.843 5.99528 21.1664 4.62946 20.2456 3.49675C18.3795 1.20084 15.6503 0.0243935 12.1337 0H12.1196C8.6102 0.0243088 5.91151 1.20522 4.09854 3.50991C2.48524 5.5608 1.65305 8.41446 1.62509 11.9916L1.625 12L1.62509 12.0084C1.65305 15.5855 2.48524 18.4393 4.09854 20.4901C5.91151 22.7948 8.6102 23.9757 12.1196 24H12.1337C15.2538 23.9784 17.453 23.1615 19.2647 21.3514C21.6351 18.9832 21.5637 16.0149 20.7825 14.1926C20.222 12.8859 19.1534 11.8245 17.6921 11.1235ZM12.3051 16.1884C11.0001 16.2619 9.6443 15.6761 9.57745 14.4215C9.5279 13.4913 10.2395 12.4532 12.3851 12.3296C12.6309 12.3154 12.872 12.3085 13.1089 12.3085C13.8883 12.3085 14.6174 12.3842 15.2802 12.5291C15.033 15.6169 13.5828 16.1182 12.3051 16.1884Z" fill="black"/></svg></a>
+                <a href="https://discord.com/users/H3art4ttack#6784"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.15557C18.7873 3.45369 17.147 2.93658 15.4319 2.6404C15.4007 2.63469 15.3695 2.64897 15.3534 2.67754C15.1424 3.05276 14.9087 3.54226 14.7451 3.927C12.9004 3.65083 11.0652 3.65083 9.25832 3.927C9.09465 3.5337 8.85248 3.05276 8.64057 2.67754C8.62448 2.64992 8.59328 2.63564 8.56205 2.6404C6.84791 2.93563 5.20756 3.45275 3.67693 4.15557C3.66368 4.16129 3.65233 4.17082 3.64479 4.18319C0.533392 8.83155 -0.31895 13.3657 0.0991801 17.8436C0.101072 17.8655 0.11337 17.8864 0.130398 17.8997C2.18321 19.4073 4.17171 20.3225 6.12328 20.9291C6.15451 20.9386 6.18761 20.9272 6.20748 20.9015C6.66913 20.2711 7.08064 19.6063 7.43348 18.9073C7.4543 18.8664 7.43442 18.8178 7.39186 18.8016C6.73913 18.554 6.1176 18.2521 5.51973 17.9093C5.47244 17.8816 5.46865 17.814 5.51216 17.7816C5.63797 17.6873 5.76382 17.5893 5.88396 17.4902C5.90569 17.4721 5.93598 17.4683 5.96153 17.4797C9.88928 19.273 14.1415 19.273 18.023 17.4797C18.0485 17.4674 18.0788 17.4712 18.1015 17.4893C18.2216 17.5883 18.3475 17.6873 18.4742 17.7816C18.5177 17.814 18.5149 17.8816 18.4676 17.9093C17.8697 18.2588 17.2482 18.554 16.5945 18.8006C16.552 18.8168 16.533 18.8664 16.5538 18.9073C16.9143 19.6054 17.3258 20.2701 17.7789 20.9005C17.7978 20.9272 17.8319 20.9386 17.8631 20.9291C19.8241 20.3225 21.8126 19.4073 23.8654 17.8997C23.8834 17.8864 23.8948 17.8664 23.8967 17.8445C24.3971 12.6676 23.0585 8.17064 20.3482 4.18414C20.3416 4.17082 20.3303 4.16129 20.317 4.15557ZM8.02002 15.117C6.8375 15.117 5.86313 14.0313 5.86313 12.6981C5.86313 11.3648 6.8186 10.2791 8.02002 10.2791C9.23087 10.2791 10.1958 11.3743 10.1769 12.6981C10.1769 14.0313 9.22141 15.117 8.02002 15.117ZM15.9947 15.117C14.8123 15.117 13.8379 14.0313 13.8379 12.6981C13.8379 11.3648 14.7933 10.2791 15.9947 10.2791C17.2056 10.2791 18.1705 11.3743 18.1516 12.6981C18.1516 14.0313 17.2056 15.117 15.9947 15.117Z" fill="black"/></svg></a>
             </div>
-            <p>Copyright © <span id="currentYearSpan"></span> &nbsp;|&nbsp; <span class="highlightSpan">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
+            <p class="copyright">Copyright © <span id="currentYearSpan">2025</span> &nbsp;|&nbsp; <span class="accentText">Stefan Mihajlovic®</span> &nbsp;|&nbsp; All Rights Reserved</p>
         </footer>
+    </main>
+
+    <div class="cursor">
+        <div class="cursor-dot"></div>
     </div>
 
-    <script src="../js/tilt.js/vanilla-tilt.js"></script>
-    <script src="../js/tilt.js/vanilla-tilt-fullpage.js"></script>
+    <div class="background">
+        <img class="bg" src="../images/bg.webp" alt="">
+        <span class="gradient"></span>
+        <span class="darken"></span>
+        <span class="base"></span>
+        <span class="noise"></span>
+    </div>
 </body>
 </html>
