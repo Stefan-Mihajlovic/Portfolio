@@ -18,6 +18,7 @@
     text-align: left;
     width: 100%;
     font-size: 1.75rem;
+    margin-bottom: 15px;
 }
 
 .currentProject > div{
@@ -110,10 +111,37 @@
     -webkit-text-fill-color: transparent;
 }
 
-.roomRule .loop-doodle{
+.krunaBoje{
+    --accent1: #7FFC03;
+    --accent2: #cfff9f;
+}
+
+.krunaBoje .button{
+    color: black;
+}
+
+.krunaBoje ::selection{
+    color: black;
+}
+
+.krunaBoje .loop-doodle{
     top: -80px;
     left: auto;
     right: -70px;
+    transform: rotate(30deg) !important;
+}
+
+.krunaBoje > span h3{
+    background: linear-gradient(90deg, #cfff9f, #7FFC03);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.roomRule .loop-doodle{
+    top: -80px;
+    right: auto;
+    left: -70px;
     transform: rotate(-25deg);
 }
 
@@ -126,8 +154,8 @@
 
 .uehsWebsite .loop-doodle{
     top: -70px;
-    left: -60px;
-    right: auto;
+    left: auto !important;
+    right: -80px !important;
     transform: rotate(-5deg);
 }
 
@@ -150,6 +178,13 @@
     -webkit-text-fill-color: transparent;
 }
 
+.browserExtensions .loop-doodle{
+    top: -80px;
+    right: auto;
+    left: -70px;
+    transform: rotate(-25deg);
+}
+
 .content .moreProjects{
     margin-block: 50px;
 }
@@ -170,8 +205,7 @@
     .currentProject h2{
         font-size: 1.2rem;
         line-height: 1.1;
-        width: 100%;
-        text-align: left;
+        margin-bottom: 5px;
     }
 }
 
