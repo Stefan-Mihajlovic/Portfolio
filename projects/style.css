@@ -97,6 +97,18 @@
 
 /* PROJECT SPECIFICS PLACEMENT */
 
+.optiFlowz{
+    --accent1: #2181ff;
+    --accent2: #5ea4ff;
+}
+
+.optiFlowz > span h3{
+    background: linear-gradient(90deg, #5ea4ff, #2181ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .crimsonMusic .loop-doodle{
     top: -60px;
     right: auto;
