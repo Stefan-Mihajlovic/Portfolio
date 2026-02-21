@@ -24,6 +24,42 @@ window.addEventListener('scroll', () => {
     }
 });
 
+// FADE IN OBSERVER
+
+function initFadeInObserver({
+    selector = ".fade-in",
+    visibleClass = "is-visible",
+    threshold = 0.05,
+    rootMargin = "0px 0px -10% 0px",
+    once = true
+} = {}) {
+    const elements = Array.from(document.querySelectorAll(selector));
+    if (!elements.length) return;
+    
+    if (!("IntersectionObserver" in window)) {
+      elements.forEach(el => el.classList.add(visibleClass));
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(visibleClass);
+          if (once) obs.unobserve(entry.target);
+        } else if (!once) {
+          entry.target.classList.remove(visibleClass);
+        }
+      });
+    }, { threshold, rootMargin });
+
+    elements.forEach(el => observer.observe(el));
+    return observer;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+initFadeInObserver();
+});
+
 // CURSOR EFFECT
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
