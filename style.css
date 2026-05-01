@@ -94,6 +94,7 @@ body.lightboxOpen{
     left: -25%;
     width: 150%;
     filter: blur(150px);
+    opacity: 0.6;
     z-index: 2;
 }
 
