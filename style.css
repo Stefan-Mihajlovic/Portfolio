@@ -615,6 +615,12 @@ i.accentText{
     --accentTextGradient: linear-gradient(90deg, #D5AC93, #ff5a23);
 }
 
+.optiFlowz{
+    --accent1: #2383ff;
+    --accent2: #55b3ff;
+    --accentTextGradient: linear-gradient(90deg, #98d5ff, #2f86ff);
+}
+
 .extensions{
     --accent1: #FF006A;
     --accent2: #4751E7;
@@ -642,6 +648,14 @@ i.accentText{
 .roomRule .loop-doodle{
     top: -70px;
     left: -70px;
+    transform: rotate(-18deg);
+}
+
+.optiFlowz .loop-doodle{
+    width: 180px;
+    height: 180px;
+    top: -70px;
+    right: -60px;
     transform: rotate(-18deg);
 }
 
