@@ -1,0 +1,264 @@
+:root{
+    --accent1: #2383ff;
+    --accent2: #1859d2;
+    --accentTextGradient: linear-gradient(90deg, #98d5ff, #2f86ff);
+}
+
+.gradient{
+    opacity: 0.48;
+}
+
+.content{
+    margin-bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.hero{
+    font-size: 2.5rem;
+    margin-top: 110px;
+    margin-bottom: 10px;
+}
+
+.megaHero{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.megaHero p{
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
+.screenshotsSection{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.sectionHeading{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.eyebrow{
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background-color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.screenshotsSlider{
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(280px, 78vw);
+    gap: 24px;
+    overflow-x: auto;
+    padding: 10px max(20px, calc((100vw - 1000px) / 2 + 20px)) 18px;
+    margin: 0 calc(50% - 50vw);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.screenshotsSlider::-webkit-scrollbar{
+    display: none;
+}
+
+.screenshotCard{
+    scroll-snap-align: center;
+    border: 1px solid var(--white10);
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+    transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.screenshotCard:hover{
+    border-color: var(--accent1);
+    transform: scale(1.02);
+}
+
+.screenshotCard img{
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.caseStudyTitle h2{
+    text-align: center;
+    font-size: 2rem;
+}
+
+.currentProject{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.currentProject > div{
+    position: relative;
+}
+
+.currentProject > div .loop-doodle{
+    width: 180px;
+    height: 180px;
+    top: -70px;
+    right: -60px;
+    transform: rotate(-18deg);
+}
+
+.currentProject p,
+.caseBlock p{
+    background-color: var(--primary);
+    color: var(--white75);
+    padding: 20px 25px;
+    font-weight: 300;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    border-radius: 20px;
+}
+
+.metaCard{
+    background-color: var(--primary);
+    padding: 20px;
+    border-radius: 40px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.metaCard h2{
+    width: fit-content;
+    font-size: 2rem;
+    margin-top: 5px;
+}
+
+.metaCard div{
+    display: flex;
+    justify-content: stretch;
+    gap: 10px;
+}
+
+.metaCard div p{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--secondary);
+    background-image: url('../images/noise-light.webp');
+    padding: 26px;
+    gap: 24px;
+    border-radius: 20px;
+}
+
+.metaCard div p span{
+    color: var(--text1);
+    font-family: 'Pattaya', cursive;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.metaCard div p strong{
+    color: var(--white75);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+.caseBlock{
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.caseBlock h2{
+    width: 100%;
+}
+
+.actions{
+    margin-top: 10px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media screen and (max-width: 500px) {
+    .megaHero h1{
+        font-size: 1.75rem;
+        margin-top: 50px;
+    }
+
+    .megaHero p{
+        font-size: 1rem;
+        margin-bottom: 0px;
+    }
+
+    .screenshotsSlider{
+        grid-auto-columns: 88vw;
+        gap: 18px;
+        padding-bottom: 12px;
+    }
+
+    .caseStudyTitle h2{
+        font-size: 1.5rem;
+    }
+
+    .metaCard{
+        border-radius: 24px;
+    }
+
+    .metaCard h2{
+        font-size: 1.5rem;
+        margin-top: 0px;
+    }
+
+    .metaCard div{
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .metaCard div p{
+        gap: 18px;
+        padding: 22px;
+    }
+
+    .metaCard div p span{
+        font-size: 1.3rem;
+    }
+
+    .currentProject p,
+    .caseBlock p{
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 950px) {
+    .metaCard div{
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    .metaCard div{
+        grid-template-columns: 1fr;
+    }
+}

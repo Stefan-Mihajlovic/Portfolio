@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Portfolio</title>
+    <title>Stefan Mihajlovic - OptiFlowz Case Study</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
@@ -13,7 +13,7 @@
     <header>
         <a href="../" class="logo">SM</a>
         <nav>
-            <a href="#" class="active">Projects</a>
+            <a href="../projects">Projects</a>
             <a href="../about">About me</a>
             <a href="../skills">Skills</a>
             <a href="../contact" class="button">Get in contact</a>
@@ -27,7 +27,7 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="#">Projects</a>
+            <a href="../projects">Projects</a>
             <a href="../about">About me</a>
             <a href="../skills">Skills</a>
             <a href="../contact">Get in contact</a>
@@ -40,195 +40,70 @@
 
         <section class="content">
             <div class="megaHero">
-                <h1 class="hero">My <span class="accentText">beloved</span> projects</h1>
-                <p>Yes, I said beloved, now leave me <span class="accentText">alone</span> and scroll down</p>
+                <h1 class="hero">OptiFlowz <span class="accentText">Case Study</span></h1>
+                <p>A website built to make OptiFlowz feel sharper, more <span class="accentText">trustworthy</span>, and just a bit harder to forget.</p>
             </div>
-            <div class="currentProject eaes fade-in">
+
+            <section class="screenshotsSection fade-in">
+                <div class="sectionHeading">
+                    <span class="eyebrow">Screenshots</span>
+                </div>
+
+                <div class="screenshotsSlider" aria-label="OptiFlowz screenshots">
+                    <figure class="screenshotCard">
+                        <img src="../images/optiflowzScreenshot1.webp" alt="OptiFlowz website screenshot showing the homepage hero section">
+                    </figure>
+                    <figure class="screenshotCard">
+                        <img src="../images/optiflowzScreenshot2.webp" alt="OptiFlowz website screenshot showing another page section and layout">
+                    </figure>
+                </div>
+            </section>
+
+            <div class="caseStudyTitle fade-in">
+                <h2>Case Study</h2>
+            </div>
+
+            <div class="currentProject fade-in">
+                <p><span class="accentText">OptiFlowz</span> needed a website that could explain what they do without putting people to sleep five seconds in. The goal was to make the brand feel stronger, cleaner, and more memorable from the very first screen, while still keeping everything easy to follow and conversion-focused.</p>
+            </div>
+
+            <div class="metaCard fade-in">
+                <h2 class="accentText">Project Snapshot</h2>
                 <div>
-                    <img src="../images/eaesBanner.webp" alt="EAES Video Corner Banner">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" d="M 30 85 C 18 62, 42 40, 62 52 C 80 62, 62 78, 52 70 C 40 60, 56 40, 82 44 C 112 48, 118 78, 96 90 C 78 100, 68 86, 78 76 C 90 64, 120 70, 112 98 C 104 122, 66 122, 48 104 C 34 90, 38 74, 52 78"/>
-                        </svg>
-                    </div>
+                    <p><span>Role</span><strong>UI/UX design, frontend development, and overall visual direction.</strong></p>
+                    <p><span>Stack</span><strong>Next.js, React, responsive layout work, and polished animation details.</strong></p>
+                    <p><span>Focus</span><strong>Clearer service communication, stronger first impression, and SEO-aware structure.</strong></p>
                 </div>
-                <span>
-                    <h3>EAES Video Corner</h3>
-                    <span class="tags">
-                        <p>React</p>
-                        <p>Tailwind CSS</p>
-                        <p>MUX Video API</p>
-                        <p>UI/UX</p>
-                    </span>
-                    <p>I'm currently collaborating with two talented colleagues from my university to develop a custom video library for the EAES (European Association for Endoscopic Surgery). Together, we're building a 'Netflix-style' platform to host their new surgical curriculum, focusing on high-performance video delivery and intuitive user navigation.</p>
-                    <div class="actions">
-                        <a href="../eaes-video-corner" class="button">View Project Page</a>
-                        <a target="_blank" href="https://videocorner.eaes.eu/" class="button">Visit Website</a>
-                    </div>
-                </span>
             </div>
-            <div class="currentProject optiFlowz fade-in">
-                <div>
-                    <img src="../images/OptiFlowzBanner.webp" alt="OptiFlowz website banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" d="M 20 70 Q 35 30, 50 70 T 80 70 T 110 70 T 130 70" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                </div>
-                <span>
-                    <h3>OptiFlowz Website</h3>
-                    <span class="tags">
-                        <p>Next.js</p>
-                        <p>React</p>
-                        <p>UI/UX</p>
-                        <p>Design</p>
-                    </span>
-                    <p>A bold marketing website built for OptiFlowz with a strong visual identity, modern motion, and a structure focused on clarity, trust, and better conversion.</p>
-                    <div class="actions">
-                        <a href="../optiflowz" class="button">View Project Page</a>
-                        <a target="_blank" href="https://www.optiflowz.com/" class="button">Visit Website</a>
-                    </div>
-                </span>
+
+            <div class="caseBlock fade-in">
+                <h2>The Brief</h2>
+                <p>OptiFlowz covers multiple services, so the site had to juggle a few things at once: explain the offer quickly, look premium, and not drown people in blocks of text pretending to be strategy. I wanted it to feel more distinctive than the usual agency site, but still simple enough to scan without effort.</p>
+                <p>So the structure was built to land the positioning early, then gently guide people through services, proof, and contact actions without making the whole thing feel like homework.</p>
             </div>
-            <div class="currentProject crimsonMusic fade-in">
-                <div>
-                    <img src="../images/crimsonMusicBanner.webp" alt="Crimson Music Banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" d="M 20 70 Q 35 30, 50 70 T 80 70 T 110 70 T 130 70" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                </div>
-                <span>
-                    <h3>Crimson Music</h3>
-                    <span class="tags">
-                        <p>JavaScript</p>
-                        <p>Firebase</p>
-                        <p>Cloud Storage</p>
-                        <p>Web App</p>
-                    </span>
-                    <p>Your next-gen music companion. Stream your favorite tracks nonstop without burning through your mobile data. Built for listeners who want music anywhere, anytime.</p>
-                    <div class="actions">
-                        <a target="_blank" href="https://crimsonmusic.netlify.app/" class="button">Visit app</a>
-                        <a target="_blank" href="https://github.com/Stefan-Mihajlovic/CrimsonMusic" class="button">Github</a>
-                    </div>
-                </span>
+
+            <div class="caseBlock fade-in">
+                <h2>What I Focused On</h2>
+                <p><span class="accentText">Clear hierarchy.</span> The main message had to hit early, so the hero and first few sections were built to get to the point fast.</p>
+                <p><span class="accentText">Stronger brand presence.</span> I pushed the visual direction a bit more so the site does not just sit there politely like every other service page on the internet.</p>
+                <p><span class="accentText">Lighter scanning.</span> The content was broken into clearer chunks, because people love clarity and absolutely hate being greeted by a wall of text.</p>
             </div>
-            <div class="currentProject krunaBoje fade-in">
-                <div>
-                    <img src="../images/KrunaBojeBanner.webp" alt="Kruna Boje Banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" 
-                                d="M 30 100 
-                                    L 110 100 
-                                    L 120 50 
-                                    L 95 75 
-                                    L 70 30 
-                                    L 45 75 
-                                    L 20 50 
-                                    Z" 
-                                fill="transparent" 
-                                stroke="currentColor" 
-                                stroke-width="2" 
-                                stroke-linecap="round" 
-                                stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                </div>
-                <span>
-                    <h3>Kruna Boje</h3>
-                    <span class="tags">
-                        <p>WordPress</p>
-                        <p>PHP</p>
-                        <p>SEO</p>
-                        <p>Content Architecture</p>
-                    </span>
-                    <p>A full-scale web solution for a specialized paint distributor. Focused on creating a clean, professional UI capable of handling high-density information. Features include an integrated blog for expert advice, a categorized product directory, and optimized PDF catalogs for professional contractors. This project highlights my ability to deliver functional, SEO-ready platforms tailored to specific business needs.</p>
-                    <div class="actions">
-                        <a target="_blank" href="https://krunaboje.com/" class="button">Visit Website</a>
-                    </div>
-                </span>
+
+            <div class="caseBlock fade-in">
+                <h2>Design Direction</h2>
+                <p>The biggest decision here was not to play it too safe. I wanted OptiFlowz to have some real presence, so I leaned into stronger contrast, a punchier visual rhythm, and a layout that keeps the brand front and center instead of hiding behind generic SaaS formulas.</p>
+                <p>That said, I was not trying to make it flashy just for the sake of it. The layout still had to do its job properly, so calls to action stay visible, the content stays readable, and the whole thing still feels trustworthy while looking a bit more alive.</p>
             </div>
-            <div class="currentProject roomRule fade-in">
-                <div>
-                    <img src="../images/roomRuleBanner.webp" alt="Room Rule Banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" d="M 40 40 C 120 20, 120 120, 70 120 C 30 120, 30 60, 70 60 C 100 60, 100 100, 80 100 C 60 100, 60 80, 75 80" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
+
+            <div class="caseBlock fade-in">
+                <h2>The Result</h2>
+                <p>The final website gives OptiFlowz a sharper digital presence and a more recognizable tone. It makes the company feel capable and modern, while still keeping the flow simple enough for first-time visitors to quickly understand what is going on.</p>
+                <p>More than anything, it turned the site into something that feels intentional instead of just technically existing, which was kind of the whole point.</p>
+                <div class="actions">
+                    <a target="_blank" href="https://optiflowz.com/" class="button">Visit Website</a>
+                    <a target="_blank" href="https://github.com/OptiFlowz/OptiFlowz-Website" class="button">View Github</a>
                 </div>
-                <span>
-                    <h3>Room Rule</h3>
-                    <span class="tags">
-                        <p>Mobile App</p>
-                        <p>Cacpacitor JS</p>
-                        <p>PWA</p>
-                        <p>Firebase</p>
-                    </span>
-                    <p>Organize your life with Room Rule. A progressive web app designed to keep everything in order. Built for Android and iOS using Capacitor JS, so it feels like a native app.</p>
-                    <div class="actions">
-                        <a target="_blank" href="https://roomrule.com/" class="button">Download app</a>
-                    </div>
-                </span>
             </div>
-            <div class="currentProject uehsWebsite fade-in">
-                <div>
-                    <img src="../images/uehsBanner.webp" alt="UEHS Website Banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 160 160" aria-hidden="true">
-                            <path class="loop-path" d="M 60 95 C 30 95, 25 60, 60 60 C 95 60, 95 95, 60 95 C 35 95, 35 25, 70 25 C 110 25, 115 80, 70 85"/>
-                        </svg>
-                    </div>
-                </div>
-                <span>
-                    <h3>UEHS Website</h3>
-                    <span class="tags">
-                        <p>Wordpress</p>
-                        <p>PHP</p>
-                        <p>Fintech</p>
-                        <p>Payment systems and security</p>
-                    </span>
-                    <p>A custom WordPress website built for the Association of Endoscopic Surgeons of Serbia. The site includes a tailored course system that allows them to manage educational programs and issue certificates directly through the platform, making it easier to organize training and track participation.</p>
-                    <div class="actions">
-                        <a target="_blank" href="https://uehs.org.rs/" class="button">Visit Website</a>
-                    </div>
-                </span>
-            </div>
-            <div class="currentProject browserExtensions fade-in">
-                <div>
-                    <img src="../images/extensionsBanner.webp" alt="My Extensions Banner" loading="lazy">
-                    <div class="doodle-wrap">
-                        <svg class="loop-doodle" viewBox="0 0 140 140" aria-hidden="true">
-                            <path class="loop-path" d="M 70 40 C 90 40, 110 60, 110 85 C 110 110, 80 120, 50 100 C 30 80, 40 40, 70 45 C 90 50, 95 70, 80 85 C 65 100, 45 80, 55 65" fill="transparent" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                </div>
-                <span>
-                    <h3>My browser extensions</h3>
-                    <span class="tags">
-                        <p>Browser Extension</p>
-                        <p>JavaScript</p>
-                        <p>Productivity</p>
-                    </span>
-                    <p>A pair of lightweight browser extensions built to make everyday browsing smoother. The color picker lets you click anywhere on a page to instantly grab HEX and RGB values, copy them with one click, and download all your saved colors whenever you need them. Tab Volume Manager gives you precise control over audio, allowing you to adjust volume levels and apply enhancements per tab. Perfect for videos, music, and calls.</p>
-                    <div class="actions">
-                        <a href="../palette-pilot" class="button">Get PalettePilot</a>
-                        <a href="../tab-volume-manager" class="button">Get Tab Volume Manager</a>
-                    </div>
-                </span>
-            </div>
-            <div class="moreProjects fade-in">
-                    Want to see how this portfolio was built?
-                    <a target="_blank" href="https://github.com/Stefan-Mihajlovic/Portfolio" class="button">Click me!</a>
-                    <svg class="arrow-doodle" viewBox="0 0 70 70" aria-hidden="true">
-                        <path class="arrow-path" d="M 52 18 C 46 25, 50 31, 42 36 C 34 41, 36 46, 28 52"/>
-                        <path class="arrow-path" d="M 28 52 L 36 49" />
-                        <path class="arrow-path" d="M 28 52 L 31 44" />
-                    </svg>
-                </div>
         </section>
 
         <footer>
