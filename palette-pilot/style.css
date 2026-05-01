@@ -1,0 +1,166 @@
+:root{
+    --accent1: #ff006a;
+    --accent2: #ff5a9d;
+    --accentTextGradient: linear-gradient(90deg, #ff7bb6, #ff006a);
+}
+
+.gradient{
+    opacity: 0.5;
+}
+
+.content{
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.hero{
+    font-size: 2.5rem;
+    margin-top: 110px;
+    margin-bottom: 10px;
+}
+
+.megaHero p{
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
+.screenshotsSection{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.extensionDetails{
+    width: 100%;
+    background-color: var(--primary);
+    color: var(--white75);
+    padding: 20px 24px;
+    border-radius: 20px;
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 40px;
+}
+
+.extensionDetails p + p{
+    margin-top: 14px;
+}
+
+.featureList{
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.featureList li{
+    position: relative;
+    padding-left: 24px;
+}
+
+.featureList li::before{
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+}
+
+.actions{
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.extensionDetails .button{
+    padding: 9px 20px;
+    font-size: 0.95rem;
+}
+
+.sectionHeading{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.eyebrow{
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background-color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.screenshotsSlider{
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(280px, 78vw);
+    gap: 24px;
+    overflow-x: auto;
+    padding: 10px max(20px, calc((100vw - 1000px) / 2 + 20px)) 18px;
+    margin: 0 calc(50% - 50vw);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.screenshotsSlider::-webkit-scrollbar{
+    display: none;
+}
+
+.screenshotCard{
+    scroll-snap-align: center;
+    border: 1px solid var(--white10);
+    border-radius: 20px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+}
+
+.screenshotCard img{
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 500px) {
+    .megaHero h1{
+        font-size: 1.75rem;
+        margin-top: 50px;
+    }
+    .megaHero p{
+        font-size: 1rem;
+        margin-bottom: 0px;
+    }
+
+    .screenshotsSlider{
+        grid-auto-columns: 88vw;
+        gap: 18px;
+        padding-bottom: 12px;
+    }
+
+    .extensionDetails{
+        padding: 16px;
+        font-size: 0.95rem;
+    }
+
+    .extensionDetails .button{
+        font-size: 0.9rem;
+        padding: 9px 16px;
+    }
+}

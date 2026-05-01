@@ -58,7 +58,116 @@ function initFadeInObserver({
 
 document.addEventListener("DOMContentLoaded", () => {
 initFadeInObserver();
+initScreenshotLightbox();
 });
+
+function initScreenshotLightbox() {
+    const sliders = Array.from(document.querySelectorAll('.screenshotsSlider'));
+    if (!sliders.length) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'lightboxOverlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `
+        <div class="lightboxBackdrop"></div>
+        <div class="lightboxDialog" role="dialog" aria-modal="true" aria-label="Screenshot preview">
+            <button class="lightboxClose" type="button" aria-label="Close preview">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6L18 18M18 6L6 18"></path>
+                </svg>
+            </button>
+            <button class="lightboxNav lightboxPrev" type="button" aria-label="Previous screenshot">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14.5 5.5L8 12L14.5 18.5"></path>
+                </svg>
+            </button>
+            <figure class="lightboxFigure">
+                <img class="lightboxImage" src="" alt="">
+            </figure>
+            <button class="lightboxNav lightboxNext" type="button" aria-label="Next screenshot">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9.5 5.5L16 12L9.5 18.5"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const overlayImage = overlay.querySelector('.lightboxImage');
+    const closeButton = overlay.querySelector('.lightboxClose');
+    const prevButton = overlay.querySelector('.lightboxPrev');
+    const nextButton = overlay.querySelector('.lightboxNext');
+    const backdrop = overlay.querySelector('.lightboxBackdrop');
+
+    let activeImages = [];
+    let activeIndex = 0;
+
+    function renderImage() {
+        const currentImage = activeImages[activeIndex];
+        if (!currentImage) return;
+
+        overlayImage.src = currentImage.src;
+        overlayImage.alt = currentImage.alt;
+        prevButton.disabled = activeImages.length <= 1;
+        nextButton.disabled = activeImages.length <= 1;
+    }
+
+    function openLightbox(images, index) {
+        activeImages = images;
+        activeIndex = index;
+        renderImage();
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('lightboxOpen');
+    }
+
+    function closeLightbox() {
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('lightboxOpen');
+    }
+
+    function showPrevious() {
+        activeIndex = (activeIndex - 1 + activeImages.length) % activeImages.length;
+        renderImage();
+    }
+
+    function showNext() {
+        activeIndex = (activeIndex + 1) % activeImages.length;
+        renderImage();
+    }
+
+    sliders.forEach((slider) => {
+        const images = Array.from(slider.querySelectorAll('img'));
+
+        images.forEach((image, index) => {
+            image.setAttribute('role', 'button');
+            image.setAttribute('tabindex', '0');
+            image.setAttribute('aria-label', `Open screenshot ${index + 1}`);
+
+            image.addEventListener('click', () => openLightbox(images, index));
+            image.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openLightbox(images, index);
+                }
+            });
+        });
+    });
+
+    closeButton.addEventListener('click', closeLightbox);
+    backdrop.addEventListener('click', closeLightbox);
+    prevButton.addEventListener('click', showPrevious);
+    nextButton.addEventListener('click', showNext);
+
+    document.addEventListener('keydown', (event) => {
+        if (!overlay.classList.contains('open')) return;
+
+        if (event.key === 'Escape') closeLightbox();
+        if (event.key === 'ArrowLeft') showPrevious();
+        if (event.key === 'ArrowRight') showNext();
+    });
+}
 
 // CURSOR EFFECT
 

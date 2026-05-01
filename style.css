@@ -50,6 +50,10 @@ body{
     overflow-x: hidden;
 }
 
+body.lightboxOpen{
+    overflow: hidden;
+}
+
 .background{
     position: absolute;
     width: 100%;
@@ -425,6 +429,110 @@ i.accentText{
 
 .hero a.accentText:hover{
     text-decoration: underline;
+}
+
+.lightboxOverlay{
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 300;
+}
+
+.lightboxOverlay.open{
+    opacity: 1;
+    pointer-events: all;
+}
+
+.lightboxBackdrop{
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.lightboxDialog{
+    position: relative;
+    width: min(1120px, calc(100vw - 40px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 1;
+}
+
+.lightboxFigure{
+    width: 100%;
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid var(--white20);
+    box-shadow: 0 30px 100px var(--black75);
+    background-color: var(--primary);
+}
+
+.lightboxImage{
+    display: block;
+    width: 100%;
+    max-height: calc(100vh - 120px);
+    object-fit: contain;
+}
+
+.lightboxClose,
+.lightboxNav{
+    border: 1px solid var(--white20);
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.lightboxClose:hover,
+.lightboxNav:hover{
+    background-color: var(--secondary);
+}
+
+.lightboxClose svg,
+.lightboxNav svg{
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.lightboxClose path,
+.lightboxNav path{
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.lightboxClose{
+    position: absolute;
+    top: -18px;
+    right: -6px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+.lightboxNav{
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    border-radius: 50%;
+}
+
+.lightboxNav:disabled{
+    opacity: 0.5;
+    cursor: default;
 }
 
 .projects{
@@ -814,6 +922,34 @@ footer div a svg{
 }
 
 @media screen and (max-width: 600px) {
+    .lightboxDialog{
+        width: calc(100vw - 20px);
+        gap: 8px;
+    }
+
+    .lightboxFigure{
+        border-radius: 18px;
+    }
+
+    .lightboxClose{
+        top: -14px;
+        right: 0;
+        width: 40px;
+        height: 40px;
+    }
+
+    .lightboxNav{
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+    }
+
+    .lightboxClose svg,
+    .lightboxNav svg{
+        width: 20px;
+        height: 20px;
+    }
+
     .projectCard img{
         border-radius: 25px;
         border: 10px solid var(--primary);
