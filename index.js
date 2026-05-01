@@ -71,12 +71,12 @@ function initScreenshotLightbox() {
     overlay.innerHTML = `
         <div class="lightboxBackdrop"></div>
         <div class="lightboxDialog" role="dialog" aria-modal="true" aria-label="Screenshot preview">
-            <button class="lightboxClose" type="button" aria-label="Close preview">
+            <button class="lightboxClose hoverable" type="button" aria-label="Close preview">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M6 6L18 18M18 6L6 18"></path>
                 </svg>
             </button>
-            <button class="lightboxNav lightboxPrev" type="button" aria-label="Previous screenshot">
+            <button class="lightboxNav lightboxPrev hoverable" type="button" aria-label="Previous screenshot">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M14.5 5.5L8 12L14.5 18.5"></path>
                 </svg>
@@ -84,7 +84,7 @@ function initScreenshotLightbox() {
             <figure class="lightboxFigure">
                 <img class="lightboxImage" src="" alt="">
             </figure>
-            <button class="lightboxNav lightboxNext" type="button" aria-label="Next screenshot">
+            <button class="lightboxNav lightboxNext hoverable" type="button" aria-label="Next screenshot">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M9.5 5.5L16 12L9.5 18.5"></path>
                 </svg>
@@ -92,6 +92,7 @@ function initScreenshotLightbox() {
         </div>
     `;
     document.body.appendChild(overlay);
+    bindHoverables(overlay);
 
     const overlayImage = overlay.querySelector('.lightboxImage');
     const closeButton = overlay.querySelector('.lightboxClose');
@@ -245,9 +246,12 @@ function animate() {
 
 animate();
 
-const hoverables = document.querySelectorAll('a, button, .skillCard p, .closeMenuButton');
+const hoverableSelector = 'a, button, .skillCard p, .closeMenuButton, .hoverable';
 
-hoverables.forEach(element => {
+function bindHoverable(element) {
+    if (element.dataset.hoverableBound === 'true') return;
+    element.dataset.hoverableBound = 'true';
+
     element.addEventListener('mouseenter', () => {
         isHovering = true;
         isTransitioning = true;
@@ -278,7 +282,13 @@ hoverables.forEach(element => {
             isTransitioning = false;
         }, 400);
     });
-});
+}
+
+function bindHoverables(root = document) {
+    root.querySelectorAll(hoverableSelector).forEach(bindHoverable);
+}
+
+bindHoverables();
 
 document.addEventListener('mouseleave', () => {
     cursor.style.opacity = '0';
