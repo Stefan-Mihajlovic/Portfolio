@@ -1,7 +1,7 @@
 :root{
-    --accent1: #3d5ce3;
-    --accent2: #7d92ff;
-    --accentTextGradient: linear-gradient(90deg, #9fb0ff, #3d5ce3);
+    --accent1: #f98939;
+    --accent2: #cd5a20;
+    --accentTextGradient: linear-gradient(90deg, #ffd08f, #cf6a2b);
 }
 
 .gradient{
@@ -49,30 +49,6 @@
 
 .extensionDetails p + p{
     margin-top: 14px;
-}
-
-.featureList{
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 18px 0;
-}
-
-.featureList li{
-    position: relative;
-    padding-left: 24px;
-}
-
-.featureList li::before{
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 11px;
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, var(--accent1), var(--accent2));
 }
 
 .actions{
@@ -149,6 +125,7 @@
         font-size: 1.75rem;
         margin-top: 50px;
     }
+
     .megaHero p{
         font-size: 1rem;
         margin-bottom: 0px;

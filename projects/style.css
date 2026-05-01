@@ -6,6 +6,19 @@
     margin-bottom: 100px;
 }
 
+.hero{
+    font-size: 2.5rem;
+    margin-top: 110px;
+    margin-bottom: 10px;
+}
+
+.megaHero p{
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
 .currentProject{
     display: flex;
     flex-direction: column;
@@ -60,7 +73,7 @@
     font-weight: 500;
     color: white;
     width: fit-content;
-    background: linear-gradient(90deg, #2855ad, #6386cc);
+    background: linear-gradient(90deg, #ffffff, #7c828f);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -96,6 +109,11 @@
 }
 
 /* PROJECT SPECIFICS PLACEMENT */
+
+.eaes{
+    --accent1: #a8a8a8;
+    --accent2: #616775;
+}
 
 .optiFlowz{
     --accent1: #2181ff;
@@ -164,6 +182,12 @@
     -webkit-text-fill-color: transparent;
 }
 
+.uehsWebsite {
+    --accent1: #21c4b1;
+    --accent2: #0f7e74;
+    --accentTextGradient: linear-gradient(90deg, #4ed4c5, #0f7970);
+}
+
 .uehsWebsite .loop-doodle{
     top: -70px;
     left: auto !important;
@@ -224,6 +248,14 @@
 @media screen and (max-width: 500px) {
     main .content{
         gap: 20px;
+    }
+    .megaHero h1{
+        font-size: 1.75rem;
+        margin-top: 50px;
+    }
+    .megaHero p{
+        font-size: 1rem;
+        margin-bottom: 0px;
     }
     .currentProject img{
         border: 5px solid var(--primary);

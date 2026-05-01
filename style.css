@@ -614,10 +614,10 @@ i.accentText{
     --accentTextGradient: linear-gradient(90deg, #D5AC93, #ff5a23);
 }
 
-.uehsWebsite{
-    --accent1: #21c4b1;
-    --accent2: #0f7e74;
-    --accentTextGradient: linear-gradient(90deg, #4ed4c5, #0f7970);
+.extensions{
+    --accent1: #FF006A;
+    --accent2: #4751E7;
+    --accentTextGradient: linear-gradient(-90deg, #4751E7, #FF006A);
 }
 
 /* DOODLES */
@@ -644,7 +644,7 @@ i.accentText{
     transform: rotate(-18deg);
 }
 
-.uehsWebsite .loop-doodle{
+.extensions .loop-doodle{
     top: -70px;
     right: -90px;
     width: 210px;
