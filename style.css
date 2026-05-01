@@ -1004,6 +1004,21 @@ footer div a svg{
     .projectCard .info p{
         font-size: 1rem;
     }
+    .projectCard .actions{
+        width: 100%;
+        flex-direction: row;
+        gap: 12px;
+    }
+    .projectCard .actions .button{
+        flex: 1 1 0;
+        text-align: center;
+        padding: 12px 10px;
+        font-size: 0.78rem;
+        line-height: 1.2;
+    }
+    .projectCard .actions .button:only-child{
+        flex: 0 1 calc(50% - 4px);
+    }
     .moreProjects{
         padding: 20px;
         border-radius: 40px;
@@ -1018,6 +1033,17 @@ footer div a svg{
     }
     footer p{
         font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .projectCard .actions{
+        gap: 8px;
+    }
+
+    .projectCard .actions .button{
+        padding: 11px 8px;
+        font-size: 0.72rem;
     }
 }
 
