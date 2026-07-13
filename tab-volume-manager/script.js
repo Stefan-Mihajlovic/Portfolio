@@ -1,4 +1,4 @@
-const TVM_API_URL = 'https://tvm-licensing-api.optiflowzoffice.workers.dev';
+const TVM_API_URL = 'https://tvm-licensing-api-prod.optiflowzoffice.workers.dev';
 
 async function postToTvm(path, body) {
     const response = await fetch(`${TVM_API_URL}${path}`, {
