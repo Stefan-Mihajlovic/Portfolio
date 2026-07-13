@@ -1,7 +1,15 @@
 const TVM_API_URL = 'https://tvm-licensing-api-prod.optiflowzoffice.workers.dev';
+const TVM_TEST_API_URL = 'https://tvm-licensing-api.optiflowzoffice.workers.dev';
+
+function tvmApiUrl(path, body) {
+    const isSandboxCheckoutResult = path === '/v1/checkout/result'
+        && typeof body?.sessionId === 'string'
+        && body.sessionId.startsWith('cs_test_');
+    return isSandboxCheckoutResult ? TVM_TEST_API_URL : TVM_API_URL;
+}
 
 async function postToTvm(path, body) {
-    const response = await fetch(`${TVM_API_URL}${path}`, {
+    const response = await fetch(`${tvmApiUrl(path, body)}${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
