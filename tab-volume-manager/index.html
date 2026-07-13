@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
     <header>
@@ -75,6 +76,108 @@
                     </div>
                 </div>
             </section>
+
+            <section class="proSection fade-in" id="pro">
+                <div class="proIntro">
+                    <span class="eyebrow">Tab Volume Manager Pro</span>
+                    <h2>More control. <span class="accentText">Better sound.</span></h2>
+                    <p>Unlock advanced audio tools for music, movies, gaming, and every tab you open.</p>
+                </div>
+
+                <div class="proSectionHeading">
+                    <span class="eyebrow">Everything included</span>
+                    <h3>Tools that stay out of your way</h3>
+                    <p>More power when you need it, with the same simple workflow you already know.</p>
+                </div>
+
+                <div class="proFeatures" aria-label="Tab Volume Manager Pro features">
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">10</span>
+                        <div>
+                            <h3>10-band EQ</h3>
+                            <p>More precise sound shaping.</p>
+                        </div>
+                    </article>
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">∞</span>
+                        <div>
+                            <h3>Unlimited presets</h3>
+                            <p>Save profiles for every setup.</p>
+                        </div>
+                    </article>
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">⚡</span>
+                        <div>
+                            <h3>Smart limiter</h3>
+                            <p>Boost without harsh clipping.</p>
+                        </div>
+                    </article>
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">A</span>
+                        <div>
+                            <h3>Adaptive volume</h3>
+                            <p>Automatically balance loudness.</p>
+                        </div>
+                    </article>
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">▶</span>
+                        <div>
+                            <h3>Movie dialogue</h3>
+                            <p>Clear voices and controlled dynamics.</p>
+                        </div>
+                    </article>
+                    <article class="proFeature">
+                        <span class="featureIcon" aria-hidden="true">≡</span>
+                        <div>
+                            <h3>Multi-tab mixer</h3>
+                            <p>Control every audible tab.</p>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="proSectionHeading pricingHeading">
+                    <span class="eyebrow">Simple pricing</span>
+                    <h3>Choose the plan that fits</h3>
+                    <p>Every plan unlocks the complete Pro experience. No accounts and no hidden tiers.</p>
+                </div>
+
+                <div class="pricingGrid" aria-label="Tab Volume Manager Pro pricing">
+                    <article class="priceCard">
+                        <span class="priceLabel">Monthly</span>
+                        <p class="price"><span>$</span>2.49</p>
+                        <p class="priceNote">Billed every month</p>
+                        <button class="button checkoutButton" type="button" data-plan="monthly">Choose monthly</button>
+                    </article>
+                    <article class="priceCard featuredPrice">
+                        <span class="bestValue">Best value</span>
+                        <span class="priceLabel">Yearly</span>
+                        <p class="price"><span>$</span>14.99</p>
+                        <p class="priceNote">Billed once per year</p>
+                        <button class="button checkoutButton" type="button" data-plan="yearly">Choose yearly</button>
+                    </article>
+                    <article class="priceCard">
+                        <span class="priceLabel">Lifetime</span>
+                        <p class="price"><span>$</span>29.99</p>
+                        <p class="priceNote">One payment, no subscription</p>
+                        <button class="button checkoutButton" type="button" data-plan="lifetime">Get lifetime</button>
+                    </article>
+                </div>
+
+                <p class="secureCheckoutNote">Secure checkout powered by Stripe. No Tab Volume Manager account required.</p>
+
+                <form class="manageLicense" id="manageLicenseForm">
+                    <div>
+                        <h3>Already have Pro?</h3>
+                        <p>Use your license key to manage billing or cancel a subscription through Stripe.</p>
+                    </div>
+                    <div class="licenseInputRow">
+                        <label class="srOnly" for="billingLicenseKey">License key</label>
+                        <input id="billingLicenseKey" name="licenseKey" type="text" autocomplete="off" spellcheck="false" placeholder="TVM-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" required>
+                        <button class="button" type="submit">Manage billing</button>
+                    </div>
+                    <p class="formMessage" id="billingMessage" role="status"></p>
+                </form>
+            </section>
         </section>
 
         <footer>
@@ -95,6 +198,22 @@
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
+
+    <section class="checkoutStatus" id="checkoutStatus" role="dialog" aria-modal="true" aria-labelledby="checkoutStatusTitle" hidden>
+        <button class="checkoutBackdrop" type="button" aria-label="Close checkout result"></button>
+        <div class="checkoutDialog">
+            <button class="checkoutClose" type="button" aria-label="Close">×</button>
+            <span class="statusOrb" aria-hidden="true"></span>
+            <p class="statusEyebrow" id="checkoutStatusEyebrow">Tab Volume Manager Pro</p>
+            <h2 id="checkoutStatusTitle">Preparing your license…</h2>
+            <p id="checkoutStatusMessage">Confirming your Stripe payment securely.</p>
+            <div class="licenseResult" id="licenseResult" hidden>
+                <code id="purchasedLicenseKey"></code>
+                <button class="button" id="copyLicenseButton" type="button">Copy license key</button>
+            </div>
+            <button class="secondaryButton" id="checkoutDoneButton" type="button">Done</button>
+        </div>
+    </section>
 
     <div class="cursor">
         <div class="cursor-dot"></div>
