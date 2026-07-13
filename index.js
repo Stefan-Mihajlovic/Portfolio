@@ -173,23 +173,26 @@ function initScreenshotLightbox() {
 // CURSOR EFFECT
 
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
-if (isTouchDevice) {
-    document.querySelector('.cursor').style.display = 'none';
-    document.body.style.cursor = 'auto';
-}
+const isCustomCursorDisabled = document.body.classList.contains('nativeCursor');
 
 const cursor = document.querySelector('.cursor');
 const cursorDot = document.querySelector('.cursor-dot');
+
+if (isTouchDevice || isCustomCursorDisabled) {
+    cursor.style.display = 'none';
+    document.body.style.cursor = 'auto';
+}
 
 let mouseX = -100, mouseY = -100;
 let cursorX = 0, cursorY = 0;
 let velocityX = 0, velocityY = 0;
 
-document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
+if (!isCustomCursorDisabled) {
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+}
 
 let isHovering = false;
 let currentElement = null;
@@ -244,12 +247,12 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-animate();
+if (!isCustomCursorDisabled) animate();
 
 const hoverableSelector = 'a, button, .skillCard p, .closeMenuButton, .hoverable';
 
 function bindHoverable(element) {
-    if (element.dataset.hoverableBound === 'true') return;
+    if (isCustomCursorDisabled || element.dataset.hoverableBound === 'true') return;
     element.dataset.hoverableBound = 'true';
 
     element.addEventListener('mouseenter', () => {
@@ -290,13 +293,15 @@ function bindHoverables(root = document) {
 
 bindHoverables();
 
-document.addEventListener('mouseleave', () => {
-    cursor.style.opacity = '0';
-});
+if (!isCustomCursorDisabled) {
+    document.addEventListener('mouseleave', () => {
+        cursor.style.opacity = '0';
+    });
 
-document.addEventListener('mouseenter', () => {
-    cursor.style.opacity = '1';
-});
+    document.addEventListener('mouseenter', () => {
+        cursor.style.opacity = '1';
+    });
+}
 
 // CONTACT FORM HANDLING
 
