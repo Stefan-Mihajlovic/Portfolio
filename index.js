@@ -8,21 +8,22 @@ function closeMobileMenu(){
     document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
 }
 
-// HEADER SCROLL SHADOW AND SCROLL TO TOP BUTTON
+// COMPACT GLASS HEADER AND SCROLL TO TOP BUTTON
 
+const siteHeader = document.querySelector('header');
 const scrollShadow = document.querySelector('.scrollShadow');
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 10) {
-        scrollShadow.classList.add('active');
-        if(window.scrollY > 50){
-            document.querySelector('.scrollToTop').classList.add('active');
-        }else{
-            document.querySelector('.scrollToTop').classList.remove('active');
-        }
-    } else {
-        scrollShadow.classList.remove('active');
-    }
-});
+const scrollToTop = document.querySelector('.scrollToTop');
+
+function updateScrollUi() {
+    const hasLeftTop = window.scrollY > 30;
+
+    siteHeader?.classList.toggle('is-scrolled', hasLeftTop);
+    scrollShadow?.classList.toggle('active', hasLeftTop);
+    scrollToTop?.classList.toggle('active', window.scrollY > 50);
+}
+
+window.addEventListener('scroll', updateScrollUi, { passive: true });
+updateScrollUi();
 
 // FADE IN OBSERVER
 
