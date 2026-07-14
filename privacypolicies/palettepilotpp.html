@@ -13,20 +13,20 @@
 
     <header>
         <a href="../" class="logo">SM</a>
-        <nav>
+        <nav aria-label="Primary navigation">
             <a href="../projects">Projects</a>
             <a href="../about">About me</a>
             <a href="../skills">Skills</a>
             <a href="../contact" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" type="button" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
         </button>
     </header>
     <div class="mobileMenuWrapper closed">
-        <nav class="closed mobileMenu">
+        <nav class="closed mobileMenu" aria-label="Mobile navigation">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
             <a href="#">Projects</a>
             <a href="../about">About me</a>
@@ -41,29 +41,44 @@
         <section class="content policyContent">
             <h1 class="hero"><a class="accentText" href="https://microsoftedge.microsoft.com/addons/detail/palette-pilot/lnbknncdeokgflnppefaokohhfgplehj">Palette Pilot</a> Privacy Policy</h1>
 
+            <p><strong>Effective date:</strong> July 14, 2026</p>
+
             <div>
-                <h2>Information Collection and Usage:</h2>
-                <p>Palette Pilot does not collect any information about its users. It does not track, store, or share any personal data.</p>
-            </div>
-        
-            <div>
-                <h2>Third-party Services:</h2>
-                <p>Palette Pilot does not integrate with any third-party services or APIs that collect user data.</p>
+                <h2>Local extension data</h2>
+                <p>Picked colors, saved palettes, folders, semantic tokens, preferences, a randomly generated installation identifier, and an activated Pro license key are stored locally in your browser. Image palette extraction is processed locally and images are not uploaded. When you explicitly run page palette extraction, Palette Pilot reads visible computed color styles and CSS color variables from the active page to create a local palette; page content and browsing history are not sent to us.</p>
             </div>
 
             <div>
-                <h2>Changes to this Privacy Policy:</h2>
+                <h2>Pro licensing data</h2>
+                <p>When you activate or validate Palette Pilot Pro, the extension sends the license key, random installation identifier, and extension version to our Cloudflare-hosted licensing service. The service stores cryptographic hashes of license keys and installation identifiers rather than the original values.</p>
+                <p>For license administration, we also store the purchase email, lifetime plan, license status, Stripe customer and transaction identifiers, activation timestamps, and the last four license-key characters. This data is used only to provide, secure, and support Pro access.</p>
+            </div>
+
+            <div>
+                <h2>Payments and service providers</h2>
+                <p>Payments are processed by Stripe. We do not receive or store your full card number. Stripe may collect payment details, billing information, email address, and fraud-prevention signals under the <a href="https://stripe.com/privacy" target="_blank" rel="noreferrer">Stripe Privacy Policy</a>.</p>
+                <p>We use Cloudflare to host the licensing API and database, and Stripe to process payments, refunds, and disputes. We do not sell personal information or share it for advertising.</p>
+            </div>
+
+            <div>
+                <h2>Your choices and retention</h2>
+                <p>You can deactivate an installation from the extension, remove locally stored extension data by uninstalling or clearing extension storage, and contact us to request access, correction, or deletion of licensing data. Some transaction records may need to be retained where required by law.</p>
+            </div>
+
+            <div>
+                <h2>Changes to this Privacy Policy</h2>
                 <p>I reserve the right to update or change the privacy policy at any time. Any updates will be reflected on this page.</p>
             </div>
 
             <div>
-                <h2>Access to Source Code:</h2>
+                <h2>Access to Source Code</h2>
                 <p>The source code for Palette Pilot is available on GitHub. You can view the code repository <a href="https://github.com/Stefan-Mihajlovic/PalettePilot">here</a>.</p>
             </div>
 
             <div>
-                <h2>Contact:</h2>
-                <p>If you have any questions or concerns regarding this privacy policy or the use of Palette Pilot, please contact me at <a href="mailto:stefan@optiflowz.com">stefan@optiflowz.com</a>.</p>
+                <h2>Contact</h2>
+                <p>Palette Pilot is provided by Optiflowz LLC. Questions and privacy requests can be sent to <a href="mailto:stefan@optiflowz.com">stefan@optiflowz.com</a>.</p>
+                <p>See also the <a href="../palette-pilot/terms.html">Palette Pilot Pro Terms</a>.</p>
             </div>
         </section>
 
@@ -79,7 +94,7 @@
         </footer>
     </main>
 
-    <a href="#" class="scrollToTop">
+    <a href="#" class="scrollToTop" aria-label="Scroll to top">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>

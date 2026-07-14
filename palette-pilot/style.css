@@ -144,6 +144,360 @@
     cursor: pointer;
 }
 
+.proSection{
+    width: 100%;
+    padding: 14px 0 10px;
+}
+
+.proSectionHeading{
+    max-width: 650px;
+    margin: 0 auto 34px;
+    text-align: center;
+}
+
+.proSectionHeading h3{
+    margin: 16px 0 8px;
+    font-size: clamp(1.65rem, 4vw, 2.25rem);
+    line-height: 1.15;
+}
+
+.proSectionHeading p{
+    color: var(--white50);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+.pricingStage{
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    padding: 30px 0 18px;
+}
+
+.pricingGlow{
+    position: absolute;
+    z-index: -1;
+    width: 540px;
+    height: 420px;
+    border-radius: 50%;
+    background: #ff006a;
+    filter: blur(110px);
+    opacity: 0.17;
+    pointer-events: none;
+}
+
+.priceCard{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(510px, 100%);
+    padding: 45px 34px 28px;
+    border: 1px solid rgba(255, 90, 157, 0.48);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 0, 106, 0.22), transparent 38%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+        rgba(20, 9, 18, 0.93);
+    box-shadow: 0 28px 85px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(18px);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.priceCard:hover{
+    transform: translateY(-6px);
+    border-color: rgba(255, 123, 182, 0.78);
+}
+
+.lifetimeBadge{
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 7px 14px;
+    border: 1px solid rgba(255, 164, 205, 0.3);
+    border-radius: 999px;
+    background: #381126;
+    color: #ffb0d3;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.priceCardHeader{
+    text-align: center;
+}
+
+.priceLabel{
+    color: white;
+    font-size: 1.08rem;
+    font-weight: 750;
+}
+
+.price{
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 18px 0 6px;
+    font-size: clamp(2.8rem, 6vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.price .currency{
+    margin-right: 5px;
+    padding-top: 0.22rem;
+    color: #ffadd0;
+    font-size: 1.1rem;
+}
+
+.priceFraction{
+    margin-left: 0.04em;
+    letter-spacing: -0.04em;
+}
+
+.priceNote{
+    color: var(--white50);
+    font-size: 0.8rem;
+}
+
+.priceDivider{
+    width: 100%;
+    height: 1px;
+    margin: 25px 0 21px;
+    background: linear-gradient(90deg, transparent, var(--white10) 14%, var(--white10) 86%, transparent);
+}
+
+.planFeatures{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    margin: 0 0 27px;
+    list-style: none;
+}
+
+.planFeatures li{
+    position: relative;
+    padding-left: 29px;
+    color: var(--white75);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.planFeatures li::before{
+    content: '\2713';
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(255, 123, 182, 0.42);
+    border-radius: 50%;
+    background: rgba(255, 0, 106, 0.14);
+    color: #ffadd0;
+    font-size: 0.66rem;
+    font-weight: 900;
+}
+
+.checkoutButton{
+    width: 100%;
+}
+
+.button:disabled{
+    cursor: wait;
+    filter: saturate(0.4);
+    opacity: 0.7;
+}
+
+.secureCheckoutNote{
+    margin: 20px 0 56px;
+    color: var(--white50);
+    text-align: center;
+    font-size: 0.78rem;
+}
+
+.manageLicense{
+    padding: 32px 0;
+    border-top: 1px solid var(--white10);
+}
+
+.manageLicense h3{
+    margin-bottom: 6px;
+    font-size: 1.35rem;
+}
+
+.manageLicense p{
+    color: var(--white50);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.licenseInputRow{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.licenseInputRow input{
+    width: 100%;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--white20);
+    border-radius: 999px;
+    outline: none;
+    background: var(--primary);
+    color: white;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.licenseInputRow input:focus{
+    border-color: #ff5a9d;
+    box-shadow: 0 0 0 4px rgba(255, 0, 106, 0.12);
+}
+
+.formMessage{
+    min-height: 20px;
+    margin-top: 8px;
+    color: #ffb4bf !important;
+}
+
+.srOnly{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.checkoutStatus{
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.checkoutStatus[hidden]{
+    display: none;
+}
+
+.checkoutBackdrop{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(7, 2, 6, 0.8);
+    backdrop-filter: blur(12px);
+    cursor: default;
+}
+
+.checkoutDialog{
+    position: relative;
+    width: min(520px, 100%);
+    padding: 38px;
+    border: 1px solid rgba(255, 90, 157, 0.45);
+    border-radius: 26px;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 0, 106, 0.25), transparent 40%), #1b0d17;
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.58);
+    text-align: center;
+}
+
+.checkoutClose{
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--white10);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--white75);
+    font-size: 1.35rem;
+    cursor: pointer;
+}
+
+.statusOrb{
+    display: block;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    border: 1px solid rgba(255, 169, 208, 0.55);
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffc0dd 0 13%, #ff3b8d 15% 34%, rgba(255, 0, 106, 0.2) 36% 100%);
+    box-shadow: 0 0 35px rgba(255, 0, 106, 0.42);
+    animation: statusPulse 2.4s ease-in-out infinite;
+}
+
+.statusEyebrow{
+    color: #ffadd0;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.checkoutDialog h2{
+    margin: 9px 0;
+    font-size: 1.7rem;
+}
+
+.checkoutDialog > p:not(.statusEyebrow){
+    color: var(--white50);
+    line-height: 1.55;
+}
+
+.licenseResult{
+    display: grid;
+    gap: 12px;
+    margin: 22px 0 10px;
+}
+
+.licenseResult[hidden]{
+    display: none;
+}
+
+.licenseResult code{
+    display: block;
+    padding: 15px;
+    border: 1px solid rgba(255, 90, 157, 0.4);
+    border-radius: 14px;
+    background: rgba(12, 3, 9, 0.72);
+    color: #ffd6e8;
+    font-size: clamp(0.78rem, 3vw, 1rem);
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+
+.secondaryButton{
+    margin-top: 12px;
+    padding: 10px 24px;
+    border: 1px solid var(--white20);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--white75);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes statusPulse{
+    0%, 100% { transform: scale(1); opacity: 0.82; }
+    50% { transform: scale(1.08); opacity: 1; }
+}
+
 @media screen and (max-width: 500px) {
     .megaHero h1{
         font-size: 1.75rem;
@@ -168,5 +522,31 @@
     .extensionDetails .button{
         font-size: 0.9rem;
         padding: 9px 16px;
+    }
+
+    .priceCard{
+        padding: 42px 20px 23px;
+    }
+
+    .planFeatures{
+        grid-template-columns: 1fr;
+    }
+
+    .licenseInputRow{
+        grid-template-columns: 1fr;
+    }
+
+    .licenseInputRow .button{
+        width: 100%;
+    }
+
+    .checkoutDialog{
+        padding: 34px 20px 26px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .statusOrb{
+        animation: none;
     }
 }

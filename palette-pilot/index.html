@@ -8,24 +8,25 @@
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script src="script.js" defer></script>
 </head>
 <body class="nativeCursor">
     <header>
         <a href="../" class="logo">SM</a>
-        <nav>
+        <nav aria-label="Primary navigation">
             <a href="../projects">Projects</a>
             <a href="../about">About me</a>
             <a href="../skills">Skills</a>
             <a href="../contact" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" type="button" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
         </button>
     </header>
     <div class="mobileMenuWrapper closed">
-        <nav class="closed mobileMenu">
+        <nav class="closed mobileMenu" aria-label="Mobile navigation">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
             <a href="../projects">Projects</a>
             <a href="../about">About me</a>
@@ -49,23 +50,24 @@
                     <span class="eyebrow">Screenshots</span>
                 </div>
 
-                <div class="screenshotsSlider" aria-label="Palette Pilot screenshots">
+                <section class="screenshotsSlider" aria-label="Palette Pilot screenshots">
                     <figure class="screenshotCard">
                         <img src="../images/PalettePilotScreen1.webp" alt="Palette Pilot extension screenshot showing the main color selection interface">
                     </figure>
                     <figure class="screenshotCard">
                         <img src="../images/PalettePilotScreen2.webp" alt="Palette Pilot extension screenshot showing another view of the color workflow">
                     </figure>
-                </div>
+                </section>
 
                 <div class="extensionDetails">
                     <p><span class="accentText">Palette Pilot</span> is your go-to tool for precise color selection. Whether you're a designer, developer, or just someone who loves working with colors, this extension makes it incredibly easy to pick any color from your screen with pixel-perfect accuracy.</p>
 
                     <ul class="featureList">
                         <li>Pick any color from any website or element on your screen</li>
-                        <li>Instant HEX and RGB values right after picking</li>
+                        <li>Instant HEX, RGB, HSL and OKLCH values</li>
                         <li>Copy values with one click without manual typing</li>
-                        <li>Export picked colors to a .txt file for later use or sharing</li>
+                        <li>Keep your six most recent colors and one saved palette free</li>
+                        <li>Basic contrast checking and simple TXT/CSS export</li>
                         <li>Simple, clean interface with no clutter or distractions</li>
                         <li>Lightweight and fast, designed for performance</li>
                     </ul>
@@ -76,8 +78,57 @@
                         <a target="_blank" href="https://chromewebstore.google.com/detail/palette-pilot/ldaifanlngakcdhdlfklmonnmpcbmhji" class="button">Get on Chrome Web Store</a>
                         <a target="_blank" href="https://microsoftedge.microsoft.com/addons/detail/lnbknncdeokgflnppefaokohhfgplehj" class="button">Get on Microsoft Edge Store</a>
                         <a target="_blank" href="../privacypolicies/palettepilotpp.html" class="button">Privacy Policy</a>
+                        <a href="terms.html" class="button">Pro Terms</a>
                     </div>
                 </div>
+            </section>
+
+            <section class="proSection fade-in" id="pro">
+                <div class="proSectionHeading">
+                    <span class="eyebrow">One price, forever</span>
+                    <h3>Unlock your complete color workflow</h3>
+                    <p>Palette Pilot Pro adds a complete palette workspace with extraction, generation, accessibility, design tokens, advanced exports, and no subscription.</p>
+                </div>
+
+                <div class="pricingStage">
+                    <span class="pricingGlow" aria-hidden="true"></span>
+                    <article class="priceCard" aria-label="Palette Pilot Pro lifetime pricing">
+                        <span class="lifetimeBadge">Lifetime access</span>
+                        <div class="priceCardHeader">
+                            <span class="priceLabel">Palette Pilot Pro</span>
+                            <p class="price"><span class="currency">$</span><span>9</span><span class="priceFraction">.99</span></p>
+                            <p class="priceNote">One payment, yours forever</p>
+                        </div>
+                        <div class="priceDivider" aria-hidden="true"></div>
+                        <ul class="planFeatures">
+                            <li>Unlimited named palettes and folders</li>
+                            <li>Page and image palette extraction</li>
+                            <li>Shades, tints, harmonies, gradients and themes</li>
+                            <li>Accessibility studio and color-blindness simulation</li>
+                            <li>Semantic color tokens and side-panel workspace</li>
+                            <li>CSS, SCSS, Tailwind, JSON, SVG, PNG, ASE and PDF exports</li>
+                            <li>Local backup and import</li>
+                            <li>Up to 3 active installations</li>
+                            <li>Future Palette Pilot Pro updates</li>
+                        </ul>
+                        <button class="button checkoutButton" type="button">Get lifetime Pro</button>
+                    </article>
+                </div>
+
+                <p class="secureCheckoutNote">Secure one-time checkout powered by Stripe. No account required. By purchasing, you agree to the <a href="terms.html">Pro Terms</a>.</p>
+
+                <form class="manageLicense" id="manageLicenseForm">
+                    <div>
+                        <h3>Already purchased?</h3>
+                        <p>Enter the PPL license key from your Stripe receipt to view purchase details.</p>
+                    </div>
+                    <div class="licenseInputRow">
+                        <label class="srOnly" for="billingLicenseKey">License key</label>
+                        <input id="billingLicenseKey" name="licenseKey" type="text" autocomplete="off" spellcheck="false" placeholder="PPL-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" required>
+                        <button class="button" type="submit">Purchase details</button>
+                    </div>
+                    <p class="formMessage" id="billingMessage" role="status"></p>
+                </form>
             </section>
         </section>
 
@@ -94,11 +145,27 @@
 
     </main>
 
-    <a href="#" class="scrollToTop">
+    <a href="#" class="scrollToTop" aria-label="Scroll to top">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
+
+    <section class="checkoutStatus" id="checkoutStatus" role="dialog" aria-modal="true" aria-labelledby="checkoutStatusTitle" hidden>
+        <button class="checkoutBackdrop" type="button" aria-label="Close checkout result"></button>
+        <div class="checkoutDialog">
+            <button class="checkoutClose" type="button" aria-label="Close">×</button>
+            <span class="statusOrb" aria-hidden="true"></span>
+            <p class="statusEyebrow" id="checkoutStatusEyebrow">Palette Pilot Pro</p>
+            <h2 id="checkoutStatusTitle">Preparing your license…</h2>
+            <p id="checkoutStatusMessage">Confirming your Stripe payment securely.</p>
+            <div class="licenseResult" id="licenseResult" hidden>
+                <code id="purchasedLicenseKey"></code>
+                <button class="button" id="copyLicenseButton" type="button">Copy license key</button>
+            </div>
+            <button class="secondaryButton" id="checkoutDoneButton" type="button">Done</button>
+        </div>
+    </section>
 
     <div class="cursor">
         <div class="cursor-dot"></div>
