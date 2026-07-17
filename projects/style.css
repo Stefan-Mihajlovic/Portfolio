@@ -202,23 +202,53 @@
     -webkit-text-fill-color: transparent;
 }
 
-.browserExtensions{
-    --accent1: #FF006A;
-    --accent2: #4751E7;
+.palettePilot{
+    --accent1: #FB0B60;
+    --accent2: #ff5b95;
 }
 
-.browserExtensions > span h3{
-    background: linear-gradient(-90deg, #4751E7, #FF006A);
+.palettePilot > span h3{
+    background: linear-gradient(90deg, #ff9abd, #FB0B60);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.browserExtensions .loop-doodle{
+.palettePilot .loop-doodle{
     top: -80px;
     right: auto;
     left: -70px;
     transform: rotate(-25deg);
+}
+
+.tabVolumeManager{
+    --accent1: #3752DB;
+    --accent2: #7185ee;
+}
+
+.tabVolumeManager > span h3{
+    background: linear-gradient(90deg, #9eacff, #3752DB);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tabVolumeManager .loop-doodle{
+    top: -75px;
+    right: -70px;
+    left: auto;
+    transform: rotate(15deg);
+}
+
+/* Keep project doodles alternating right, left, right, left. */
+.content > .currentProject:nth-child(even) .loop-doodle{
+    right: -70px !important;
+    left: auto !important;
+}
+
+.content > .currentProject:nth-child(odd) .loop-doodle{
+    right: auto !important;
+    left: -70px !important;
 }
 
 .content .moreProjects{
