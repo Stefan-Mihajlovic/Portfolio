@@ -76,15 +76,105 @@
 }
 
 .actions{
-    margin-top: 20px;
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid var(--white10);
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.extensionDetails .button{
-    padding: 9px 20px;
-    font-size: 0.95rem;
+.storeActions{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 680px;
+}
+
+.storeButton{
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 72px;
+    padding: 10px 18px 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.025));
+    color: var(--text1);
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.storeButton:hover{
+    transform: translateY(-2px);
+    border-color: rgba(125, 146, 255, 0.6);
+    background-color: rgba(61, 92, 227, 0.1);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.storeIcon{
+    flex: 0 0 48px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-right: 12px;
+    border-radius: 12px;
+    background: #f4f6f8;
+}
+
+.storeIcon img{
+    display: block;
+    width: 31px;
+    height: 31px;
+    object-fit: contain;
+}
+
+.storeButtonText{
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.storeButtonText small{
+    margin-bottom: 3px;
+    color: var(--white50);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.storeButtonText strong{
+    font-size: 0.9rem;
+    font-weight: 650;
+}
+
+.legalLinks{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.78rem;
+    line-height: 1;
+}
+
+.legalLinks a{
+    color: var(--white50);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.legalLinks a:hover{
+    color: var(--text1);
+}
+
+.legalLinks span{
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--white20);
 }
 
 .sectionHeading{
@@ -686,6 +776,19 @@
     .extensionDetails{
         padding: 16px;
         font-size: 0.95rem;
+    }
+
+    .actions{
+        margin-top: 22px;
+        padding-top: 18px;
+    }
+
+    .storeActions{
+        grid-template-columns: 1fr;
+    }
+
+    .storeButton{
+        min-height: 68px;
     }
 
     .extensionDetails .button{
