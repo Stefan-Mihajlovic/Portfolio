@@ -591,17 +591,14 @@ i.accentText{
     width: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--white10);
-    border-radius: 30px;
-    background-color: var(--primary);
-    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.18);
 }
 
 .projectCard img{
-    display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    border-radius: 29px 29px 0 0;
+    border-radius: 40px;
+    border: 15px solid var(--primary);
+    margin-bottom: 15px;
     object-fit: cover;
 }
 
@@ -609,11 +606,6 @@ i.accentText{
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 28px;
-    padding: 24px 26px 26px;
-    border-top: 1px solid var(--white10);
-    border-radius: 0 0 29px 29px;
-    background-color: var(--primary);
 }
 
 .projectCard .info{
@@ -1040,17 +1032,9 @@ footer div a svg{
         height: 20px;
     }
 
-    .projectCard{
-        border-radius: 24px;
-    }
-
     .projectCard img{
-        border-radius: 23px 23px 0 0;
-    }
-
-    .projectCard .aboutProject{
-        padding: 20px;
-        border-radius: 0 0 23px 23px;
+        border-radius: 25px;
+        border: 10px solid var(--primary);
     }
 }
 
@@ -1076,6 +1060,10 @@ footer div a svg{
     }
     .projects h2{
         font-size: 1.75rem;
+    }
+    .projectCard img{
+        border: 5px solid var(--primary);
+        border-radius: 20px;
     }
     .projectCard .info h3{
         font-size: 2rem;

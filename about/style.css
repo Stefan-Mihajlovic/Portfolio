@@ -66,26 +66,17 @@
     align-items: center;
     gap: 30px;
     margin-top: 50px;
-    width: 100%;
 }
 
 .currentProject h2{
     width: 100%;
 }
 
-.projectFeatureCard{
-    width: 100%;
-    border: 1px solid var(--white10);
-    border-radius: 30px;
-    background-color: var(--primary);
-    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.18);
-}
-
-.projectFeatureMedia{
+.currentProject > div{
     position: relative;
 }
 
-.projectFeatureMedia .loop-doodle{
+.currentProject > div .loop-doodle{
     width: 180px;
     height: 180px;
     top: -70px;
@@ -94,15 +85,12 @@
 }
 
 .currentProject img{
-    display: block;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    border-radius: 29px 29px 0 0;
+    border-radius: 40px;
+    border: 15px solid var(--primary);
 }
 
-.projectFeatureCard > p,
-.currentProject > .thankYou{
+.currentProject p{
     width: 100%;
     background-color: var(--primary);
     color: var(--white75);
@@ -113,19 +101,12 @@
     border-radius: 20px;
 }
 
-.projectFeatureCard > p{
-    border-top: 1px solid var(--white10);
-    border-radius: 0 0 29px 29px;
-}
-
 .moreProjects{
     margin-bottom: 50px;
 }
 
 @media screen and (max-width: 800px) {
-    .projectFeatureCard > p,
-    .currentProject > .thankYou,
-    .detailedBio p{
+    .currentProject p, .detailedBio p{
         font-size: 1rem;
     }
 }
@@ -149,13 +130,15 @@
         font-size: 1rem;
         margin-bottom: 0px;
     }
-    .projectFeatureCard{
-        border-radius: 24px;
-    }
     .currentProject img{
-        border-radius: 23px 23px 0 0;
+        border-radius: 25px;
+        border: 10px solid var(--primary);
     }
-    .projectFeatureCard > p{
-        border-radius: 0 0 23px 23px;
+}
+
+@media screen and (max-width: 500px) {
+    .currentProject img{
+        border: 5px solid var(--primary);
+        border-radius: 20px;
     }
 }
