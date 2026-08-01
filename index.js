@@ -83,7 +83,7 @@ function initScreenshotLightbox() {
                 </svg>
             </button>
             <figure class="lightboxFigure">
-                <img class="lightboxImage" src="" alt="">
+                <img class="lightboxImage" src="" alt="Selected project screenshot preview">
             </figure>
             <button class="lightboxNav lightboxNext hoverable" type="button" aria-label="Next screenshot">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
