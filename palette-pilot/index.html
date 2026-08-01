@@ -3,21 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Palette Pilot</title>
+    <title>Palette Pilot Color Picker Extension | Stefan Mihajlovic</title>
+    <meta name="description" content="Palette Pilot is a fast browser color picker with HEX, RGB, HSL and OKLCH values, palettes, contrast checks, extraction, design tokens, and exports.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/palette-pilot/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="Palette Pilot Color Picker Extension">
+    <meta property="og:description" content="Pick colors precisely, build palettes, check accessibility, create design tokens, and export your work.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/palette-pilot/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/PalettePilotBanner.webp">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="844">
+    <meta property="og:image:alt" content="Palette Pilot browser color picker extension">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Palette Pilot Color Picker Extension">
+    <meta name="twitter:description" content="Pick colors precisely, build palettes, check accessibility, create design tokens, and export your work.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/PalettePilotBanner.webp">
+    <meta name="twitter:image:alt" content="Palette Pilot browser color picker extension">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
     <script src="script.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://stefanmihajlovic.com/palette-pilot/#software",
+          "name": "Palette Pilot",
+          "url": "https://stefanmihajlovic.com/palette-pilot/",
+          "image": "https://stefanmihajlovic.com/images/PalettePilotBanner.webp",
+          "description": "A browser color picker, palette manager, accessibility checker, design token workspace, and color export tool.",
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "Chrome, Microsoft Edge",
+          "author": { "@type": "Person", "@id": "https://stefanmihajlovic.com/#person", "name": "Stefan Mihajlovic" },
+          "offers": [
+            { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Palette Pilot Pro Lifetime", "price": "9.99", "priceCurrency": "USD", "url": "https://stefanmihajlovic.com/palette-pilot/" }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stefanmihajlovic.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://stefanmihajlovic.com/projects/" },
+            { "@type": "ListItem", "position": 3, "name": "Palette Pilot", "item": "https://stefanmihajlovic.com/palette-pilot/" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="nativeCursor">
     <header>
         <a href="../" class="logo">SM</a>
         <nav aria-label="Primary navigation">
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact" class="button">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/" class="button">Get in contact</a>
         </nav>
         <button id="mobileMenuButton" type="button" aria-label="Open navigation menu">
             <span></span>
@@ -28,10 +80,10 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu" aria-label="Mobile navigation">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -47,7 +99,7 @@
 
             <section class="screenshotsSection fade-in">
                 <div class="sectionHeading">
-                    <span class="eyebrow">Screenshots</span>
+                    <h2 class="eyebrow">Screenshots</h2>
                 </div>
 
                 <section class="screenshotsSlider" aria-label="Palette Pilot screenshots">

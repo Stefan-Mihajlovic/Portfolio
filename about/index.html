@@ -3,22 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Portfolio</title>
+    <title>About Stefan Mihajlovic | Designer &amp; Developer</title>
+    <meta name="description" content="Meet Stefan Mihajlovic, a web designer and developer in Belgrade who turns thoughtful visual concepts into responsive, working digital products.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/about/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="profile">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="About Stefan Mihajlovic | Designer &amp; Developer">
+    <meta property="og:description" content="Learn about Stefan's path from visual design to building complete digital products.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/about/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/mePhoto.webp">
+    <meta property="og:image:width" content="1920">
+    <meta property="og:image:height" content="1833">
+    <meta property="og:image:alt" content="Portrait of web designer and developer Stefan Mihajlovic">
+    <meta property="og:locale" content="en_US">
+    <meta property="profile:first_name" content="Stefan">
+    <meta property="profile:last_name" content="Mihajlovic">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About Stefan Mihajlovic | Designer &amp; Developer">
+    <meta name="twitter:description" content="Learn about Stefan's path from visual design to building complete digital products.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/mePhoto.webp">
+    <meta name="twitter:image:alt" content="Portrait of web designer and developer Stefan Mihajlovic">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "@id": "https://stefanmihajlovic.com/about/#webpage",
+      "url": "https://stefanmihajlovic.com/about/",
+      "name": "About Stefan Mihajlovic",
+      "inLanguage": "en",
+      "mainEntity": {
+        "@type": "Person",
+        "@id": "https://stefanmihajlovic.com/#person",
+        "name": "Stefan Mihajlovic",
+        "url": "https://stefanmihajlovic.com/",
+        "image": "https://stefanmihajlovic.com/images/mePhoto.webp",
+        "jobTitle": "Web Designer and Developer",
+        "sameAs": ["https://www.linkedin.com/in/stefanmihajlovic-in/", "https://github.com/Stefan-Mihajlovic"]
+      }
+    }
+    </script>
 </head>
 <body>
     <header>
         <a href="../" class="logo">SM</a>
         <nav>
-            <a href="../projects">Projects</a>
+            <a href="../projects/">Projects</a>
             <a href="#" class="active">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact" class="button">Get in contact</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
@@ -27,10 +70,10 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="../projects">Projects</a>
+            <a href="../projects/">Projects</a>
             <a href="#">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact">Get in contact</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -69,7 +112,7 @@
 
             <div class="moreProjects fade-in">
                 Download my CV
-                <a target="_blank" href="../resumes/Stefan Mihajlovic CV - English.pdf" class="button">Download</a>
+                <a target="_blank" rel="noopener noreferrer" href="../resumes/Stefan Mihajlovic CV - English.pdf" class="button">Download</a>
                 <svg class="arrow-doodle" viewBox="0 0 70 70" aria-hidden="true">
                     <path class="arrow-path" d="M 52 18 C 46 25, 50 31, 42 36 C 34 41, 36 46, 28 52"/>
                     <path class="arrow-path" d="M 28 52 L 36 49" />

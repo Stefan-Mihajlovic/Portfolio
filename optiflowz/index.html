@@ -3,22 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - OptiFlowz Case Study</title>
+    <title>OptiFlowz Website Case Study | Stefan Mihajlovic</title>
+    <meta name="description" content="Explore the OptiFlowz website case study covering UI/UX design, frontend development, visual direction, responsive layouts, and conversion-focused structure.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/optiflowz/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="OptiFlowz Website Case Study | Stefan Mihajlovic">
+    <meta property="og:description" content="How OptiFlowz gained a sharper brand presence, clearer messaging, and a conversion-focused website.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/optiflowz/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/OptiFlowzBanner.webp">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="844">
+    <meta property="og:image:alt" content="OptiFlowz website design case study">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OptiFlowz Website Case Study | Stefan Mihajlovic">
+    <meta name="twitter:description" content="How OptiFlowz gained a sharper brand presence, clearer messaging, and a conversion-focused website.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/OptiFlowzBanner.webp">
+    <meta name="twitter:image:alt" content="OptiFlowz website design case study">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "CreativeWork",
+          "@id": "https://stefanmihajlovic.com/optiflowz/#project",
+          "name": "OptiFlowz Website",
+          "url": "https://stefanmihajlovic.com/optiflowz/",
+          "image": "https://stefanmihajlovic.com/images/OptiFlowzBanner.webp",
+          "description": "A website design and frontend development case study focused on clear service communication, a strong visual identity, and conversion.",
+          "creator": { "@type": "Person", "@id": "https://stefanmihajlovic.com/#person", "name": "Stefan Mihajlovic" },
+          "keywords": ["UI/UX design", "Next.js", "React", "responsive web design", "frontend development"]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stefanmihajlovic.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://stefanmihajlovic.com/projects/" },
+            { "@type": "ListItem", "position": 3, "name": "OptiFlowz", "item": "https://stefanmihajlovic.com/optiflowz/" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
     <header>
         <a href="../" class="logo">SM</a>
         <nav>
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact" class="button">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
@@ -27,10 +74,10 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -46,7 +93,7 @@
 
             <section class="screenshotsSection fade-in">
                 <div class="sectionHeading">
-                    <span class="eyebrow">Screenshots</span>
+                    <h2 class="eyebrow">Screenshots</h2>
                 </div>
 
                 <div class="screenshotsSlider" aria-label="OptiFlowz screenshots">
@@ -100,8 +147,8 @@
                 <p>The final website gives OptiFlowz a sharper digital presence and a more recognizable tone. It makes the company feel capable and modern, while still keeping the flow simple enough for first-time visitors to quickly understand what is going on.</p>
                 <p>More than anything, it turned the site into something that feels intentional instead of just technically existing, which was kind of the whole point.</p>
                 <div class="actions">
-                    <a target="_blank" href="https://optiflowz.com/" class="button">Visit Website</a>
-                    <a target="_blank" href="https://github.com/OptiFlowz/OptiFlowz-Website" class="button">View Github</a>
+                    <a target="_blank" rel="noopener noreferrer" href="https://optiflowz.com/" class="button">Visit Website</a>
+                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/OptiFlowz/OptiFlowz-Website" class="button">View Github</a>
                 </div>
             </div>
         </section>

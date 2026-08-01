@@ -3,23 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Tab Volume Manager</title>
+    <title>Tab Volume Manager Browser Extension | Stefan Mihajlovic</title>
+    <meta name="description" content="Control browser tab audio with per-site volume, sound profiles, effects, a multi-band equalizer, smart limiter, adaptive volume, and a tab mixer.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/tab-volume-manager/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="Tab Volume Manager Browser Extension">
+    <meta property="og:description" content="Shape browser audio with per-site volume control, profiles, effects, an equalizer, adaptive volume, and more.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/tab-volume-manager/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/TabVolumeManagerBanner.webp">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="844">
+    <meta property="og:image:alt" content="Tab Volume Manager browser extension">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tab Volume Manager Browser Extension">
+    <meta name="twitter:description" content="Shape browser audio with per-site volume control, profiles, effects, an equalizer, adaptive volume, and more.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/TabVolumeManagerBanner.webp">
+    <meta name="twitter:image:alt" content="Tab Volume Manager browser extension">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
     <script src="script.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://stefanmihajlovic.com/tab-volume-manager/#software",
+          "name": "Tab Volume Manager",
+          "url": "https://stefanmihajlovic.com/tab-volume-manager/",
+          "image": "https://stefanmihajlovic.com/images/TabVolumeManagerBanner.webp",
+          "description": "A browser extension for per-site volume control, sound profiles, audio effects, equalization, adaptive volume, and multi-tab mixing.",
+          "applicationCategory": "MultimediaApplication",
+          "operatingSystem": "Chrome, Microsoft Edge",
+          "author": { "@type": "Person", "@id": "https://stefanmihajlovic.com/#person", "name": "Stefan Mihajlovic" },
+          "offers": [
+            { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Pro Monthly", "price": "2.49", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Pro Yearly", "price": "14.99", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Pro Lifetime", "price": "29.99", "priceCurrency": "USD" }
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://stefanmihajlovic.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://stefanmihajlovic.com/projects/" },
+            { "@type": "ListItem", "position": 3, "name": "Tab Volume Manager", "item": "https://stefanmihajlovic.com/tab-volume-manager/" }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body class="nativeCursor">
     <header>
         <a href="../" class="logo">SM</a>
         <nav>
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact" class="button">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
@@ -28,10 +82,10 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="../projects">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact">Get in contact</a>
+            <a href="../projects/">Projects</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -47,7 +101,7 @@
 
             <section class="screenshotsSection fade-in">
                 <div class="sectionHeading">
-                    <span class="eyebrow">Screenshots</span>
+                    <h2 class="eyebrow">Screenshots</h2>
                 </div>
 
                 <div class="screenshotsSlider" aria-label="Tab Volume Manager screenshots">

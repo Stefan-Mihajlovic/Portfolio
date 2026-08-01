@@ -1,0 +1,9 @@
+{
+  "name": "Stefan Mihajlovic — Web Designer & Developer",
+  "short_name": "Stefan Mihajlovic",
+  "description": "Portfolio of web designer and developer Stefan Mihajlovic.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f0e8",
+  "theme_color": "#f4f0e8"
+}

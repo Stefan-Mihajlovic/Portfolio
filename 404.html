@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | Stefan Mihajlovic</title>
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="shortcut icon" href="/images/logo.png" type="image/x-icon">
+    <script src="/index.js" defer></script>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo" aria-label="Stefan Mihajlovic home">SM</a>
+        <nav aria-label="Primary navigation">
+            <a href="/projects/">Projects</a>
+            <a href="/about/">About me</a>
+            <a href="/skills/">Skills</a>
+            <a href="/contact/" class="button">Get in contact</a>
+        </nav>
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+    <div class="mobileMenuWrapper closed">
+        <nav class="closed mobileMenu" aria-label="Mobile navigation">
+            <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="/projects/">Projects</a>
+            <a href="/about/">About me</a>
+            <a href="/skills/">Skills</a>
+            <a href="/contact/">Get in contact</a>
+        </nav>
+        <span class="closeMenu" onclick="closeMobileMenu()"></span>
+    </div>
+
+    <main>
+        <section class="content" style="min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <h1 class="hero" style="margin-top: 100px;">404 — This page went <span class="accentText">missing</span></h1>
+            <p>The page may have moved, or the link may be outdated.</p>
+            <a href="/" class="button" style="margin-top: 20px;">Return home</a>
+        </section>
+    </main>
+
+    <div class="background" aria-hidden="true">
+        <img class="bg" src="/images/bg.webp" alt="">
+        <span class="gradient"></span>
+        <span class="darken"></span>
+        <span class="base"></span>
+        <span class="noise"></span>
+    </div>
+</body>
+</html>

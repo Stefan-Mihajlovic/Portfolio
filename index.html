@@ -3,21 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Portfolio</title>
+    <title>Stefan Mihajlovic | Web Designer &amp; Developer</title>
+    <meta name="description" content="Portfolio of Stefan Mihajlovic, a Belgrade-based web designer and developer creating polished websites, digital products, and browser extensions.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="Stefan Mihajlovic | Web Designer &amp; Developer">
+    <meta property="og:description" content="Explore selected websites, digital products, and browser extensions designed and developed by Stefan Mihajlovic.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="844">
+    <meta property="og:image:alt" content="A selection of browser extension projects by Stefan Mihajlovic">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Stefan Mihajlovic | Web Designer &amp; Developer">
+    <meta name="twitter:description" content="Explore selected websites, digital products, and browser extensions designed and developed by Stefan Mihajlovic.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
+    <meta name="twitter:image:alt" content="A selection of browser extension projects by Stefan Mihajlovic">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
     <script src="index.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://stefanmihajlovic.com/#person",
+          "name": "Stefan Mihajlovic",
+          "url": "https://stefanmihajlovic.com/",
+          "image": "https://stefanmihajlovic.com/images/mePhoto.webp",
+          "jobTitle": "Web Designer and Developer",
+          "homeLocation": { "@type": "Place", "name": "Belgrade, Serbia" },
+          "sameAs": [
+            "https://www.linkedin.com/in/stefanmihajlovic-in/",
+            "https://github.com/Stefan-Mihajlovic",
+            "https://www.instagram.com/stefi_mihajlovic_/",
+            "https://www.threads.com/@stefi_mihajlovic_"
+          ],
+          "knowsAbout": ["Web design", "UI/UX design", "Frontend development", "React", "TypeScript", "JavaScript"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://stefanmihajlovic.com/#website",
+          "url": "https://stefanmihajlovic.com/",
+          "name": "Stefan Mihajlovic",
+          "description": "Portfolio of web designer and developer Stefan Mihajlovic.",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://stefanmihajlovic.com/#person" }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://stefanmihajlovic.com/#webpage",
+          "url": "https://stefanmihajlovic.com/",
+          "name": "Stefan Mihajlovic | Web Designer & Developer",
+          "isPartOf": { "@id": "https://stefanmihajlovic.com/#website" },
+          "about": { "@id": "https://stefanmihajlovic.com/#person" },
+          "inLanguage": "en"
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
     <header>
         <a href="#" class="logo">SM</a>
         <nav>
-            <a href="/projects">Projects</a>
-            <a href="/about">About me</a>
-            <a href="/skills">Skills</a>
-            <a href="/contact" class="button">Get in contact</a>
+            <a href="/projects/">Projects</a>
+            <a href="/about/">About me</a>
+            <a href="/skills/">Skills</a>
+            <a href="/contact/" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
@@ -26,10 +89,10 @@
     <div class="mobileMenuWrapper closed">
         <nav class="mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
-            <a href="/projects">Projects</a>
-            <a href="/about">About me</a>
-            <a href="/skills">Skills</a>
-            <a href="/contact">Get in contact</a>
+            <a href="/projects/">Projects</a>
+            <a href="/about/">About me</a>
+            <a href="/skills/">Skills</a>
+            <a href="/contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -50,8 +113,8 @@
                             <p>Your NEXT GEN Musical companion. Stream music non stop and find new favorites the easy way. A progressive web app made with Firebase and Javascript.</p>
                         </div>
                         <div class="actions">
-                            <a target="_blank" href="https://crimsonmusic.netlify.app/" class="button">Visit app</a>
-                            <a target="_blank" href="https://github.com/Stefan-Mihajlovic/CrimsonMusic" class="button">Github</a>
+                            <a target="_blank" rel="noopener noreferrer" href="https://crimsonmusic.netlify.app/" class="button">Visit app</a>
+                            <a target="_blank" rel="noopener noreferrer" href="https://github.com/Stefan-Mihajlovic/CrimsonMusic" class="button">Github</a>
                         </div>
                     </div>
                     <div class="doodle-wrap">
@@ -69,7 +132,7 @@
                         </div>
                         <div class="actions">
                             <a href="optiflowz/" class="button">View Project Page</a>
-                            <a target="_blank" href="https://optiflowz.com/" class="button">Visit Website</a>
+                            <a target="_blank" rel="noopener noreferrer" href="https://optiflowz.com/" class="button">Visit Website</a>
                         </div>
                     </div>
                     <div class="doodle-wrap">
@@ -103,7 +166,7 @@
                             <p>Organize your life with Room Rule. An IOS and Android app to help you stay on track. Made with Capacitor JS</p>
                         </div>
                         <div class="actions">
-                            <a target="_blank" href="https://roomrule.com/" class="button">Download app</a>
+                            <a target="_blank" rel="noopener noreferrer" href="https://roomrule.com/" class="button">Download app</a>
                         </div>
                     </div>
                     <div class="doodle-wrap">
@@ -132,7 +195,7 @@
 
                 <div class="moreProjects fade-in">
                     Want to see more of my projects?
-                    <a href="/projects" class="button">Click me!</a>
+                    <a href="/projects/" class="button">Click me!</a>
                     <svg class="arrow-doodle" viewBox="0 0 70 70" aria-hidden="true">
                         <path class="arrow-path" d="M 52 18 C 46 25, 50 31, 42 36 C 34 41, 36 46, 28 52"/>
                         <path class="arrow-path" d="M 28 52 L 36 49" />

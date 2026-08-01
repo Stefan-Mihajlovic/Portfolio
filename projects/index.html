@@ -3,22 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stefan Mihajlovic - Portfolio</title>
+    <title>Web Design &amp; Development Projects | Stefan Mihajlovic</title>
+    <meta name="description" content="Explore websites, web apps, browser extensions, and UI/UX case studies designed and developed by Stefan Mihajlovic.">
+    <meta name="author" content="Stefan Mihajlovic">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="theme-color" content="#f4f0e8">
+    <link rel="canonical" href="https://stefanmihajlovic.com/projects/">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="apple-touch-icon" href="/images/logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Stefan Mihajlovic">
+    <meta property="og:title" content="Web Design &amp; Development Projects | Stefan Mihajlovic">
+    <meta property="og:description" content="Selected websites, apps, extensions, and UI/UX work by Stefan Mihajlovic.">
+    <meta property="og:url" content="https://stefanmihajlovic.com/projects/">
+    <meta property="og:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
+    <meta property="og:image:width" content="1500">
+    <meta property="og:image:height" content="844">
+    <meta property="og:image:alt" content="Browser extension projects by Stefan Mihajlovic">
+    <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Web Design &amp; Development Projects | Stefan Mihajlovic">
+    <meta name="twitter:description" content="Selected websites, apps, extensions, and UI/UX work by Stefan Mihajlovic.">
+    <meta name="twitter:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
+    <meta name="twitter:image:alt" content="Browser extension projects by Stefan Mihajlovic">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": "https://stefanmihajlovic.com/projects/#webpage",
+      "url": "https://stefanmihajlovic.com/projects/",
+      "name": "Web Design and Development Projects by Stefan Mihajlovic",
+      "description": "A collection of websites, web apps, browser extensions, and UI/UX projects.",
+      "inLanguage": "en",
+      "author": { "@type": "Person", "@id": "https://stefanmihajlovic.com/#person", "name": "Stefan Mihajlovic" },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "url": "https://stefanmihajlovic.com/eaes-video-corner/", "name": "EAES Video Corner" },
+          { "@type": "ListItem", "position": 2, "url": "https://stefanmihajlovic.com/optiflowz/", "name": "OptiFlowz Website" },
+          { "@type": "ListItem", "position": 3, "url": "https://stefanmihajlovic.com/tab-volume-manager/", "name": "Tab Volume Manager" },
+          { "@type": "ListItem", "position": 4, "url": "https://stefanmihajlovic.com/palette-pilot/", "name": "Palette Pilot" }
+        ]
+      }
+    }
+    </script>
 </head>
 <body>
     <header>
         <a href="../" class="logo">SM</a>
         <nav>
             <a href="#" class="active">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact" class="button">Get in contact</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/" class="button">Get in contact</a>
         </nav>
-        <button id="mobileMenuButton">
+        <button id="mobileMenuButton" aria-label="Open navigation menu">
             <span></span>
             <span></span>
             <span></span>
@@ -28,9 +71,9 @@
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
             <a href="#">Projects</a>
-            <a href="../about">About me</a>
-            <a href="../skills">Skills</a>
-            <a href="../contact">Get in contact</a>
+            <a href="../about/">About me</a>
+            <a href="../skills/">Skills</a>
+            <a href="../contact/">Get in contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -41,7 +84,7 @@
         <section class="content">
             <div class="megaHero">
                 <h1 class="hero">My <span class="accentText">beloved</span> projects</h1>
-                <p>Yes, I said beloved, now leave me <span class="accentText">alone</span> and scroll down</p>
+                <p>A collection of ideas I’ve loved bringing to <span class="accentText">life</span>.</p>
             </div>
             <div class="currentProject eaes fade-in">
                 <div>
@@ -53,7 +96,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>EAES Video Corner</h3>
+                    <h2>EAES Video Corner</h2>
                     <span class="tags">
                         <p>React</p>
                         <p>Tailwind CSS</p>
@@ -62,8 +105,8 @@
                     </span>
                     <p>I'm currently collaborating with two talented colleagues from my university to develop a custom video library for the EAES (European Association for Endoscopic Surgery). Together, we're building a 'Netflix-style' platform to host their new surgical curriculum, focusing on high-performance video delivery and intuitive user navigation.</p>
                     <div class="actions">
-                        <a href="../eaes-video-corner" class="button">View Project Page</a>
-                        <a target="_blank" href="https://videocorner.eaes.eu/" class="button">Visit Website</a>
+                        <a href="../eaes-video-corner/" class="button">View Project Page</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://videocorner.eaes.eu/" class="button">Visit Website</a>
                     </div>
                 </span>
             </div>
@@ -77,7 +120,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>OptiFlowz Website</h3>
+                    <h2>OptiFlowz Website</h2>
                     <span class="tags">
                         <p>Next.js</p>
                         <p>React</p>
@@ -86,8 +129,8 @@
                     </span>
                     <p>A bold marketing website built for OptiFlowz with a strong visual identity, modern motion, and a structure focused on clarity, trust, and better conversion.</p>
                     <div class="actions">
-                        <a href="../optiflowz" class="button">View Project Page</a>
-                        <a target="_blank" href="https://www.optiflowz.com/" class="button">Visit Website</a>
+                        <a href="../optiflowz/" class="button">View Project Page</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://www.optiflowz.com/" class="button">Visit Website</a>
                     </div>
                 </span>
             </div>
@@ -101,7 +144,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>Crimson Music</h3>
+                    <h2>Crimson Music</h2>
                     <span class="tags">
                         <p>JavaScript</p>
                         <p>Firebase</p>
@@ -110,8 +153,8 @@
                     </span>
                     <p>Your next-gen music companion. Stream your favorite tracks nonstop without burning through your mobile data. Built for listeners who want music anywhere, anytime.</p>
                     <div class="actions">
-                        <a target="_blank" href="https://crimsonmusic.netlify.app/" class="button">Visit app</a>
-                        <a target="_blank" href="https://github.com/Stefan-Mihajlovic/CrimsonMusic" class="button">Github</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://crimsonmusic.netlify.app/" class="button">Visit app</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://github.com/Stefan-Mihajlovic/CrimsonMusic" class="button">Github</a>
                     </div>
                 </span>
             </div>
@@ -125,7 +168,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>Palette Pilot</h3>
+                    <h2>Palette Pilot</h2>
                     <span class="tags">
                         <p>Browser Extension</p>
                         <p>JavaScript</p>
@@ -134,7 +177,7 @@
                     </span>
                     <p>A complete color workspace built directly into the browser. Palette Pilot lets you pick colors from any webpage, inspect HEX, RGB, HSL, and OKLCH values, organize reusable palettes, and check contrast and accessibility without breaking your workflow.</p>
                     <div class="actions">
-                        <a href="../palette-pilot" class="button">View Project Page</a>
+                        <a href="../palette-pilot/" class="button">View Project Page</a>
                     </div>
                 </span>
             </div>
@@ -161,7 +204,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>Kruna Boje</h3>
+                    <h2>Kruna Boje</h2>
                     <span class="tags">
                         <p>WordPress</p>
                         <p>PHP</p>
@@ -170,7 +213,7 @@
                     </span>
                     <p>A full-scale web solution for a specialized paint distributor. Focused on creating a clean, professional UI capable of handling high-density information. Features include an integrated blog for expert advice, a categorized product directory, and optimized PDF catalogs for professional contractors. This project highlights my ability to deliver functional, SEO-ready platforms tailored to specific business needs.</p>
                     <div class="actions">
-                        <a target="_blank" href="https://krunaboje.com/" class="button">Visit Website</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://krunaboje.com/" class="button">Visit Website</a>
                     </div>
                 </span>
             </div>
@@ -184,7 +227,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>Room Rule</h3>
+                    <h2>Room Rule</h2>
                     <span class="tags">
                         <p>Mobile App</p>
                         <p>Cacpacitor JS</p>
@@ -193,7 +236,7 @@
                     </span>
                     <p>Organize your life with Room Rule. A progressive web app designed to keep everything in order. Built for Android and iOS using Capacitor JS, so it feels like a native app.</p>
                     <div class="actions">
-                        <a target="_blank" href="https://roomrule.com/" class="button">Download app</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://roomrule.com/" class="button">Download app</a>
                     </div>
                 </span>
             </div>
@@ -207,7 +250,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>UEHS Website</h3>
+                    <h2>UEHS Website</h2>
                     <span class="tags">
                         <p>Wordpress</p>
                         <p>PHP</p>
@@ -216,7 +259,7 @@
                     </span>
                     <p>A custom WordPress website built for the Association of Endoscopic Surgeons of Serbia. The site includes a tailored course system that allows them to manage educational programs and issue certificates directly through the platform, making it easier to organize training and track participation.</p>
                     <div class="actions">
-                        <a target="_blank" href="https://uehs.org.rs/" class="button">Visit Website</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://uehs.org.rs/" class="button">Visit Website</a>
                     </div>
                 </span>
             </div>
@@ -230,7 +273,7 @@
                     </div>
                 </div>
                 <span>
-                    <h3>Tab Volume Manager</h3>
+                    <h2>Tab Volume Manager</h2>
                     <span class="tags">
                         <p>Browser Extension</p>
                         <p>JavaScript</p>
@@ -239,13 +282,13 @@
                     </span>
                     <p>A powerful audio toolkit for every browser tab. Tab Volume Manager provides per-site volume control, sound enhancements, custom profiles, adjustable effects, and a detailed multi-band equalizer for precise tuning across videos, music, and calls.</p>
                     <div class="actions">
-                        <a href="../tab-volume-manager" class="button">View Project Page</a>
+                        <a href="../tab-volume-manager/" class="button">View Project Page</a>
                     </div>
                 </span>
             </div>
             <div class="moreProjects fade-in">
                     Want to see how this portfolio was built?
-                    <a target="_blank" href="https://github.com/Stefan-Mihajlovic/Portfolio" class="button">Click me!</a>
+                    <a target="_blank" rel="noopener noreferrer" href="https://github.com/Stefan-Mihajlovic/Portfolio" class="button">Click me!</a>
                     <svg class="arrow-doodle" viewBox="0 0 70 70" aria-hidden="true">
                         <path class="arrow-path" d="M 52 18 C 46 25, 50 31, 42 36 C 34 41, 36 46, 28 52"/>
                         <path class="arrow-path" d="M 28 52 L 36 49" />

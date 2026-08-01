@@ -1,11 +1,11 @@
 // MOBILE MENU TOGGLE
 
-document.getElementById('mobileMenuButton').addEventListener('click', function() {
+document.getElementById('mobileMenuButton')?.addEventListener('click', function() {
     document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
 });
 
 function closeMobileMenu(){
-    document.querySelector('.mobileMenuWrapper').classList.toggle('closed');
+    document.querySelector('.mobileMenuWrapper')?.classList.toggle('closed');
 }
 
 // COMPACT GLASS HEADER AND SCROLL TO TOP BUTTON
@@ -178,9 +178,10 @@ const isCustomCursorDisabled = document.body.classList.contains('nativeCursor');
 
 const cursor = document.querySelector('.cursor');
 const cursorDot = document.querySelector('.cursor-dot');
+const canUseCustomCursor = !isTouchDevice && !isCustomCursorDisabled && cursor && cursorDot;
 
-if (isTouchDevice || isCustomCursorDisabled) {
-    cursor.style.display = 'none';
+if (!canUseCustomCursor) {
+    if (cursor) cursor.style.display = 'none';
     document.body.style.cursor = 'auto';
 }
 
@@ -188,7 +189,7 @@ let mouseX = -100, mouseY = -100;
 let cursorX = 0, cursorY = 0;
 let velocityX = 0, velocityY = 0;
 
-if (!isCustomCursorDisabled) {
+if (canUseCustomCursor) {
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX;
         mouseY = e.clientY;
@@ -248,12 +249,12 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-if (!isCustomCursorDisabled) animate();
+if (canUseCustomCursor) animate();
 
 const hoverableSelector = 'a, button, .skillCard p, .closeMenuButton, .hoverable';
 
 function bindHoverable(element) {
-    if (isCustomCursorDisabled || element.dataset.hoverableBound === 'true') return;
+    if (!canUseCustomCursor || element.dataset.hoverableBound === 'true') return;
     element.dataset.hoverableBound = 'true';
 
     element.addEventListener('mouseenter', () => {
@@ -294,7 +295,7 @@ function bindHoverables(root = document) {
 
 bindHoverables();
 
-if (!isCustomCursorDisabled) {
+if (canUseCustomCursor) {
     document.addEventListener('mouseleave', () => {
         cursor.style.opacity = '0';
     });

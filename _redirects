@@ -1,0 +1,2 @@
+# Prevent the Netlify subdomain from competing with the custom domain in search.
+https://stefanmihajlovic.netlify.app/* https://stefanmihajlovic.com/:splat 301!
