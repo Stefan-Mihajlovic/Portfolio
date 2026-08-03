@@ -57,9 +57,91 @@ function initFadeInObserver({
     return observer;
 }
 
+function initFaqAccordions() {
+    const faqItems = Array.from(document.querySelectorAll('.faqItem'));
+    if (!faqItems.length) return;
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const animationDuration = prefersReducedMotion ? 0 : 420;
+    const animationEasing = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+    faqItems.forEach((item) => {
+        const summary = item.querySelector('summary');
+        const answer = item.querySelector('.faqAnswer');
+        if (!summary || !answer) return;
+
+        const setState = (isOpen) => {
+            item.open = isOpen;
+            answer.hidden = !isOpen;
+            answer.style.height = isOpen ? 'auto' : '0px';
+            answer.style.opacity = isOpen ? '1' : '0';
+        };
+
+        setState(item.open);
+
+        summary.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (item.dataset.faqAnimating === 'true') return;
+
+            const isOpening = !item.open;
+
+            if (animationDuration === 0) {
+                setState(isOpening);
+                return;
+            }
+
+            item.dataset.faqAnimating = 'true';
+
+            if (isOpening) {
+                item.open = true;
+                answer.hidden = false;
+                answer.style.height = 'auto';
+                answer.style.opacity = '1';
+                const targetHeight = answer.getBoundingClientRect().height;
+
+                answer.style.height = '0px';
+                answer.style.opacity = '0';
+
+                const animation = answer.animate([
+                    { height: '0px', opacity: 0 },
+                    { height: `${targetHeight}px`, opacity: 1 }
+                ], {
+                    duration: animationDuration,
+                    easing: animationEasing
+                });
+
+                animation.addEventListener('finish', () => {
+                    answer.style.height = 'auto';
+                    answer.style.opacity = '1';
+                    delete item.dataset.faqAnimating;
+                }, { once: true });
+                return;
+            }
+
+            const currentHeight = answer.getBoundingClientRect().height;
+            answer.style.height = `${currentHeight}px`;
+            answer.style.opacity = '1';
+
+            const animation = answer.animate([
+                { height: `${currentHeight}px`, opacity: 1 },
+                { height: '0px', opacity: 0 }
+            ], {
+                duration: animationDuration,
+                easing: animationEasing
+            });
+
+            animation.addEventListener('finish', () => {
+                setState(false);
+                delete item.dataset.faqAnimating;
+            }, { once: true });
+        });
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 initFadeInObserver();
 initScreenshotLightbox();
+initFaqAccordions();
 });
 
 function initScreenshotLightbox() {
