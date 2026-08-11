@@ -190,7 +190,155 @@ function initializeCheckoutStatus() {
     }
 }
 
+function initializeScrollHeader() {
+    const header = document.querySelector('.scrollHeader');
+    const hero = document.querySelector('.heroSection');
+    if (!header || !hero) return;
+
+    let ticking = false;
+    const update = () => {
+        const revealPoint = Math.min(hero.offsetHeight * 0.36, 390);
+        header.classList.toggle('is-visible', window.scrollY > revealPoint);
+        ticking = false;
+    };
+    const requestUpdate = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', requestUpdate, { passive: true });
+    window.addEventListener('resize', requestUpdate);
+    update();
+}
+
+function initializeDirectProAnchor() {
+    if (window.location.hash !== '#pro') return;
+    const target = document.getElementById('pro');
+    if (!target) return;
+
+    requestAnimationFrame(() => {
+        const root = document.documentElement;
+        const previousBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        target.scrollIntoView({ block: 'start' });
+        root.style.scrollBehavior = previousBehavior;
+    });
+}
+
+function initializeSmoothFaq() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll('.faqList details').forEach((details) => {
+        const summary = details.querySelector('summary');
+        const answer = details.querySelector('p');
+        if (!summary || !answer) return;
+
+        let animation = null;
+        let answerAnimation = null;
+
+        const finish = (open) => {
+            details.open = open;
+            details.style.height = '';
+            details.style.overflow = '';
+            details.classList.remove('is-opening', 'is-closing');
+            animation = null;
+            answerAnimation = null;
+        };
+
+        summary.addEventListener('click', (event) => {
+            event.preventDefault();
+            const isOpen = details.open;
+            const startHeight = `${details.offsetHeight}px`;
+
+            animation?.cancel();
+            answerAnimation?.cancel();
+            details.style.height = startHeight;
+            details.style.overflow = 'hidden';
+
+            if (!isOpen) details.open = true;
+            const endHeight = isOpen ? `${summary.offsetHeight}px` : `${summary.offsetHeight + answer.offsetHeight}px`;
+            details.classList.toggle('is-opening', !isOpen);
+            details.classList.toggle('is-closing', isOpen);
+
+            animation = details.animate({ height: [startHeight, endHeight] }, {
+                duration: 380,
+                easing: 'cubic-bezier(.2,.75,.2,1)'
+            });
+            answerAnimation = answer.animate({
+                opacity: isOpen ? [1, 0] : [0, 1],
+                transform: isOpen ? ['translateY(0)', 'translateY(-7px)'] : ['translateY(-7px)', 'translateY(0)']
+            }, {
+                duration: isOpen ? 230 : 340,
+                easing: 'cubic-bezier(.2,.75,.2,1)',
+                fill: 'both'
+            });
+            animation.onfinish = () => finish(!isOpen);
+            animation.oncancel = () => {
+                details.style.height = '';
+                details.style.overflow = '';
+            };
+        });
+    });
+}
+
+function initializeMotion() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const targets = document.querySelectorAll([
+        '.signalStrip span',
+        '.sectionIntro',
+        '.featureCard',
+        '.experienceCopy',
+        '.experienceCopy li',
+        '.experienceVisual',
+        '.galleryGrid figure',
+        '.pricingHeading',
+        '.priceCard',
+        '.monthlyRow',
+        '.manageForm',
+        '.faqIntro',
+        '.faqList details',
+        '.finalCta > div:last-child'
+    ].join(','));
+
+    document.body.classList.add('motion-ready');
+    targets.forEach((target, index) => {
+        target.classList.add('reveal');
+        target.style.setProperty('--reveal-delay', `${(index % 3) * 75}ms`);
+    });
+
+    requestAnimationFrame(() => document.body.classList.add('page-ready'));
+
+    if (!('IntersectionObserver' in window)) {
+        targets.forEach((target) => target.classList.add('in-view'));
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
+
+    targets.forEach((target) => observer.observe(target));
+
+    const demoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            entry.target.classList.toggle('demo-active', entry.isIntersecting);
+        });
+    }, { threshold: 0.22 });
+
+    document.querySelectorAll('.featureCard').forEach((card) => demoObserver.observe(card));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initializeDirectProAnchor();
+    initializeScrollHeader();
+    initializeSmoothFaq();
+    initializeMotion();
     initializeCheckoutButtons();
     initializeBillingPortal();
     initializeCheckoutStatus();
