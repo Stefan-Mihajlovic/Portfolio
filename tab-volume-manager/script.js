@@ -45,7 +45,6 @@ function initializeCheckoutButtons() {
                 button.disabled = false;
                 button.textContent = originalText;
                 showCheckoutStatus({
-                    eyebrow: 'Checkout unavailable',
                     title: 'Could not open checkout',
                     message: error.message
                 });
@@ -91,7 +90,6 @@ function initializeBillingPortal() {
 function checkoutStatusElements() {
     return {
         modal: document.getElementById('checkoutStatus'),
-        eyebrow: document.getElementById('checkoutStatusEyebrow'),
         title: document.getElementById('checkoutStatusTitle'),
         message: document.getElementById('checkoutStatusMessage'),
         result: document.getElementById('licenseResult'),
@@ -100,9 +98,8 @@ function checkoutStatusElements() {
     };
 }
 
-function showCheckoutStatus({ eyebrow, title, message, licenseKey }) {
+function showCheckoutStatus({ title, message, licenseKey }) {
     const elements = checkoutStatusElements();
-    elements.eyebrow.textContent = eyebrow;
     elements.title.textContent = title;
     elements.message.textContent = message;
     elements.modal.hidden = false;
@@ -157,7 +154,6 @@ function initializeCheckoutStatus() {
 
     if (checkoutState === 'cancelled') {
         showCheckoutStatus({
-            eyebrow: 'Checkout cancelled',
             title: 'No payment was made',
             message: 'You can choose a Pro plan whenever you are ready.'
         });
@@ -166,7 +162,6 @@ function initializeCheckoutStatus() {
 
     if (checkoutState === 'success' && sessionId) {
         showCheckoutStatus({
-            eyebrow: 'Payment received',
             title: 'Preparing your license…',
             message: 'Confirming your Stripe payment securely.'
         });
@@ -174,7 +169,6 @@ function initializeCheckoutStatus() {
         postToTvm('/v1/checkout/result', { sessionId })
             .then((license) => {
                 showCheckoutStatus({
-                    eyebrow: `${license.plan} Pro license`,
                     title: 'Welcome to Tab Volume Manager Pro',
                     message: `Your license is ready for ${license.email}. Save it somewhere safe, then activate it inside the extension.`,
                     licenseKey: license.licenseKey
@@ -182,7 +176,6 @@ function initializeCheckoutStatus() {
             })
             .catch((error) => {
                 showCheckoutStatus({
-                    eyebrow: 'License pending',
                     title: 'We could not load your license yet',
                     message: `${error.message} Refresh this page in a moment to try again.`
                 });

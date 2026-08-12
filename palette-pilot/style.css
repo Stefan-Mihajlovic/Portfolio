@@ -63,7 +63,6 @@ img{max-width:100%;height:auto}
 
 .featureSection{padding-top:135px;padding-bottom:140px}
 .sectionIntro{max-width:800px}.sectionIntro.compact{max-width:700px}.sectionIntro.centered{margin-inline:auto;text-align:center}
-.eyebrow{display:block;margin-bottom:17px;color:#ff70ad;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
 .sectionIntro h2,.pricingCopy h2{font-size:clamp(39px,4.2vw,64px);font-weight:500;letter-spacing:-3px;line-height:1.08}
 .sectionIntro>p{max-width:620px;margin-top:20px;color:#917d85;font-size:15px;line-height:1.75}
 .bentoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:64px}
@@ -71,6 +70,7 @@ img{max-width:100%;height:auto}
 .featureCard.wide{display:grid;grid-template-columns:.85fr 1.15fr;align-items:center;gap:44px;grid-column:1/-1;min-height:430px}
 .featureCard::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 100% 0%,rgba(255,0,106,.09),transparent 38%);pointer-events:none}
 .cardCopy{position:relative;z-index:2;max-width:470px}.cardIndex{display:grid;width:34px;height:34px;place-items:center;margin-bottom:50px;border:1px solid rgba(255,103,169,.35);border-radius:50%;color:#ff73af;font-size:10px}
+.cardIndex svg,.workflowIcon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
 .cardCopy h3{font-size:28px;font-weight:500;letter-spacing:-1.3px}.cardCopy p{margin-top:14px;color:#9d8991;font-size:13px;line-height:1.75}
 .pickerDemo{position:relative;z-index:2;padding:20px;border:1px solid rgba(255,255,255,.17);border-radius:18px;background:linear-gradient(145deg,#3c001a,#170008);box-shadow:0 30px 70px rgba(0,0,0,.35);transform:rotate(2deg)}
 .pickedColor{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;padding:13px;border:1px solid rgba(255,255,255,.1);border-radius:11px;background:rgba(255,255,255,.07);font-size:13px}.pickedColor>span{width:40px;height:40px;border-radius:9px;background:var(--pink)}.pickedColor small{padding:5px 8px;border-radius:999px;background:#1a5b3b;color:#a4f5cd;font-size:8px;text-transform:uppercase}
@@ -84,7 +84,7 @@ img{max-width:100%;height:auto}
 .codeDemo code{display:block;min-height:176px;padding:28px;color:#b9acb1;font:12px/2 ui-monospace,SFMono-Regular,Menlo,monospace}.typedCode{white-space:pre-wrap}.typedCode .codeRoot{color:#ff76b0;font-weight:700}.typedCode .codeValue{color:#71d0e9}.typingCaret{display:inline-block;width:2px;height:1.25em;margin-left:2px;vertical-align:-.22em;border-radius:2px;background:#ff76b0;box-shadow:0 0 10px rgba(255,118,176,.45);animation:typingCaretBlink .78s steps(1,end) infinite}
 
 .workflowSection{padding:130px 0;background:var(--paper);color:#260411}
-.workflowSection .eyebrow{color:#c50052}.workflowSection .sectionIntro h2 em{color:#c50052}
+.workflowSection .sectionIntro h2 em{color:#c50052}
 .workflowGrid{display:grid;grid-template-columns:.75fr 1.25fr;gap:85px;align-items:center;margin-top:65px}
 .workflowSteps{display:grid}.workflowSteps article{display:grid;grid-template-columns:42px 1fr;gap:18px;padding:24px 0;border-top:1px solid #e6d8de}.workflowSteps article:last-child{border-bottom:1px solid #e6d8de}.workflowSteps>article>span{display:grid;width:30px;height:30px;place-items:center;border-radius:50%;background:#ffe3ee;color:#bd004e;font-size:10px;font-weight:700}.workflowSteps h3{font-size:17px;font-weight:600}.workflowSteps p{margin-top:5px;color:#806d74;font-size:12px;line-height:1.65}
 .workflowVisual{overflow:hidden;border:10px solid #21000e;border-radius:22px;box-shadow:0 35px 80px rgba(90,4,43,.22);transform:rotate(1.5deg)}.workflowVisual img{display:block;width:100%}
@@ -104,7 +104,7 @@ img{max-width:100%;height:auto}
 
 .faqSection{display:grid;grid-template-columns:330px 1fr;gap:95px;padding-top:140px;padding-bottom:140px}.faqIntro h2{font-size:48px;font-weight:500;letter-spacing:-2px}.faqIntro p{margin-top:15px;color:#826f76;font-size:12px}.faqIntro a{color:#ff70ad}.faqList{border-top:1px solid rgba(255,255,255,.13)}.faqList details{border-bottom:1px solid rgba(255,255,255,.13)}.faqList summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px 0;cursor:pointer;list-style:none;font-size:14px;font-weight:500}.faqList summary::-webkit-details-marker{display:none}.faqList summary span{position:relative;width:18px;height:18px;flex:0 0 auto}.faqList summary span::before,.faqList summary span::after{content:'';position:absolute;top:8px;width:100%;height:1px;background:#ff72af;transition:.2s}.faqList summary span::after{transform:rotate(90deg)}.faqList details[open] summary span::after{transform:rotate(0)}.faqList details p{max-width:740px;padding:0 48px 25px 0;color:#948087;font-size:12px;line-height:1.8}
 
-.finalCta{position:relative;min-height:510px;display:grid;place-items:center;overflow:hidden;background:#fff;color:#20000d;text-align:center}.finalCta>div:last-child{position:relative;z-index:2}.finalCta .eyebrow{color:#a70046}.finalCta h2{font-size:clamp(70px,10vw,145px);font-weight:600;letter-spacing:-8px;line-height:.95}.lightButton{margin-top:34px;background:#170008;color:#fff}.lightButton:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(40,0,17,.2)}
+.finalCta{position:relative;min-height:510px;display:grid;place-items:center;overflow:hidden;background:#fff;color:#20000d;text-align:center}.finalCta>div:last-child{position:relative;z-index:2}.finalCta h2{font-size:clamp(70px,10vw,145px);font-weight:600;letter-spacing:-8px;line-height:.95}.lightButton{margin-top:34px;background:#170008;color:#fff}.lightButton:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(40,0,17,.2)}
 .finalColors{position:absolute;inset:0;display:flex;opacity:.13;filter:blur(0)}.finalColors span{flex:1;clip-path:polygon(25% 0,100% 0,75% 100%,0 100%)}.finalColors span:nth-child(1){background:#ff006a}.finalColors span:nth-child(2){background:#ffb800}.finalColors span:nth-child(3){background:#71d0e9}.finalColors span:nth-child(4){background:#8b75e1}.finalColors span:nth-child(5){background:#45ca9a}.finalColors span:nth-child(6){background:#ff5449}
 footer{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:30px;padding:40px max(24px,calc((100vw - var(--max))/2));border-top:1px solid rgba(255,255,255,.09);background:#080002;color:#73656b;font-size:10px}footer p a{color:#fff}footer nav{display:flex;justify-content:flex-end;gap:20px}footer nav a{text-decoration:none}footer nav a:hover{color:#fff}.footerBrand{font-size:14px}.footerBrand .brandMark{width:27px;height:27px;border-radius:7px;transform:scale(.8)}
 
@@ -122,7 +122,6 @@ footer{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:30
 .heroSection::before{inset:0;background:radial-gradient(ellipse at 50% 5%,rgba(255,0,106,.14),transparent 52%);opacity:1;mask-image:none}
 .heroSection::after{display:none}
 .heroCopy{width:min(820px,100%)}
-.heroEyebrow{display:block;margin-bottom:22px;color:#ff7db4;font-size:10px;font-weight:700;letter-spacing:.2em}
 .heroCopy h1{max-width:none;font-size:clamp(62px,6vw,88px);letter-spacing:-5px;line-height:1.02}
 .heroCopy>p{max-width:660px;margin:24px auto 0;font-size:16px;line-height:1.7}
 .heroActions{justify-content:center;margin-top:32px}
@@ -258,15 +257,16 @@ a,button,.featureCard,.priceCard,.workflowSteps article,.faqList details,.storeB
 }
 .trustStrip>p{padding:0 12px;color:#aa909b;font-size:10px;line-height:1.55;text-align:left}.trustStrip p b{color:#fff}
 .trustStrip>div{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:0;color:#cfb5c0;font-size:7px;letter-spacing:.08em}
-.trustStrip>div span{position:relative;display:flex;min-height:48px;align-items:center;padding:0 10px 0 28px;border:1px solid rgba(255,255,255,.075);border-radius:12px;background:rgba(255,255,255,.035)}
-.trustStrip>div span::before{content:'';position:absolute;left:12px;width:6px;height:6px;border-radius:50%;background:#ff4f99;box-shadow:0 0 0 4px rgba(255,0,106,.09)}
+.trustStrip>div span{position:relative;display:flex;min-height:48px;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.075);border-radius:12px;background:rgba(255,255,255,.035)}
+.trustStrip>div svg{width:16px;height:16px;flex:0 0 auto;fill:none;stroke:#ff5fa5;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.trustStrip>div svg .iconFill{fill:rgba(255,95,165,.28);stroke:#ff5fa5}
 
 /* Reworked workflow: focused steps beside the real product */
 .workflowSection{position:relative;overflow:hidden;padding:125px 0;background:radial-gradient(circle at 82% 22%,rgba(255,0,106,.12),transparent 31%),linear-gradient(155deg,#090003,#180009 64%,#0b0004);color:#fff}
 .workflowSection::before{content:'';position:absolute;inset:0;opacity:.11;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:76px 76px;mask-image:linear-gradient(90deg,transparent,#000 38%,#000 100%)}
 .workflowInner{position:relative}
 .workflowSection .sectionIntro.compact{max-width:820px;margin:0 auto;text-align:center}
-.workflowSection .sectionIntro h2{max-width:none;margin-top:16px;font-size:clamp(48px,5vw,72px);letter-spacing:-4px;line-height:1.04}.workflowSection .sectionIntro h2 em{display:inline;color:#ff63a4}
+.workflowSection .sectionIntro h2{max-width:none;font-size:clamp(48px,5vw,72px);letter-spacing:-4px;line-height:1.04}.workflowSection .sectionIntro h2 em{display:inline;color:#ff63a4}
 .workflowGrid{display:grid;grid-template-columns:.88fr 1.12fr;gap:20px;align-items:stretch;margin-top:60px}
 .workflowSteps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .workflowSteps article,.workflowSteps article:last-child{display:block;min-height:180px;padding:22px;border:1px solid rgba(255,255,255,.105);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));box-shadow:inset 0 1px rgba(255,255,255,.035);transition:transform .35s cubic-bezier(.2,.75,.2,1),border-color .35s,background .35s}
@@ -279,10 +279,10 @@ a,button,.featureCard,.priceCard,.workflowSteps article,.faqList details,.storeB
 .pricingSection{scroll-margin-top:96px}.anchorTarget{position:absolute;top:0;left:0;width:1px;height:1px;pointer-events:none}
 
 /* Preserve the fan timeline while it is offscreen, then resume it in place. */
-.paletteCard .swatchFan span{will-change:transform,opacity,filter;animation:paletteFanLoop 6.6s cubic-bezier(.4,0,.2,1) infinite;animation-play-state:paused}
+.paletteCard .swatchFan span{will-change:transform,opacity,filter;animation:paletteFanLoop 6s cubic-bezier(.4,0,.2,1) infinite;animation-play-state:paused}
 .paletteCard .swatchFan span:nth-child(1){animation-delay:.14s}.paletteCard .swatchFan span:nth-child(2){animation-delay:.07s}.paletteCard .swatchFan span:nth-child(4){animation-delay:.07s}.paletteCard .swatchFan span:nth-child(5){animation-delay:.14s}
 .paletteCard.demo-active .swatchFan span{animation-play-state:running}
-@keyframes paletteFanLoop{0%,10%,100%{opacity:0;transform:translateX(-50%) rotate(0) scale(.5);filter:brightness(.92)}28%,72%{opacity:1;transform:translateX(-50%) rotate(var(--fan-angle)) scale(1);filter:brightness(1)}82%{opacity:1;transform:translateX(-50%) rotate(var(--fan-angle)) scale(1.015);filter:brightness(1.06)}94%{opacity:0;transform:translateX(-50%) rotate(0) scale(.5);filter:brightness(.92)}}
+@keyframes paletteFanLoop{0%,7%,100%{opacity:0;transform:translateX(-50%) rotate(0) scale(.5);filter:brightness(.92)}21%,72%{opacity:1;transform:translateX(-50%) rotate(var(--fan-angle)) scale(1);filter:brightness(1)}82%{opacity:1;transform:translateX(-50%) rotate(var(--fan-angle)) scale(1.015);filter:brightness(1.06)}94%{opacity:0;transform:translateX(-50%) rotate(0) scale(.5);filter:brightness(.92)}}
 
 @media(max-width:900px){.scrollNav{display:none}.trustStrip{grid-template-columns:1fr}.trustStrip>p{text-align:center}.workflowGrid{grid-template-columns:1fr}.workflowVisual{min-height:auto}.workflowVisual img{height:auto}}
 @media(max-width:600px){.scrollHeader{top:9px;min-height:57px;padding:8px 9px 8px 12px}.scrollHeader .brand{font-size:12px}.scrollHeader .brandMark{width:29px;height:29px}.scrollCta{min-height:38px;padding:0 12px;font-size:8px}.trustStrip{width:calc(100% - 24px);margin-top:-28px;padding:10px}.trustStrip>div{grid-template-columns:repeat(2,1fr)}.workflowSteps{grid-template-columns:1fr}.workflowSteps article,.workflowSteps article:last-child{min-height:150px}.workflowSection .sectionIntro h2{font-size:43px;letter-spacing:-2.7px}}
@@ -309,3 +309,10 @@ a,button,.featureCard,.priceCard,.workflowSteps article,.faqList details,.storeB
     .workflowSteps article,.workflowSteps article:last-child{min-height:0;padding:19px}
     .workflowSteps>article>span{margin-bottom:20px}
 }
+
+/* Fixed navigation mirrors the primary header's scale and underline motion. */
+.scrollNav{gap:30px}
+.scrollNav a{position:relative;color:#b8a2ac;font-size:12px;transition:color .24s,transform .24s}
+.scrollNav a::after{content:'';position:absolute;right:100%;bottom:-7px;left:0;height:2px;border-radius:999px;background:var(--pink);transition:right .26s cubic-bezier(.2,.75,.2,1)}
+.scrollNav a:hover{color:#fff;transform:translateY(-1px)}
+.scrollNav a:hover::after{right:0}
