@@ -131,23 +131,57 @@
             <div class="sectionIntro"><h2>The volume control your browser should have shipped with.</h2><p>Simple when you need a quick fix. Deep when you want to tune every detail.</p></div>
             <div class="featureGrid">
                 <article class="featureCard volumeCard">
-                    <div class="cardTop"><span class="iconCircle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l4 4V6L9 10zM16 9c1.8 1.7 1.8 4.3 0 6M18.5 6.5c3.2 3.1 3.2 7.9 0 11"></path></svg></span><small>PER-TAB VOLUME</small></div>
-                    <h3>Make quiet tabs loud.<br>Keep loud tabs under control.</h3>
+                    <h3>Make quiet tabs <strong>loud.</strong><br>Keep loud tabs under control.</h3>
                     <p>Set an independent volume for every website, mute instantly, or reset to the original level in one click.</p>
                     <div class="sliderDemo"><div><span>Website volume</span><b data-volume-value>240%</b></div><div class="sliderTrack"><span></span><i></i></div><small>0%</small><small>500%</small></div>
                 </article>
                 <article class="featureCard effectsCard">
-                    <div class="cardTop"><span class="iconCircle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8zM5.5 14l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"></path></svg></span><small>SMART EFFECTS</small></div>
-                    <h3>Clearer voices.<br>Deeper sound.</h3>
+                    <h3><strong>Clearer</strong> voices.<br>Deeper sound.</h3>
                     <p>Switch on Bass Boost or Voice Clarity, then dial the effect in exactly as far as you want.</p>
-                    <div class="effectPills"><span class="on"><i>♪</i>Bass Boost<b></b></span><span><i>◖</i>Voice Clarity<b></b></span><span class="on"><i>▶</i>Movie Dialogue<b></b></span></div>
+                    <div class="effectPills">
+                        <div class="effectPanelHead"><b>Sound profile</b></div>
+                        <div class="effectOptions">
+                            <span class="effectOption active">Effects Off</span>
+                            <span class="effectOption">Bass Boost</span>
+                            <span class="effectOption">Voice Clarity</span>
+                        </div>
+                        <div class="effectIntensityDemo"><span><b>Effect Intensity</b><em><strong data-effect-value>50</strong>%</em></span><i class="effectLevelTrack"><u></u><em></em></i></div>
+                    </div>
                 </article>
                 <article class="featureCard equalizerCard">
-                    <div class="eqCopy"><div class="cardTop"><span class="iconCircle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M3 9h4M10 15h4M17 8h4"></path><circle cx="5" cy="9" r="2"></circle><circle cx="12" cy="15" r="2"></circle><circle cx="19" cy="8" r="2"></circle></svg></span><small>FULL EQUALIZER</small></div><h3>Shape the sound,<br>not your workflow.</h3><p>Tune ten frequency bands, start with a sound profile, and save presets for the way you listen.</p><div class="profileTags"><span>Warm</span><span>Music</span><span>Podcast</span><span>Gaming</span></div></div>
-                    <div class="eqDemo" aria-label="Ten-band equalizer illustration"><div class="eqCurve"></div><span style="--h:32%"></span><span style="--h:50%"></span><span style="--h:66%"></span><span style="--h:48%"></span><span style="--h:35%"></span><span style="--h:55%"></span><span style="--h:73%"></span><span style="--h:61%"></span><span style="--h:43%"></span><span style="--h:28%"></span></div>
+                    <div class="eqCopy"><h3>Shape the <strong>sound,</strong><br>not your workflow.</h3><p>Tune ten frequency bands, start with a sound profile, and save presets for the way you listen.</p><div class="profileTags"><span>Warm</span><span>Music</span><span>Podcast</span><span>Gaming</span></div></div>
+                    <div class="eqDemo" aria-label="Ten-band equalizer illustration styled like the extension">
+                        <div class="eqBandDemo" style="--thumb:63%;--pulse:6%;--eq-delay:-.3s"><output>+4 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>32 Hz</strong><small>Sub Bass</small></div>
+                        <div class="eqBandDemo" style="--thumb:60%;--pulse:5%;--eq-delay:-1.4s"><output>+3 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>64 Hz</strong><small>Bass</small></div>
+                        <div class="eqBandDemo" style="--thumb:57%;--pulse:4%;--eq-delay:-.8s"><output>+2 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>125 Hz</strong><small>Body</small></div>
+                        <div class="eqBandDemo" style="--thumb:50%;--pulse:6%;--eq-delay:-1.8s"><output>0 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>250 Hz</strong><small>Low Mid</small></div>
+                        <div class="eqBandDemo" style="--thumb:47%;--pulse:5%;--eq-delay:-.5s"><output>-1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>500 Hz</strong><small>Mid</small></div>
+                        <div class="eqBandDemo" style="--thumb:53%;--pulse:4%;--eq-delay:-1.1s"><output>+1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>1 kHz</strong><small>Presence</small></div>
+                        <div class="eqBandDemo" style="--thumb:60%;--pulse:5%;--eq-delay:-2s"><output>+3 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>2 kHz</strong><small>Detail</small></div>
+                        <div class="eqBandDemo" style="--thumb:57%;--pulse:6%;--eq-delay:-.7s"><output>+2 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>4 kHz</strong><small>Clarity</small></div>
+                        <div class="eqBandDemo" style="--thumb:50%;--pulse:5%;--eq-delay:-1.6s"><output>0 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>8 kHz</strong><small>Air</small></div>
+                        <div class="eqBandDemo" style="--thumb:47%;--pulse:4%;--eq-delay:-.2s"><output>-1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>16 kHz</strong><small>Brilliance</small></div>
+                    </div>
                 </article>
-                <article class="featureCard mixerCard"><div class="cardTop"><span class="iconCircle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h7M15 17h5"></path><circle cx="16" cy="7" r="2"></circle><circle cx="9" cy="12" r="2"></circle><circle cx="13" cy="17" r="2"></circle></svg></span><small>MULTI-TAB MIXER</small></div><h3>All your audible tabs.<br>One clean mixer.</h3><p>See what is playing and balance everything without hunting through your tab bar.</p><div class="mixerRows"><span><i class="serviceLogo spotify"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ed760"></circle><path d="M6.1 9.1c4.1-1.2 8.8-.9 12.1.9M6.8 12.3c3.5-1 7.6-.7 10.6.8M7.5 15.2c2.9-.8 6.2-.5 8.8.7" fill="none" stroke="#08120c" stroke-width="1.7" stroke-linecap="round"></path></svg></i><b>Spotify</b><em><u style="--w:72%"></u></em><small>72</small></span><span><i class="serviceLogo youtube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4.5" width="22" height="15" rx="4" fill="#ff0033"></rect><path d="m10 8.5 6 3.5-6 3.5z" fill="#fff"></path></svg></i><b>YouTube</b><em><u style="--w:44%"></u></em><small>44</small></span><span><i class="serviceLogo meet"><svg viewBox="0 0 87.5 72" aria-hidden="true"><path fill="#00832d" d="M49.5 36l8.53 9.75 11.47 7.33 2-17.02-2-16.64-11.69 6.44z"></path><path fill="#0066da" d="M0 51.5V66c0 3.315 2.685 6 6 6h14.5l3-10.96-3-9.54-9.95-3z"></path><path fill="#e94235" d="M20.5 0 0 20.5l10.55 3 9.95-3 2.95-9.41z"></path><path fill="#2684fc" d="M20.5 20.5H0v31h20.5z"></path><path fill="#00ac47" d="M82.6 8.68 69.5 19.42v33.66l13.16 10.79c1.97 1.54 4.85.135 4.85-2.37V11c0-2.535-2.945-3.925-4.91-2.32zM49.5 36v15.5h-29V72h43c3.315 0 6-2.685 6-6V53.08z"></path><path fill="#ffba00" d="M63.5 0h-43v20.5h29V36l20-16.57V6c0-3.315-2.685-6-6-6z"></path></svg></i><b>Meet</b><em><u style="--w:88%"></u></em><small>88</small></span></div></article>
-                <article class="featureCard adaptiveCard"><div class="cardTop"><span class="iconCircle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17V9M9.3 17V5M14.7 17v-5M20 17V7"></path><path d="M2 17h20"></path><circle cx="9.3" cy="9" r="1.8"></circle><circle cx="14.7" cy="14" r="1.8"></circle></svg></span><small>ADAPTIVE VOLUME</small></div><h3>Balanced by itself.</h3><p>Automatically smooth the jump between quiet dialogue and loud moments.</p><div class="adaptiveVisual"><div class="adaptiveBars" aria-hidden="true"><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u><u></u></div><span></span><i></i><b>LIVE</b></div></article>
+                <article class="featureCard mixerCard"><h3>All your audible tabs.<br>One clean <strong>mixer.</strong></h3><p>See what is playing and balance everything without hunting through your tab bar.</p><div class="mixerRows"><span><i class="serviceLogo spotify"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ed760"></circle><path d="M6.1 9.1c4.1-1.2 8.8-.9 12.1.9M6.8 12.3c3.5-1 7.6-.7 10.6.8M7.5 15.2c2.9-.8 6.2-.5 8.8.7" fill="none" stroke="#08120c" stroke-width="1.7" stroke-linecap="round"></path></svg></i><b>Spotify</b><em><u style="--w:72%"></u></em><small>72</small></span><span><i class="serviceLogo youtube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4.5" width="22" height="15" rx="4" fill="#ff0033"></rect><path d="m10 8.5 6 3.5-6 3.5z" fill="#fff"></path></svg></i><b>YouTube</b><em><u style="--w:44%"></u></em><small>44</small></span><span><i class="serviceLogo meet"><svg viewBox="0 0 87.5 72" aria-hidden="true"><path fill="#00832d" d="M49.5 36l8.53 9.75 11.47 7.33 2-17.02-2-16.64-11.69 6.44z"></path><path fill="#0066da" d="M0 51.5V66c0 3.315 2.685 6 6 6h14.5l3-10.96-3-9.54-9.95-3z"></path><path fill="#e94235" d="M20.5 0 0 20.5l10.55 3 9.95-3 2.95-9.41z"></path><path fill="#2684fc" d="M20.5 20.5H0v31h20.5z"></path><path fill="#00ac47" d="M82.6 8.68 69.5 19.42v33.66l13.16 10.79c1.97 1.54 4.85.135 4.85-2.37V11c0-2.535-2.945-3.925-4.91-2.32zM49.5 36v15.5h-29V72h43c3.315 0 6-2.685 6-6V53.08z"></path><path fill="#ffba00" d="M63.5 0h-43v20.5h29V36l20-16.57V6c0-3.315-2.685-6-6-6z"></path></svg></i><b>Meet</b><em><u style="--w:88%"></u></em><small>88</small></span></div></article>
+                <article class="featureCard adaptiveCard">
+                    <h3><strong>Balanced</strong> by itself.</h3>
+                    <p>Automatically smooth the jump between quiet dialogue and loud moments.</p>
+                    <div class="adaptiveFlow" aria-label="Smooth adaptive volume waveform">
+                        <svg viewBox="0 0 640 150" role="img" aria-hidden="true" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="adaptiveWaveGradient" x1="0" y1="0" x2="1" y2="0">
+                                    <stop offset="0" stop-color="#4167ff" stop-opacity="0"/>
+                                    <stop offset=".24" stop-color="#4167ff"/>
+                                    <stop offset=".72" stop-color="#65caff"/>
+                                    <stop offset="1" stop-color="#65caff" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+                            <path class="adaptiveBaseline" d="M0 75H640"/>
+                            <path class="adaptiveWavePath" pathLength="1" d="M0 75 C42 75 48 60 76 60 S112 101 142 75 S181 32 216 75 S258 111 292 75 S334 47 368 75 S407 95 441 75 S482 55 516 75 S565 84 640 75"/>
+                        </svg>
+                    </div>
+                </article>
             </div>
         </section>
 
@@ -156,11 +190,11 @@
                 <div class="experienceCopy">
                     <h2>Set it once.<br><em>Hear it every time.</em></h2>
                     <p>Tab Volume Manager remembers how each website should sound, then restores that setup when you return.</p>
-                    <ul>
-                        <li><span class="stepIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 8h18M8 13h3l3-3v8l-3-3H8zM17 12.5c1 .8 1 2.2 0 3"></path></svg></span><div><strong>Open an audible tab</strong><small>Everything currently playing is ready to adjust.</small></div></li>
-                        <li><span class="stepIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M3 9h4M10 15h4M17 8h4"></path><circle cx="5" cy="9" r="2"></circle><circle cx="12" cy="15" r="2"></circle><circle cx="19" cy="8" r="2"></circle></svg></span><div><strong>Make it sound right</strong><small>Choose a level, effect, or complete sound profile.</small></div></li>
-                        <li><span class="stepIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8a8 8 0 1 0 .6 7"></path><path d="M19 4v4h-4"></path></svg></span><div><strong>Leave the rest to us</strong><small>Your settings return automatically on your next visit.</small></div></li>
-                    </ul>
+                    <ol class="experienceSteps">
+                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 6 10 6-10 6z"></path></svg></span><div><strong>Open an audible tab</strong><small>Everything currently playing is ready to adjust.</small></div></li>
+                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"></path><circle cx="9" cy="8" r="1.7"></circle><circle cx="15" cy="16" r="1.7"></circle></svg></span><div><strong>Make it sound right</strong><small>Choose a level, effect, or complete sound profile.</small></div></li>
+                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"></path></svg></span><div><strong>Leave the rest to us</strong><small>Your settings return automatically on your next visit.</small></div></li>
+                    </ol>
                 </div>
                 <div class="experienceVisual">
                     <div class="popupGlow" aria-hidden="true"></div>

@@ -331,13 +331,18 @@ function initializeAnimatedValues() {
     const volumeValue = document.querySelector('[data-volume-value]');
     const volumeTrack = document.querySelector('.volumeCard .sliderTrack');
     const volumeThumb = volumeTrack?.querySelector('i');
+    const effectValue = document.querySelector('[data-effect-value]');
+    const effectTrack = document.querySelector('.effectsCard .effectLevelTrack');
+    const effectThumb = effectTrack?.querySelector('em');
     const mixerMeters = [...document.querySelectorAll('.mixerRows > span')].map((row) => ({
         fill: row.querySelector('u'),
         track: row.querySelector('em'),
         value: row.querySelector('small')
     })).filter(({ fill, track, value }) => fill && track && value);
 
-    if ((!volumeValue || !volumeTrack || !volumeThumb) && !mixerMeters.length) return;
+    const hasVolumeDemo = volumeValue && volumeTrack && volumeThumb;
+    const hasEffectDemo = effectValue && effectTrack && effectThumb;
+    if (!hasVolumeDemo && !hasEffectDemo && !mixerMeters.length) return;
 
     const render = () => {
         if (!document.hidden && volumeValue && volumeTrack && volumeThumb) {
@@ -346,6 +351,14 @@ function initializeAnimatedValues() {
             const position = (thumbRect.left + thumbRect.width / 2 - trackRect.left) / trackRect.width;
             const nextValue = `${Math.round(Math.max(0, Math.min(1, position)) * 500)}%`;
             if (volumeValue.textContent !== nextValue) volumeValue.textContent = nextValue;
+        }
+
+        if (!document.hidden && effectValue && effectTrack && effectThumb) {
+            const trackRect = effectTrack.getBoundingClientRect();
+            const thumbRect = effectThumb.getBoundingClientRect();
+            const position = (thumbRect.left + thumbRect.width / 2 - trackRect.left) / trackRect.width;
+            const nextValue = `${Math.round(Math.max(0, Math.min(1, position)) * 100)}`;
+            if (effectValue.textContent !== nextValue) effectValue.textContent = nextValue;
         }
 
         if (!document.hidden) {
