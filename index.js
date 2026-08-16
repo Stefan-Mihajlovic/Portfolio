@@ -8,17 +8,17 @@ function closeMobileMenu(){
     document.querySelector('.mobileMenuWrapper')?.classList.toggle('closed');
 }
 
-// COMPACT GLASS HEADER AND SCROLL TO TOP BUTTON
+// HEADER SCROLL SHADOW AND SCROLL TO TOP BUTTON
 
 const siteHeader = document.querySelector('header');
 const scrollShadow = document.querySelector('.scrollShadow');
 const scrollToTop = document.querySelector('.scrollToTop');
 
 function updateScrollUi() {
-    const hasLeftTop = window.scrollY > 30;
+    const hasScrollBackdrop = window.scrollY > 10;
 
-    siteHeader?.classList.toggle('is-scrolled', hasLeftTop);
-    scrollShadow?.classList.toggle('active', hasLeftTop);
+    siteHeader?.classList.toggle('has-scroll-backdrop', hasScrollBackdrop);
+    scrollShadow?.classList.toggle('active', hasScrollBackdrop);
     scrollToTop?.classList.toggle('active', window.scrollY > 50);
 }
 
