@@ -70,18 +70,11 @@
 
 .currentProject h2{
     width: 100%;
+    text-align: center;
 }
 
 .currentProject > div{
     position: relative;
-}
-
-.currentProject > div .loop-doodle{
-    width: 180px;
-    height: 180px;
-    top: -70px;
-    right: -60px;
-    transform: rotate(-18deg);
 }
 
 .currentProject img{

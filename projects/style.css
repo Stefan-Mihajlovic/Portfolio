@@ -38,14 +38,6 @@
     position: relative;
 }
 
-.currentProject > div .loop-doodle{
-    width: 180px;
-    height: 180px;
-    top: -70px;
-    right: -60px;
-    transform: rotate(-18deg);
-}
-
 .currentProject img{
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -86,6 +78,10 @@
     margin-bottom: 10px;
 }
 
+.currentProject .projectStatus{
+    margin-bottom: 12px;
+}
+
 .currentProject .tags p{
     background-color: var(--white10);
     background-image: url('../images/noise-light.webp');
@@ -110,6 +106,13 @@
 
 /* PROJECT SPECIFICS PLACEMENT */
 
+.healthPlus > span h2{
+    background: linear-gradient(90deg, #ffe069, #22b2d3);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .eaes{
     --accent1: #a8a8a8;
     --accent2: #616775;
@@ -125,13 +128,6 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-.crimsonMusic .loop-doodle{
-    top: -60px;
-    right: auto;
-    left: -50px;
-    transform: rotate(-10deg);
 }
 
 .crimsonMusic > span h2{
@@ -154,25 +150,11 @@
     color: black;
 }
 
-.krunaBoje .loop-doodle{
-    top: -80px;
-    left: auto;
-    right: -70px;
-    transform: rotate(30deg) !important;
-}
-
 .krunaBoje > span h2{
     background: linear-gradient(90deg, #cfff9f, #7FFC03);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-.roomRule .loop-doodle{
-    top: -80px;
-    right: auto;
-    left: -70px;
-    transform: rotate(-25deg);
 }
 
 .roomRule > span h2{
@@ -186,13 +168,6 @@
     --accent1: #21c4b1;
     --accent2: #0f7e74;
     --accentTextGradient: linear-gradient(90deg, #4ed4c5, #0f7970);
-}
-
-.uehsWebsite .loop-doodle{
-    top: -70px;
-    left: auto !important;
-    right: -80px !important;
-    transform: rotate(-5deg);
 }
 
 .uehsWebsite > span h2{
@@ -214,13 +189,6 @@
     -webkit-text-fill-color: transparent;
 }
 
-.palettePilot .loop-doodle{
-    top: -80px;
-    right: auto;
-    left: -70px;
-    transform: rotate(-25deg);
-}
-
 .tabVolumeManager{
     --accent1: #3752DB;
     --accent2: #7185ee;
@@ -231,24 +199,6 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-.tabVolumeManager .loop-doodle{
-    top: -75px;
-    right: -70px;
-    left: auto;
-    transform: rotate(15deg);
-}
-
-/* Keep project doodles alternating right, left, right, left. */
-.content > .currentProject:nth-child(even) .loop-doodle{
-    right: -70px !important;
-    left: auto !important;
-}
-
-.content > .currentProject:nth-child(odd) .loop-doodle{
-    right: auto !important;
-    left: -70px !important;
 }
 
 .content .moreProjects{

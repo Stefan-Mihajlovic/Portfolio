@@ -283,7 +283,7 @@ header button{
     margin: -5px;
     margin-right: 5px;
     padding: 10px 15px;
-    transition: all 0.15s ease;
+    transition: background-color 0.25s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     cursor: pointer;
 }
 
@@ -295,8 +295,32 @@ header button span{
     background-color: white;
     width: 30px;
     height: 3px;
-    transition: all 0.15s ease;
+    transform-origin: center;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.25s ease,
+                width 0.35s ease;
     border-radius: 2px;
+}
+
+header button.is-open span:nth-child(1){
+    transform: translateY(9px) rotate(45deg);
+}
+
+header button.is-open span:nth-child(2){
+    width: 0;
+    opacity: 0;
+}
+
+header button.is-open span:nth-child(3){
+    transform: translateY(-9px) rotate(-45deg);
+}
+
+body.mobile-menu-open{
+    overflow: hidden;
+}
+
+body.mobile-menu-open header{
+    z-index: 102;
 }
 
 .mobileMenuWrapper{
@@ -306,14 +330,21 @@ header button span{
     left: 0;
     width: 100vw;
     height: 100vh;
-    pointer-events: all;
-    background-color: var(--black50);
-    transition: all 0.2s ease;
+    pointer-events: auto;
+    visibility: visible;
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.56);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.4s ease, visibility 0s;
     z-index: 101;
 }
+
 .mobileMenuWrapper.closed{
     pointer-events: none;
+    visibility: hidden;
     opacity: 0;
+    transition: opacity 0.3s ease, visibility 0s 0.3s;
 }
 
 .closeMenu{
@@ -330,46 +361,36 @@ header button span{
     position: absolute;
     flex-direction: column;
     align-items: flex-end;
-    gap: 10px;
-    top: 0;
-    right: 0;
-    width: min(80%, 300px);
-    height: 100%;
+    gap: 12px;
+    top: 96px;
+    right: 15px;
+    bottom: 20px;
+    left: 15px;
+    width: auto;
+    height: auto;
     overflow: hidden;
-    transform: translateX(0%);
-    padding: 15px;
-    transform-origin: top;
-    border-left: 1px solid var(--white10);
-    transition: all 0.2s ease;
-    will-change: transform;
-    background-color: var(--primary);
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate3d(28px, 8px, 0);
+    padding: 0;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.32s ease,
+                visibility 0s 0.5s;
+    will-change: transform, opacity;
     z-index: 2;
 }
 
-.closed .mobileMenu{
-    opacity: 0;
-    transform: translateX(110%);
+body.mobile-menu-open .mobileMenu{
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition-delay: 0.28s, 0.28s, 0s;
 }
 
 .mobileMenu .closeMenuButton{
-    color: white;
-    background-color: rgb(194, 60, 60);
-    border: 1px solid var(--white20);
-    width: 35px;
-    height: 35px;
-    padding-bottom: 5px;
-    border-radius: 50%;
-    font-size: 1.25rem;
-    font-weight: 200;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease, opacity 0.05s ease;
-}
-
-.mobileMenu .closeMenuButton:hover{
-    background-color: rgb(228, 79, 79);
+    display: none;
 }
 
 .mobileMenu a{
@@ -382,13 +403,43 @@ header button span{
     text-align: right;
     border-radius: 16px;
     border: 1px solid var(--white10);
-    transition: all 0.15s ease, opacity 0.05s ease;
+    opacity: 0;
+    transform: translateX(34px);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.35s ease,
+                background-color 0.2s ease,
+                border-color 0.2s ease;
     font-size: 1.25rem;
     font-weight: 500;
 }
 
-.closed .mobileMenu a{
-    opacity: 0;
+.mobileMenu a:nth-last-child(2){
+    margin-right: 0;
+}
+
+.mobileMenu a.active::before{
+    display: none;
+}
+
+body.mobile-menu-open .mobileMenu a{
+    opacity: 1;
+    transform: translateX(0);
+}
+
+body.mobile-menu-open .mobileMenu a:nth-of-type(1){
+    transition-delay: 0.34s;
+}
+
+body.mobile-menu-open .mobileMenu a:nth-of-type(2){
+    transition-delay: 0.4s;
+}
+
+body.mobile-menu-open .mobileMenu a:nth-of-type(3){
+    transition-delay: 0.46s;
+}
+
+body.mobile-menu-open .mobileMenu a:nth-of-type(4){
+    transition-delay: 0.52s;
 }
 
 .mobileMenu a:hover{
@@ -613,7 +664,28 @@ i.accentText{
     gap: 15px;
 }
 
+.projectStatus{
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 10px;
+    background-color: color-mix(in srgb, var(--accent1) 24%, var(--white10));
+    background-image: url('images/noise-light.webp');
+    color: var(--accent2);
+    font-size: 0.9rem;
+    font-weight: 300;
+    line-height: normal;
+}
+
 /* PROJECT COLORS */
+
+.healthPlus{
+    --accent1: #0089b5;
+    --accent2: #f3c72c;
+    --accentTextGradient: linear-gradient(90deg, #ffe069, #22b2d3);
+}
 
 .crimsonMusic{
     --accent1: #7033BD;
@@ -643,83 +715,6 @@ i.accentText{
     --accent1: #3752DB;
     --accent2: #7185ee;
     --accentTextGradient: linear-gradient(90deg, #9eacff, #3752DB);
-}
-
-/* DOODLES */
-
-.loop-doodle{
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.crimsonMusic .loop-doodle{
-    width: 180px;
-    height: 180px;
-    top: -70px;
-    right: -60px;
-    transform: rotate(-18deg);
-}
-
-.roomRule .loop-doodle{
-    top: -70px;
-    left: -70px;
-    transform: rotate(-18deg);
-}
-
-.optiFlowz .loop-doodle{
-    width: 180px;
-    height: 180px;
-    top: -70px;
-    right: -60px;
-    transform: rotate(-18deg);
-}
-
-.palettePilot .loop-doodle{
-    top: -70px;
-    right: -90px;
-    width: 210px;
-    height: 210px;
-    transform: rotate(18deg);
-}
-
-.tabVolumeManager .loop-doodle{
-    top: -70px;
-    left: -75px;
-    width: 190px;
-    height: 190px;
-    transform: rotate(-16deg);
-}
-
-/* Keep project doodles alternating right, left, right, left. */
-.projects > .projectCard:nth-child(even) .loop-doodle{
-    right: -70px !important;
-    left: auto !important;
-}
-
-.projects > .projectCard:nth-child(odd) .loop-doodle{
-    right: auto !important;
-    left: -70px !important;
-}
-
-.loop-doodle path{
-    fill: none;
-    stroke: rgba(255,255,255,1);
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 420;
-    stroke-dashoffset: 420;
-    animation: loopDraw 2.6s ease-in-out infinite;
-}
-
-@keyframes loopDraw{
-    0%   { stroke-dashoffset: 420; opacity: 0.15; }
-    40%  { stroke-dashoffset: 0;   opacity: 0.45; }
-    60%  { stroke-dashoffset: 0;   opacity: 0.45; }
-    100% { stroke-dashoffset: -420; opacity: 0.15; }
 }
 
 /* MORE PROJECTS SECTION */
@@ -1258,11 +1253,76 @@ footer div a svg{
 /* RESPONSIVE FIX */
 
 @media screen and (max-width: 800px) {
+    header{
+        --mobile-header-edge: 20px;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        padding: 0;
+        transform: translateZ(0);
+        border: 0;
+        border-radius: 0;
+        overflow: hidden;
+        clip-path: inset(
+            var(--mobile-header-edge)
+            var(--mobile-header-edge)
+            calc(100dvh - 70px - var(--mobile-header-edge))
+            var(--mobile-header-edge)
+            round 100px
+        );
+        contain: paint;
+        transition: clip-path 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+                    background-color 0.45s ease,
+                    backdrop-filter 0.45s ease,
+                    -webkit-backdrop-filter 0.45s ease;
+        will-change: clip-path;
+    }
+    header .logo{
+        position: absolute;
+        top: calc(var(--mobile-header-edge) + 13px);
+        left: calc(var(--mobile-header-edge) + 20px);
+        margin-left: 0;
+        transition: transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+                    background-color 0.2s ease;
+    }
     header nav{
         display: none;
     }
     header button{
         display: flex;
+        position: absolute;
+        top: calc(var(--mobile-header-edge) + 13px);
+        right: calc(var(--mobile-header-edge) + 17px);
+        margin: 0;
+        z-index: 3;
+    }
+    body.mobile-menu-open header{
+        clip-path: inset(0 0 0 calc(100% - min(84vw, 320px)) round 0);
+        background-color: rgba(13, 9, 17, 0.9);
+        -webkit-backdrop-filter: blur(22px) saturate(120%);
+        backdrop-filter: blur(22px) saturate(120%);
+    }
+    body.mobile-menu-open header .logo{
+        transform: translate3d(
+            calc(100vw - min(84vw, 320px) - var(--mobile-header-edge) - 10px),
+            calc(-1 * var(--mobile-header-edge)),
+            0
+        );
+    }
+    body.mobile-menu-open header button{
+        transform: translate3d(
+            calc(var(--mobile-header-edge) + 17px),
+            calc(-1 * var(--mobile-header-edge)),
+            0
+        );
+    }
+    header .mobileMenu{
+        display: flex;
+        right: 15px;
+        left: auto;
+        width: calc(min(84vw, 320px) - 30px);
     }
     .scrollShadow{
         display: none;
@@ -1439,8 +1499,7 @@ footer div a svg{
         font-size: 0.9rem;
     }
     header{
-        top: 15px;
-        width: calc(100% - 30px);
+        --mobile-header-edge: 15px;
     }
     .hero{
         font-size: 1.5rem;
