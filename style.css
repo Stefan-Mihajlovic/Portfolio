@@ -334,8 +334,6 @@ body.mobile-menu-open header{
     visibility: visible;
     opacity: 1;
     background-color: rgba(0, 0, 0, 0.56);
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
     transition: opacity 0.4s ease, visibility 0s;
     z-index: 101;
 }
@@ -344,7 +342,7 @@ body.mobile-menu-open header{
     pointer-events: none;
     visibility: hidden;
     opacity: 0;
-    transition: opacity 0.3s ease, visibility 0s 0.3s;
+    transition: opacity 0.3s ease, visibility 0s 0.42s;
 }
 
 .closeMenu{
@@ -444,6 +442,37 @@ body.mobile-menu-open .mobileMenu a:nth-of-type(4){
 
 .mobileMenu a:hover{
     background-color: var(--white10);
+}
+
+.mobileMenuLabel{
+    display: inline-block;
+    color: rgba(255, 255, 255, 0.38);
+    background: linear-gradient(
+        90deg,
+        #fff 0%,
+        #fff 42%,
+        rgba(255, 255, 255, 0.38) 58%,
+        rgba(255, 255, 255, 0.38) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 100% 0;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.mobile-menu-open .mobileMenuLabel{
+    animation: mobileMenuTextLight 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes mobileMenuTextLight{
+    from{
+        background-position: 100% 0;
+    }
+    to{
+        background-position: 0 0;
+    }
 }
 
 /* MAIN */
@@ -1255,37 +1284,60 @@ footer div a svg{
 @media screen and (max-width: 800px) {
     header{
         --mobile-header-edge: 20px;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        max-width: none;
-        height: 100dvh;
+        top: var(--mobile-header-edge);
+        left: 50%;
+        width: calc(100% - (var(--mobile-header-edge) * 2));
+        max-width: 900px;
+        height: 70px;
         padding: 0;
-        transform: translateZ(0);
+        transform: translateX(-50%);
         border: 0;
-        border-radius: 0;
-        overflow: hidden;
-        clip-path: inset(
-            var(--mobile-header-edge)
-            var(--mobile-header-edge)
-            calc(100dvh - 70px - var(--mobile-header-edge))
-            var(--mobile-header-edge)
-            round 100px
-        );
-        contain: paint;
-        transition: clip-path 0.72s cubic-bezier(0.16, 1, 0.3, 1),
-                    background-color 0.45s ease,
-                    backdrop-filter 0.45s ease,
-                    -webkit-backdrop-filter 0.45s ease;
-        will-change: clip-path;
+        border-radius: 100px;
+        overflow: visible;
+        clip-path: none;
+        contain: none;
+        isolation: isolate;
+        background-color: transparent;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        transition: none;
+        will-change: auto;
+    }
+    header::before{
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 1px solid transparent;
+        border-radius: inherit;
+        background-color: var(--primary);
+        opacity: 1;
+        transition: opacity 0.24s ease, background-color 0.28s ease;
+        z-index: 0;
+    }
+    header.has-scroll-backdrop{
+        background-color: transparent;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    header.has-scroll-backdrop::before{
+        background-color: rgba(13, 9, 17, 0.74);
+        -webkit-backdrop-filter: blur(14px) saturate(115%);
+        backdrop-filter: blur(14px) saturate(115%);
     }
     header .logo{
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: absolute;
-        top: calc(var(--mobile-header-edge) + 13px);
-        left: calc(var(--mobile-header-edge) + 20px);
+        top: 15px;
+        left: 20px;
+        line-height: 1;
+        padding-top: 1px;
+        padding-bottom: 0;
         margin-left: 0;
-        transition: transform 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
                     background-color 0.2s ease;
+        z-index: 3;
     }
     header nav{
         display: none;
@@ -1293,16 +1345,18 @@ footer div a svg{
     header button{
         display: flex;
         position: absolute;
-        top: calc(var(--mobile-header-edge) + 13px);
-        right: calc(var(--mobile-header-edge) + 17px);
+        top: 13px;
+        right: 17px;
         margin: 0;
         z-index: 3;
     }
     body.mobile-menu-open header{
-        clip-path: inset(0 0 0 calc(100% - min(84vw, 320px)) round 0);
-        background-color: rgba(13, 9, 17, 0.9);
-        -webkit-backdrop-filter: blur(22px) saturate(120%);
-        backdrop-filter: blur(22px) saturate(120%);
+        background-color: transparent;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+    body.mobile-menu-open header::before{
+        opacity: 0;
     }
     body.mobile-menu-open header .logo{
         transform: translate3d(
@@ -1318,17 +1372,79 @@ footer div a svg{
             0
         );
     }
-    header .mobileMenu{
+    .mobileMenu{
         display: flex;
-        right: 15px;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: auto;
         left: auto;
-        width: calc(min(84vw, 320px) - 30px);
+        width: min(84vw, 320px);
+        height: 100vh;
+        height: 100svh;
+        padding: 92px 15px 20px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        visibility: hidden;
+        pointer-events: none;
+        opacity: 1;
+        background-color: rgba(13, 9, 17, 0.985);
+        box-shadow: -24px 0 60px rgba(0, 0, 0, 0.28);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        transform: translate3d(105%, 0, 0);
+        transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+                    visibility 0s 0.42s;
+        transition-delay: 0s, 0.42s;
+        will-change: transform;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        overscroll-behavior: contain;
+    }
+    body.mobile-menu-open .mobileMenu{
+        visibility: visible;
+        pointer-events: auto;
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        transition: transform 0.54s cubic-bezier(0.16, 1, 0.3, 1),
+                    visibility 0s;
+        transition-delay: 0s, 0s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(1){
+        transition-delay: 0.14s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(1) .mobileMenuLabel{
+        animation-delay: 0.18s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(2){
+        transition-delay: 0.19s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(2) .mobileMenuLabel{
+        animation-delay: 0.23s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(3){
+        transition-delay: 0.24s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(3) .mobileMenuLabel{
+        animation-delay: 0.28s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(4){
+        transition-delay: 0.29s;
+    }
+    body.mobile-menu-open .mobileMenu a:nth-of-type(4) .mobileMenuLabel{
+        animation-delay: 0.33s;
     }
     .scrollShadow{
         display: none;
     }
     .mobileMenuWrapper{
         display: block;
+        height: 100vh;
+        height: 100svh;
+        background-color: rgba(0, 0, 0, 0.52);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        overscroll-behavior: contain;
     }
     .hero{
         font-size: 1.75rem;

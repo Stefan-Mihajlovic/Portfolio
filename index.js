@@ -5,9 +5,14 @@ const mobileMenuButton = document.getElementById('mobileMenuButton');
 const mobileMenuWrapper = document.querySelector('.mobileMenuWrapper');
 const mobileMenu = document.querySelector('.mobileMenu');
 
-if (siteHeader && mobileMenu) {
-    siteHeader.appendChild(mobileMenu);
-}
+mobileMenu?.querySelectorAll('a').forEach((link) => {
+    if (link.querySelector('.mobileMenuLabel')) return;
+
+    const label = document.createElement('span');
+    label.className = 'mobileMenuLabel';
+    label.textContent = link.textContent.trim();
+    link.replaceChildren(label);
+});
 
 function setMobileMenuOpen(isOpen) {
     mobileMenuWrapper?.classList.toggle('closed', !isOpen);
