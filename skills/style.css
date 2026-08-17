@@ -64,12 +64,6 @@
     margin-bottom: 75px;
 }
 
-.first .loop-doodle, .third .loop-doodle{
-    right: -50px;
-    top: -70px;
-    transform: rotate(-20deg);
-}
-
 @media screen and (max-width: 950px) {
     .skillCard div{
         display: grid;
