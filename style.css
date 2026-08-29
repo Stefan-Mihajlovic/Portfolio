@@ -196,7 +196,7 @@ header{
 }
 
 header.has-scroll-backdrop{
-    background-color: rgba(13, 9, 17, 0.74);
+    background-color: rgba(13, 9, 17, 0.5);
     -webkit-backdrop-filter: blur(14px) saturate(115%);
     backdrop-filter: blur(14px) saturate(115%);
 }
@@ -1320,7 +1320,7 @@ footer div a svg{
         backdrop-filter: none;
     }
     header.has-scroll-backdrop::before{
-        background-color: rgba(13, 9, 17, 0.74);
+        background-color: rgba(13, 9, 17, 0.5);
         -webkit-backdrop-filter: blur(14px) saturate(115%);
         backdrop-filter: blur(14px) saturate(115%);
     }
