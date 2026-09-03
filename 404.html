@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/motion-boot.js"></script>
     <title>Page Not Found | Stefan Mihajlovic</title>
     <meta name="robots" content="noindex, follow">
     <meta name="theme-color" content="#f4f0e8">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="apple-touch-icon" href="/images/logo.png">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/motion.css">
     <link rel="shortcut icon" href="/images/logo.png" type="image/x-icon">
     <script src="/index.js" defer></script>
+    <script src="/motion.js" defer></script>
 </head>
 <body>
     <header>
@@ -30,10 +33,11 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu" aria-label="Mobile navigation">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="/">Home</a>
             <a href="/projects/">Projects</a>
             <a href="/about/">About me</a>
             <a href="/skills/">Skills</a>
-            <a href="/contact/">Get in contact</a>
+            <a href="/contact/">Contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>

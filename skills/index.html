@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/motion-boot.js"></script>
     <title>Design &amp; Development Skills | Stefan Mihajlovic</title>
     <meta name="description" content="Explore Stefan Mihajlovic's skills in UI/UX, Figma, responsive design, React, TypeScript, Tailwind CSS, Node.js, PostgreSQL, and more.">
     <meta name="author" content="Stefan Mihajlovic">
@@ -27,9 +28,10 @@
     <meta name="twitter:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
     <meta name="twitter:image:alt" content="Digital product work by Stefan Mihajlovic">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/motion.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script src="/motion.js" defer></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -65,10 +67,11 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="../">Home</a>
             <a href="../projects/">Projects</a>
             <a href="../about/">About me</a>
             <a href="#">Skills</a>
-            <a href="../contact/">Get in contact</a>
+            <a href="../contact/">Contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -81,28 +84,28 @@
             <div class="skillCard first fade-in">
                 <h2 class="accentText">Design & Creative</h2>
                 <div>
-                    <p><span>Figma</span><img src="icons/figma.svg" alt="Figma"></p>
-                    <p><span>Affinity Suite</span><img src="icons/affinity.svg" alt="Affinity Suite"></p>
-                    <p><span>Responsive Design</span><img src="icons/responsive.svg" alt="Responsive Design"></p>
-                    <p><span>UI/UX Prototyping</span><img src="icons/uiux.svg" alt="UI/UX Prototyping"></p>
+                    <p data-skill="figma"><span class="skill-label">Figma</span><span class="skill-icon"><img src="icons/figma.svg" alt="Figma"></span></p>
+                    <p data-skill="affinity"><span class="skill-label">Affinity Suite</span><span class="skill-icon"><img src="icons/affinity.svg" alt="Affinity Suite"></span></p>
+                    <p data-skill="responsive"><span class="skill-label">Responsive Design</span><span class="skill-icon"><img src="icons/responsive.svg" alt="Responsive Design"></span></p>
+                    <p data-skill="uiux"><span class="skill-label">UI/UX Prototyping</span><span class="skill-icon"><img src="icons/uiux.svg" alt="UI/UX Prototyping"></span></p>
                 </div>
             </div>
             <div class="skillCard fade-in">
                 <h2 class="accentText">Frontend & Mobile</h2>
                 <div>
-                    <p><span>React / TypeScript</span><img src="icons/react.svg" alt="React"></p>
-                    <p><span>Tailwind CSS</span><img src="icons/tailwindcss.svg" alt="Tailwind CSS"></p>
-                    <p><span>JavaScript</span><img src="icons/js.svg" alt="JavaScript"></p>
-                    <p><span>Capacitor JS</span><img src="icons/capacitor.svg" alt="Capacitor JS"></p>
+                    <p data-skill="react"><span class="skill-label">React / TypeScript</span><span class="skill-icon"><img src="icons/react.svg" alt="React"></span></p>
+                    <p data-skill="tailwind"><span class="skill-label">Tailwind CSS</span><span class="skill-icon"><img src="icons/tailwindcss.svg" alt="Tailwind CSS"></span></p>
+                    <p data-skill="javascript"><span class="skill-label">JavaScript</span><span class="skill-icon"><img src="icons/js.svg" alt="JavaScript"></span></p>
+                    <p data-skill="capacitor"><span class="skill-label">Capacitor JS</span><span class="skill-icon"><img src="icons/capacitor.svg" alt="Capacitor JS"></span></p>
                 </div>
             </div>
             <div class="skillCard third fade-in">
                 <h2 class="accentText">Backend & Specialized</h2>
                 <div>
-                    <p><span>Node.js</span><img src="icons/nodejs.svg" alt="Node JS"></p>
-                    <p><span>PostgreSQL</span><img src="icons/postgresql.svg" alt="PostgreSQL"></p>
-                    <p><span>Unity / C#</span><img src="icons/cs.svg" alt="C#"></p>
-                    <p><span>WordPress / PHP</span><img src="icons/wordpress.svg" alt="Wordpress"></p>
+                    <p data-skill="node"><span class="skill-label">Node.js</span><span class="skill-icon"><img src="icons/nodejs.svg" alt="Node JS"></span></p>
+                    <p data-skill="postgresql"><span class="skill-label">PostgreSQL</span><span class="skill-icon"><img src="icons/postgresql.svg" alt="PostgreSQL"></span></p>
+                    <p data-skill="csharp"><span class="skill-label">Unity / C#</span><span class="skill-icon"><img src="icons/cs.svg" alt="C#"></span></p>
+                    <p data-skill="wordpress"><span class="skill-label">WordPress / PHP</span><span class="skill-icon"><img src="icons/wordpress.svg" alt="Wordpress"></span></p>
                 </div>
             </div>
             <div class="moreProjects fade-in">
@@ -134,10 +137,6 @@
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
-
-    <div class="cursor">
-        <div class="cursor-dot"></div>
-    </div>
 
     <div class="background">
         <img class="bg" src="../images/bg.webp" alt="Abstract dark fabric background">

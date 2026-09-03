@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/motion-boot.js"></script>
     <title>EAES Video Corner Case Study | Stefan Mihajlovic</title>
     <meta name="description" content="See the EAES Video Corner case study: a modern educational video platform designed for surgeons and trainees by Stefan Mihajlovic and collaborators.">
     <meta name="author" content="Stefan Mihajlovic">
@@ -27,9 +28,10 @@
     <meta name="twitter:image" content="https://stefanmihajlovic.com/images/eaesBanner.webp">
     <meta name="twitter:image:alt" content="EAES Video Corner interface case study">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/motion.css">
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script src="../index.js" defer></script>
+    <script src="/motion.js" defer></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -74,10 +76,11 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="../">Home</a>
             <a href="../projects/">Projects</a>
             <a href="../about/">About me</a>
             <a href="../skills/">Skills</a>
-            <a href="../contact/">Get in contact</a>
+            <a href="../contact/">Contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -106,17 +109,17 @@
                         <img src="../images/eaesScreenshot3.webp" alt="EAES Video Corner screenshot showing another view of the learning platform">
                     </figure>
                 </div>
+            </section>
 
-                <div class="extensionDetails">
-                    <p><span class="accentText">EAES Video Corner</span> is a custom educational video platform built for the European Association for Endoscopic Surgery.</p>
+            <section class="extensionDetails fade-in">
+                <p><span class="accentText">EAES Video Corner</span> is a custom educational video platform built for the European Association for Endoscopic Surgery.</p>
 
-                    <p>The goal of the project is to give surgeons and trainees a smooth, modern place to explore structured video content, follow the curriculum more easily, and access high-quality material without friction.</p>
+                <p>The goal of the project is to give surgeons and trainees a smooth, modern place to explore structured video content, follow the curriculum more easily, and access high-quality material without friction.</p>
 
-                    <p>I worked on shaping the interface and overall experience so the platform feels clean, intuitive, and content-first, while still supporting a rich video library and a polished professional presentation.</p>
+                <p>I worked on shaping the interface and overall experience so the platform feels clean, intuitive, and content-first, while still supporting a rich video library and a polished professional presentation.</p>
 
-                    <div class="actions">
-                        <a target="_blank" rel="noopener noreferrer" href="https://videocorner.eaes.eu/" class="button">Visit Website</a>
-                    </div>
+                <div class="actions">
+                    <a target="_blank" rel="noopener noreferrer" href="https://videocorner.eaes.eu/" class="button">Visit Website</a>
                 </div>
             </section>
         </section>
@@ -139,10 +142,6 @@
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
-
-    <div class="cursor">
-        <div class="cursor-dot"></div>
-    </div>
 
     <div class="background">
         <img class="bg" src="../images/bg.webp" alt="Abstract dark fabric background">

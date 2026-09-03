@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/motion-boot.js"></script>
     <title>Stefan Mihajlovic | Web Designer &amp; Developer</title>
     <meta name="description" content="Portfolio of Stefan Mihajlovic, a Belgrade-based web designer and developer creating polished websites, digital products, and browser extensions.">
     <meta name="author" content="Stefan Mihajlovic">
@@ -27,8 +28,10 @@
     <meta name="twitter:image" content="https://stefanmihajlovic.com/images/extensionsBanner.webp">
     <meta name="twitter:image:alt" content="A selection of browser extension projects by Stefan Mihajlovic">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/motion.css">
     <link rel="shortcut icon" href="images/logo.png" type="image/x-icon">
     <script src="index.js" defer></script>
+    <script src="/motion.js" defer></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -89,10 +92,11 @@
     <div class="mobileMenuWrapper closed">
         <nav class="mobileMenu">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="/">Home</a>
             <a href="/projects/">Projects</a>
             <a href="/about/">About me</a>
             <a href="/skills/">Skills</a>
-            <a href="/contact/">Get in contact</a>
+            <a href="/contact/">Contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -109,9 +113,11 @@
                     <img src="images/HealthPlusBanner.webp" alt="HealthPlus Edukacije website banner">
                     <div class="aboutProject">
                         <div class="info">
-                            <span class="projectStatus">Currently working on</span>
                             <h3>HealthPlus Edukacije</h3>
-                            <p>A new website for a school specializing in ultrasound training and accredited education for healthcare professionals. The platform brings programs, membership, news, and enrollment information together in one clear and trustworthy experience.</p>
+                            <p>A healthcare education website that brings accredited courses, news, membership, and enrollment into one clear, trustworthy experience.</p>
+                        </div>
+                        <div class="actions">
+                            <a target="_blank" rel="noopener noreferrer" href="https://healthplusedu.com/" class="button">Visit Website</a>
                         </div>
                     </div>
                 </div>
@@ -195,10 +201,6 @@
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
-
-    <div class="cursor">
-        <div class="cursor-dot"></div>
-    </div>
 
     <div class="background">
         <img class="bg" src="images/bg.webp" alt="Abstract dark fabric background">

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/motion-boot.js"></script>
     <title>Palette Pilot Privacy Policy | Stefan Mihajlovic</title>
     <meta name="description" content="Learn what data Palette Pilot and Palette Pilot Pro process, how licensing and payments work, how information is protected, and what choices users have.">
     <meta name="author" content="Stefan Mihajlovic">
@@ -28,7 +29,9 @@
     <meta name="twitter:image" content="https://stefanmihajlovic.com/images/PalettePilotBanner.webp">
     <meta name="twitter:image:alt" content="Palette Pilot browser color picker extension">
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="/motion.css">
     <script src="../index.js" defer></script>
+    <script src="/motion.js" defer></script>
     <link rel="shortcut icon" href="../images/logo.png" type="image/x-icon">
     <script type="application/ld+json">
     {
@@ -44,7 +47,7 @@
     }
     </script>
 </head>
-<body onload="setTransition(); setSkillValues();">
+<body>
 
     <header>
         <a href="../" class="logo">SM</a>
@@ -63,10 +66,11 @@
     <div class="mobileMenuWrapper closed">
         <nav class="closed mobileMenu" aria-label="Mobile navigation">
             <span class="closeMenuButton" onclick="closeMobileMenu()">x</span>
+            <a href="../">Home</a>
             <a href="../projects/">Projects</a>
             <a href="../about/">About me</a>
             <a href="../skills/">Skills</a>
-            <a href="../contact/">Get in contact</a>
+            <a href="../contact/">Contact</a>
         </nav>
         <span class="closeMenu" onclick="closeMobileMenu()"></span>
     </div>
@@ -134,10 +138,6 @@
             <path d="M12 19V5M18 11L12 5L6 11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </a>
-
-    <div class="cursor">
-        <div class="cursor-dot"></div>
-    </div>
 
     <div class="background">
         <img class="bg" src="../images/bg.webp" alt="Abstract dark fabric background">

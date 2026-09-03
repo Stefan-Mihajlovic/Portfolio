@@ -30,6 +30,10 @@ mobileMenuButton?.addEventListener('click', () => {
     setMobileMenuOpen(mobileMenuWrapper?.classList.contains('closed'));
 });
 
+mobileMenu?.addEventListener('click', (event) => {
+    if (event.target === mobileMenu) setMobileMenuOpen(false);
+});
+
 function closeMobileMenu(){
     setMobileMenuOpen(false);
 }
@@ -86,91 +90,9 @@ function initFadeInObserver({
     return observer;
 }
 
-function initFaqAccordions() {
-    const faqItems = Array.from(document.querySelectorAll('.faqItem'));
-    if (!faqItems.length) return;
-
-    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const animationDuration = prefersReducedMotion ? 0 : 420;
-    const animationEasing = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
-
-    faqItems.forEach((item) => {
-        const summary = item.querySelector('summary');
-        const answer = item.querySelector('.faqAnswer');
-        if (!summary || !answer) return;
-
-        const setState = (isOpen) => {
-            item.open = isOpen;
-            answer.hidden = !isOpen;
-            answer.style.height = isOpen ? 'auto' : '0px';
-            answer.style.opacity = isOpen ? '1' : '0';
-        };
-
-        setState(item.open);
-
-        summary.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (item.dataset.faqAnimating === 'true') return;
-
-            const isOpening = !item.open;
-
-            if (animationDuration === 0) {
-                setState(isOpening);
-                return;
-            }
-
-            item.dataset.faqAnimating = 'true';
-
-            if (isOpening) {
-                item.open = true;
-                answer.hidden = false;
-                answer.style.height = 'auto';
-                answer.style.opacity = '1';
-                const targetHeight = answer.getBoundingClientRect().height;
-
-                answer.style.height = '0px';
-                answer.style.opacity = '0';
-
-                const animation = answer.animate([
-                    { height: '0px', opacity: 0 },
-                    { height: `${targetHeight}px`, opacity: 1 }
-                ], {
-                    duration: animationDuration,
-                    easing: animationEasing
-                });
-
-                animation.addEventListener('finish', () => {
-                    answer.style.height = 'auto';
-                    answer.style.opacity = '1';
-                    delete item.dataset.faqAnimating;
-                }, { once: true });
-                return;
-            }
-
-            const currentHeight = answer.getBoundingClientRect().height;
-            answer.style.height = `${currentHeight}px`;
-            answer.style.opacity = '1';
-
-            const animation = answer.animate([
-                { height: `${currentHeight}px`, opacity: 1 },
-                { height: '0px', opacity: 0 }
-            ], {
-                duration: animationDuration,
-                easing: animationEasing
-            });
-
-            animation.addEventListener('finish', () => {
-                setState(false);
-                delete item.dataset.faqAnimating;
-            }, { once: true });
-        });
-    });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
 initFadeInObserver();
 initScreenshotLightbox();
-initFaqAccordions();
 });
 
 function initScreenshotLightbox() {
@@ -183,6 +105,10 @@ function initScreenshotLightbox() {
     overlay.innerHTML = `
         <div class="lightboxBackdrop"></div>
         <div class="lightboxDialog" role="dialog" aria-modal="true" aria-label="Screenshot preview">
+            <div class="lightboxChrome" aria-hidden="true">
+                <span>Gallery view</span>
+                <span class="lightboxCount">01 / 01</span>
+            </div>
             <button class="lightboxClose hoverable" type="button" aria-label="Close preview">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M6 6L18 18M18 6L6 18"></path>
@@ -204,13 +130,13 @@ function initScreenshotLightbox() {
         </div>
     `;
     document.body.appendChild(overlay);
-    bindHoverables(overlay);
 
     const overlayImage = overlay.querySelector('.lightboxImage');
     const closeButton = overlay.querySelector('.lightboxClose');
     const prevButton = overlay.querySelector('.lightboxPrev');
     const nextButton = overlay.querySelector('.lightboxNext');
     const backdrop = overlay.querySelector('.lightboxBackdrop');
+    const lightboxCount = overlay.querySelector('.lightboxCount');
 
     let activeImages = [];
     let activeIndex = 0;
@@ -223,11 +149,16 @@ function initScreenshotLightbox() {
         overlayImage.alt = currentImage.alt;
         prevButton.disabled = activeImages.length <= 1;
         nextButton.disabled = activeImages.length <= 1;
+        lightboxCount.textContent = `${String(activeIndex + 1).padStart(2, '0')} / ${String(activeImages.length).padStart(2, '0')}`;
     }
 
-    function openLightbox(images, index) {
+    function openLightbox(images, index, slider) {
         activeImages = images;
         activeIndex = index;
+        const panel = slider.closest('.art-panel');
+        const panelStyle = panel ? getComputedStyle(panel) : null;
+        overlay.style.setProperty('--lightbox-bg', panel?.dataset.artBg || panelStyle?.backgroundColor || '#8fb7ff');
+        overlay.style.setProperty('--lightbox-ink', panel?.dataset.artInk || panelStyle?.color || '#090909');
         renderImage();
         overlay.classList.add('open');
         overlay.setAttribute('aria-hidden', 'false');
@@ -252,17 +183,46 @@ function initScreenshotLightbox() {
 
     sliders.forEach((slider) => {
         const images = Array.from(slider.querySelectorAll('img'));
+        const galleryHeading = slider.parentElement.querySelector('.sectionHeading');
+        const galleryPosition = document.createElement('span');
+
+        if (galleryHeading) {
+            galleryHeading.classList.add('galleryMeta');
+            galleryHeading.replaceChildren();
+
+            const galleryLabel = document.createElement('span');
+            galleryLabel.textContent = 'Swipe to explore';
+            galleryPosition.className = 'galleryPosition';
+            galleryHeading.append(galleryLabel, galleryPosition);
+        }
+
+        const updateGalleryPosition = () => {
+            if (!images.length || !galleryPosition) return;
+            const cards = Array.from(slider.querySelectorAll('.screenshotCard'));
+            const nearestIndex = cards.reduce((nearest, card, index) => {
+                const distance = Math.abs(card.offsetLeft - slider.scrollLeft);
+                return distance < nearest.distance ? { index, distance } : nearest;
+            }, { index: 0, distance: Infinity }).index;
+            galleryPosition.textContent = `${String(nearestIndex + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
+        };
+
+        updateGalleryPosition();
+        let galleryFrame = 0;
+        slider.addEventListener('scroll', () => {
+            cancelAnimationFrame(galleryFrame);
+            galleryFrame = requestAnimationFrame(updateGalleryPosition);
+        }, { passive: true });
 
         images.forEach((image, index) => {
             image.setAttribute('role', 'button');
             image.setAttribute('tabindex', '0');
             image.setAttribute('aria-label', `Open screenshot ${index + 1}`);
 
-            image.addEventListener('click', () => openLightbox(images, index));
+            image.addEventListener('click', () => openLightbox(images, index, slider));
             image.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
-                    openLightbox(images, index);
+                    openLightbox(images, index, slider);
                 }
             });
         });
@@ -279,140 +239,6 @@ function initScreenshotLightbox() {
         if (event.key === 'Escape') closeLightbox();
         if (event.key === 'ArrowLeft') showPrevious();
         if (event.key === 'ArrowRight') showNext();
-    });
-}
-
-// CURSOR EFFECT
-
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-const isCustomCursorDisabled = document.body.classList.contains('nativeCursor');
-
-const cursor = document.querySelector('.cursor');
-const cursorDot = document.querySelector('.cursor-dot');
-const canUseCustomCursor = !isTouchDevice && !isCustomCursorDisabled && cursor && cursorDot;
-
-if (!canUseCustomCursor) {
-    if (cursor) cursor.style.display = 'none';
-    document.body.style.cursor = 'auto';
-}
-
-let mouseX = -100, mouseY = -100;
-let cursorX = 0, cursorY = 0;
-let velocityX = 0, velocityY = 0;
-
-if (canUseCustomCursor) {
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-}
-
-let isHovering = false;
-let currentElement = null;
-let targetX = 0, targetY = 0;
-let isTransitioning = false;
-
-function animate() {
-    if (isHovering && currentElement) {
-        const rect = currentElement.getBoundingClientRect();
-        targetX = rect.left + rect.width / 2;
-        targetY = rect.top + rect.height / 2;
-        
-        cursorX += (targetX - cursorX) * 0.1;
-        cursorY += (targetY - cursorY) * 0.1;
-        
-        cursor.style.left = cursorX + 'px';
-        cursor.style.top = cursorY + 'px';
-        
-        cursorDot.style.transform = 'translate(-50%, -50%)';
-    } else {
-        const dx = mouseX - cursorX;
-        const dy = mouseY - cursorY;
-        
-        cursorX += dx * 0.15;
-        cursorY += dy * 0.15;
-        
-        velocityX = dx * 0.15;
-        velocityY = dy * 0.15;
-        
-        cursor.style.left = cursorX + 'px';
-        cursor.style.top = cursorY + 'px';
-        
-        if (!isTransitioning) {
-            const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
-            const stretchFactor = Math.min(speed * 0.75, 25);
-            
-            const angle = Math.atan2(velocityY, velocityX);
-            const scaleX = 1 + stretchFactor * 0.08;
-            const scaleY = 1 - stretchFactor * 0.06;
-            
-            cursorDot.style.transform = `
-                translate(-50%, -50%) 
-                rotate(${angle}rad) 
-                scaleX(${scaleX}) 
-                scaleY(${scaleY})
-            `;
-        } else {
-            cursorDot.style.transform = 'translate(-50%, -50%)';
-        }
-    }
-    
-    requestAnimationFrame(animate);
-}
-
-if (canUseCustomCursor) animate();
-
-const hoverableSelector = 'a, button, .skillCard p, .closeMenuButton, .hoverable';
-
-function bindHoverable(element) {
-    if (!canUseCustomCursor || element.dataset.hoverableBound === 'true') return;
-    element.dataset.hoverableBound = 'true';
-
-    element.addEventListener('mouseenter', () => {
-        isHovering = true;
-        isTransitioning = true;
-        currentElement = element;
-        const rect = element.getBoundingClientRect();
-        cursor.classList.add('morphing');
-        
-        setTimeout(() => {
-            if (isHovering && currentElement === element) {
-                cursorDot.style.width = rect.width + 'px';
-                cursorDot.style.height = rect.height + 'px';
-                cursorDot.style.borderRadius = getComputedStyle(element).borderRadius;
-            }
-        }, 50);
-    });
-    
-    element.addEventListener('mouseleave', () => {
-        isHovering = false;
-        currentElement = null;
-        cursor.classList.remove('morphing');
-        isTransitioning = true;
-        
-        cursorDot.style.width = '40px';
-        cursorDot.style.height = '40px';
-        cursorDot.style.borderRadius = '50%';
-        
-        setTimeout(() => {
-            isTransitioning = false;
-        }, 400);
-    });
-}
-
-function bindHoverables(root = document) {
-    root.querySelectorAll(hoverableSelector).forEach(bindHoverable);
-}
-
-bindHoverables();
-
-if (canUseCustomCursor) {
-    document.addEventListener('mouseleave', () => {
-        cursor.style.opacity = '0';
-    });
-
-    document.addEventListener('mouseenter', () => {
-        cursor.style.opacity = '1';
     });
 }
 
