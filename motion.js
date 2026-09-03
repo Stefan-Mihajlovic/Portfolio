@@ -4,6 +4,7 @@
     const body = document.body;
     const root = document.documentElement;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mobileMotionQuery = window.matchMedia('(max-width: 800px)');
     const isProductPage = Boolean(document.querySelector('.siteHeader'));
 
     let arrivingFromNavigation = false;
@@ -493,6 +494,23 @@
         const maxScroll = Math.max(1, document.documentElement.scrollHeight - viewportHeight);
         const progress = clamp(scrollY / maxScroll);
 
+        if (mobileMotionQuery.matches) {
+            scenes.forEach((scene) => {
+                scene.classList.remove('art-motion-active');
+                scene.style.setProperty('--art-panel-y', '0px');
+                scene.style.setProperty('--art-scene-progress', '0');
+            });
+            sceneMedia.forEach(({ media }) => {
+                media.classList.remove('art-motion-active');
+                media.style.setProperty('--art-media-y', '0px');
+            });
+
+            smoothVelocity = 0;
+            scrollVelocity = 0;
+            updateHeader();
+            return;
+        }
+
         smoothVelocity += (scrollVelocity - smoothVelocity) * 0.13;
         scrollVelocity *= 0.82;
 
@@ -579,7 +597,7 @@
 
         const startTop = window.scrollY;
         const distance = targetTop - startTop;
-        if (reducedMotion || Math.abs(distance) < 2) {
+        if (reducedMotion || mobileMotionQuery.matches || Math.abs(distance) < 2) {
             window.scrollTo({ top: targetTop, left: 0, behavior: 'auto' });
             return;
         }

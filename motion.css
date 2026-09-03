@@ -1886,12 +1886,11 @@ html:has(body.motion-portfolio) {
     .motion-portfolio > header,
     .motion-portfolio > header.has-scroll-backdrop,
     .motion-portfolio.mobile-menu-open > header {
-        top: 0;
-        left: 0;
-        width: 100%;
+        inset: 0 0 auto;
+        width: auto;
         max-width: none;
         height: 70px;
-        padding: 0 16px;
+        padding: 0;
         transform: none;
         border: 0;
         border-bottom: 1px solid color-mix(in srgb, var(--art-header-ink) 34%, transparent);
@@ -1905,18 +1904,24 @@ html:has(body.motion-portfolio) {
 
     .motion-portfolio > header .logo,
     .motion-portfolio.mobile-menu-open > header .logo {
-        top: 13px;
-        left: 16px;
+        position: absolute;
+        top: 50%;
+        left: max(16px, env(safe-area-inset-left));
+        flex: none;
+        padding: 0;
         margin-left: 0;
-        transform: none;
+        transform: translateY(-50%) !important;
         color: var(--art-header-ink);
+        transition: color .32s ease, background-color .32s ease;
     }
 
     .motion-portfolio > header button,
     .motion-portfolio.mobile-menu-open > header button {
-        top: 10px;
-        right: 10px;
-        transform: none;
+        position: absolute;
+        top: 50%;
+        right: max(12px, env(safe-area-inset-right));
+        flex: none;
+        transform: translateY(-50%) !important;
         width: 52px;
         height: 50px;
         padding: 9px 10px;
@@ -1927,6 +1932,32 @@ html:has(body.motion-portfolio) {
         -webkit-appearance: none;
         appearance: none;
         -webkit-tap-highlight-color: transparent;
+    }
+
+    .art-rail {
+        display: none;
+    }
+
+    .art-hero-scene,
+    .motion-portfolio .art-panel,
+    .motion-product .art-product-panel {
+        --art-panel-y: 0px !important;
+        --art-scene-progress: 0 !important;
+        transform: none !important;
+    }
+
+    .art-float-media {
+        --art-media-y: 0px !important;
+        transform: perspective(1250px) translate3d(0, 0, 70px) rotateZ(var(--art-media-rotate)) !important;
+        transition: none !important;
+    }
+
+    .motion-portfolio .art-panel::before {
+        transform: none !important;
+    }
+
+    .motion-portfolio .art-panel::after {
+        transform: translate(-50%, -50%) !important;
     }
 
     .motion-portfolio .mobileMenuWrapper {
@@ -2029,11 +2060,10 @@ html:has(body.motion-portfolio) {
     .motion-portfolio { --signal-gap: 6px; }
 
     .motion-portfolio > header {
-        top: 0;
-        left: 0;
-        width: 100%;
+        inset: 0 0 auto;
+        width: auto;
         height: 70px;
-        padding: 0 14px;
+        padding: 0;
         border-radius: 0;
     }
 
