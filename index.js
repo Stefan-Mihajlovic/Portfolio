@@ -140,6 +140,7 @@ function initScreenshotLightbox() {
 
     let activeImages = [];
     let activeIndex = 0;
+    let closeTimer = 0;
 
     function renderImage() {
         const currentImage = activeImages[activeIndex];
@@ -153,6 +154,8 @@ function initScreenshotLightbox() {
     }
 
     function openLightbox(images, index, slider) {
+        window.clearTimeout(closeTimer);
+        overlay.classList.remove('closing');
         activeImages = images;
         activeIndex = index;
         const panel = slider.closest('.art-panel');
@@ -166,9 +169,22 @@ function initScreenshotLightbox() {
     }
 
     function closeLightbox() {
-        overlay.classList.remove('open');
+        if (!overlay.classList.contains('open') || overlay.classList.contains('closing')) return;
+
+        const finishClose = () => {
+            overlay.classList.remove('open', 'closing');
+            document.body.classList.remove('lightboxOpen');
+        };
+
+        overlay.classList.add('closing');
         overlay.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('lightboxOpen');
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            finishClose();
+            return;
+        }
+
+        closeTimer = window.setTimeout(finishClose, 640);
     }
 
     function showPrevious() {
@@ -234,7 +250,7 @@ function initScreenshotLightbox() {
     nextButton.addEventListener('click', showNext);
 
     document.addEventListener('keydown', (event) => {
-        if (!overlay.classList.contains('open')) return;
+        if (!overlay.classList.contains('open') || overlay.classList.contains('closing')) return;
 
         if (event.key === 'Escape') closeLightbox();
         if (event.key === 'ArrowLeft') showPrevious();

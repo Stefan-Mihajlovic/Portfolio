@@ -207,6 +207,11 @@ main .content {
     transition: opacity .28s ease, visibility 0s;
 }
 
+.lightboxOverlay.open.closing {
+    pointer-events: none;
+    animation: lightbox-overlay-exit .62s ease forwards;
+}
+
 .lightboxBackdrop {
     position: absolute;
     inset: 0;
@@ -279,6 +284,23 @@ main .content {
     --lightbox-control-y: -50%;
 }
 
+.lightboxOverlay.open.closing .lightboxDialog {
+    animation: lightbox-panel-exit .62s cubic-bezier(.6, 0, .8, .12) forwards;
+}
+
+.lightboxOverlay.open.closing .lightboxFigure {
+    animation: lightbox-image-exit .4s cubic-bezier(.55, 0, .75, .15) forwards;
+}
+
+.lightboxOverlay.open.closing .lightboxChrome {
+    animation: lightbox-detail-exit .28s ease-in forwards;
+}
+
+.lightboxOverlay.open.closing .lightboxClose,
+.lightboxOverlay.open.closing .lightboxNav {
+    animation: lightbox-control-exit .28s ease-in forwards;
+}
+
 @keyframes lightbox-panel-enter {
     0% {
         clip-path: polygon(0 0, 8% 0, 8% 100%, 0 100%, 0 100%, 0 0);
@@ -307,6 +329,41 @@ main .content {
 @keyframes lightbox-control-enter {
     from { opacity: 0; transform: translateY(calc(var(--lightbox-control-y, 0%) + 18px)) scale(.72); }
     to { opacity: 1; transform: translateY(var(--lightbox-control-y, 0%)) scale(1); }
+}
+
+@keyframes lightbox-overlay-exit {
+    0%, 56% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes lightbox-panel-exit {
+    0% {
+        clip-path: polygon(0 0, calc(100% - 42px) 0, 100% 42px, 100% 100%, 42px 100%, 0 calc(100% - 42px));
+        transform: none;
+    }
+    32% {
+        clip-path: polygon(0 0, calc(100% - 42px) 0, 100% 42px, 100% 100%, 42px 100%, 0 calc(100% - 42px));
+        transform: translateY(5px) rotate(-.18deg) scale(1.006);
+    }
+    100% {
+        clip-path: polygon(0 0, 8% 0, 8% 100%, 0 100%, 0 100%, 0 0);
+        transform: translateY(54px) rotate(-1.25deg) scale(.955);
+    }
+}
+
+@keyframes lightbox-image-exit {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(34px) rotate(.8deg) scale(.94); }
+}
+
+@keyframes lightbox-detail-exit {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateY(-12px); }
+}
+
+@keyframes lightbox-control-exit {
+    from { opacity: 1; transform: translateY(var(--lightbox-control-y, 0%)) scale(1); }
+    to { opacity: 0; transform: translateY(calc(var(--lightbox-control-y, 0%) + 18px)) scale(.72); }
 }
 
 .lightboxImage {
@@ -552,6 +609,10 @@ main > footer .socials svg {
     .lightboxOverlay.open .lightboxChrome,
     .lightboxOverlay.open .lightboxClose,
     .lightboxOverlay.open .lightboxNav {
+        animation: none;
+    }
+
+    .lightboxOverlay.open.closing {
         animation: none;
     }
 }

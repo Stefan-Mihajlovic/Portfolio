@@ -1140,6 +1140,15 @@ body.art-entering .art-page-transition span {
     background: var(--art-ink);
     background-image: none;
     box-shadow: none;
+    transition: transform .5s ease, opacity .5s ease, background-color .3s ease,
+        border-color .3s ease, border-radius .4s var(--art-ease);
+}
+
+.motion-portfolio .scrollToTop:hover,
+.motion-portfolio .scrollToTop:focus-visible {
+    border-color: var(--art-ink);
+    border-radius: 50%;
+    background: var(--art-paper);
 }
 
 /* Keep this control above scenes, but below the mobile navigation layer. */
@@ -1582,6 +1591,10 @@ html:has(body.motion-portfolio) {
 }
 
 .art-hero-cta__arrow {
+    --art-arrow-shaft-angle: -45deg;
+    --art-arrow-shaft-right: 36.875%;
+    --art-arrow-shaft-top: 34.7%;
+    position: relative;
     display: grid;
     width: clamp(44px, 4vw, 58px);
     aspect-ratio: 1;
@@ -1591,7 +1604,7 @@ html:has(body.motion-portfolio) {
     border-radius: 50%;
     background: var(--art-panel-bg, var(--art-paper));
     color: var(--art-panel-ink, currentColor);
-    transition: transform .35s var(--art-ease);
+    transition: transform .35s var(--art-ease), background-color .3s ease, color .3s ease;
 }
 
 .art-hero-cta__arrow::before,
@@ -1606,18 +1619,62 @@ html:has(body.motion-portfolio) {
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M18 44 L44 18 M31 18 H44 V31' fill='none' stroke='black' stroke-width='4.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-.art-hero-cta--contact .art-hero-cta__arrow::before {
+.art-hero-cta__arrow::before,
+.art-hero-cta__arrow::after {
+    position: absolute;
+    background: currentColor;
+}
+
+.art-hero-cta__arrow::before {
+    inset: auto var(--art-arrow-shaft-right) auto auto;
+    top: var(--art-arrow-shaft-top);
+    width: 40.2%;
+    height: 3px;
+    border-radius: 999px;
+    -webkit-mask: none;
+    mask: none;
+    transform: translateY(-50%) rotate(var(--art-arrow-shaft-angle)) scaleX(1);
+    transform-origin: right center;
+}
+
+.art-hero-cta__arrow::after {
+    content: '';
+    inset: 15%;
+    width: auto;
+    height: auto;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M31 18 H44 V31' fill='none' stroke='black' stroke-width='4.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M31 18 H44 V31' fill='none' stroke='black' stroke-width='4.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.art-hero-cta--contact .art-hero-cta__arrow {
+    --art-arrow-shaft-angle: 90deg;
+    --art-arrow-shaft-right: 48.45%;
+    --art-arrow-shaft-top: 70.1%;
+}
+
+.art-hero-cta--contact .art-hero-cta__arrow::after {
     transform: rotate(135deg);
+}
+
+.art-hero-cta:hover .art-hero-cta__arrow::before,
+.art-hero-cta:focus-visible .art-hero-cta__arrow::before {
+    animation: art-arrow-shaft-draw .72s cubic-bezier(.45, 0, .2, 1);
+}
+
+@keyframes art-arrow-shaft-draw {
+    0%, 100% {
+        transform: translateY(-50%) rotate(var(--art-arrow-shaft-angle)) scaleX(1);
+    }
+    46% {
+        transform: translateY(-50%) rotate(var(--art-arrow-shaft-angle)) scaleX(.66);
+    }
 }
 
 .art-hero-cta:hover .art-hero-cta__arrow,
 .art-hero-cta:focus-visible .art-hero-cta__arrow {
-    transform: translate(5px, -5px);
-}
-
-.art-hero-cta--contact:hover .art-hero-cta__arrow,
-.art-hero-cta--contact:focus-visible .art-hero-cta__arrow {
-    transform: translateY(5px);
+    background: var(--art-panel-ink, var(--art-paper));
+    color: var(--art-panel-bg, currentColor);
+    transform: none;
 }
 
 .motion-portfolio[data-art-page="contact"] form.art-panel {
@@ -1751,6 +1808,12 @@ html:has(body.motion-portfolio) {
     height: 28px;
     color: var(--art-paper);
     transform: rotate(-45deg);
+    transition: color .3s ease;
+}
+
+.motion-portfolio .scrollToTop:hover::before,
+.motion-portfolio .scrollToTop:focus-visible::before {
+    color: var(--art-ink);
 }
 
 .motion-portfolio .moreProjects.art-panel .button:hover {
@@ -2145,5 +2208,9 @@ html:has(body.motion-portfolio) {
 
     .motion-portfolio .mobileMenu a {
         transition: none !important;
+    }
+
+    .art-hero-cta__arrow::before {
+        animation: none !important;
     }
 }
