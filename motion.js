@@ -130,13 +130,20 @@
     transition.style.setProperty('--art-transition-bg', arrivingTransitionColor || getMeta().color);
     transition.hidden = !arrivingFromNavigation;
     body.appendChild(transition);
-    root.classList.remove('art-transition-pending');
+    const transitionMark = transition.querySelector('span');
+    if (!arrivingFromNavigation) root.classList.remove('art-transition-pending');
 
     let transitionCleanupTimer = 0;
+    let arrivalAnimations = [];
+    const cancelArrivalAnimations = () => {
+        arrivalAnimations.forEach((animation) => animation.cancel());
+        arrivalAnimations = [];
+    };
     const hideTransition = () => {
         body.classList.remove('art-entering-armed');
         if (body.classList.contains('art-leaving')) return;
         transition.hidden = true;
+        cancelArrivalAnimations();
     };
 
     const initializeHeaderLetterDeformation = () => {
@@ -680,6 +687,8 @@
         }).pop() || scenes[0];
         const transitionColor = transitionScene?.dataset.artBg || getMeta().color;
         window.clearTimeout(transitionCleanupTimer);
+        cancelArrivalAnimations();
+        body.classList.remove('art-entering', 'art-entering-armed');
         transition.style.setProperty('--art-transition-bg', transitionColor);
         transition.hidden = false;
         // Commit the collapsed state before starting the expansion. Without
@@ -713,25 +722,56 @@
             refreshSceneMetrics();
 
             if (arrivingFromNavigation) {
+                // Keep the bootstrap overlay for one painted frame after the
+                // page becomes visible. This makes the handoff deterministic
+                // even when production HTML and assets arrive over the network.
                 requestAnimationFrame(() => {
-                    body.classList.add('art-entering-armed');
-                    // Chromium on Windows can otherwise coalesce the initial
-                    // full-screen state and the collapsed state into one paint.
                     void transition.offsetWidth;
+                    root.classList.remove('art-transition-pending');
+
                     requestAnimationFrame(() => {
                         let handleArrivalEnd;
+                        let arrivalFinished = false;
                         const finishArrival = () => {
+                            if (arrivalFinished) return;
+                            arrivalFinished = true;
                             window.clearTimeout(transitionCleanupTimer);
-                            transition.removeEventListener('transitionend', handleArrivalEnd);
+                            if (handleArrivalEnd) transition.removeEventListener('transitionend', handleArrivalEnd);
                             hideTransition();
                         };
-                        handleArrivalEnd = (event) => {
-                            if (event.target !== transition || event.propertyName !== 'clip-path') return;
-                            finishArrival();
-                        };
 
-                        transition.addEventListener('transitionend', handleArrivalEnd);
-                        body.classList.remove('art-entering');
+                        if (!reducedMotion && typeof transition.animate === 'function' && transitionMark) {
+                            const animationOptions = {
+                                duration: 780,
+                                easing: 'cubic-bezier(.16, 1, .3, 1)',
+                                fill: 'forwards'
+                            };
+                            const circleAnimation = transition.animate([
+                                { clipPath: 'circle(150vmax at 50% 50%)' },
+                                { clipPath: 'circle(0 at 50% 50%)' }
+                            ], animationOptions);
+                            const markAnimation = transitionMark.animate([
+                                { transform: 'translateY(0) rotate(0) scale(1)' },
+                                { transform: 'translateY(32vh) rotate(-7deg) scale(.72)' }
+                            ], animationOptions);
+
+                            arrivalAnimations = [circleAnimation, markAnimation];
+                            body.classList.remove('art-entering');
+                            Promise.allSettled(arrivalAnimations.map((animation) => animation.finished)).then(finishArrival);
+                        } else if (!reducedMotion) {
+                            body.classList.add('art-entering-armed');
+                            void transition.offsetWidth;
+                            handleArrivalEnd = (event) => {
+                                if (event.target !== transition || event.propertyName !== 'clip-path') return;
+                                finishArrival();
+                            };
+                            transition.addEventListener('transitionend', handleArrivalEnd);
+                            requestAnimationFrame(() => body.classList.remove('art-entering'));
+                        } else {
+                            body.classList.remove('art-entering');
+                            finishArrival();
+                        }
+
                         transitionCleanupTimer = window.setTimeout(
                             finishArrival,
                             reducedMotion ? 0 : 1400

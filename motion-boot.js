@@ -3,7 +3,7 @@
 
     document.documentElement.classList.add('art-motion-pending');
     window.setTimeout(() => {
-        document.documentElement.classList.remove('art-motion-pending');
+        document.documentElement.classList.remove('art-motion-pending', 'art-transition-pending');
     }, 3000);
 
     const logoFontPreload = document.createElement('link');
