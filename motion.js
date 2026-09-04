@@ -128,15 +128,8 @@
     transition.setAttribute('aria-hidden', 'true');
     transition.innerHTML = '<span>SM</span>';
     transition.style.setProperty('--art-transition-bg', arrivingTransitionColor || getMeta().color);
-    transition.hidden = !arrivingFromNavigation;
     body.appendChild(transition);
     root.classList.remove('art-transition-pending');
-
-    let transitionCleanupTimer = 0;
-    const hideTransition = () => {
-        if (body.classList.contains('art-leaving')) return;
-        transition.hidden = true;
-    };
 
     const initializeHeaderLetterDeformation = () => {
         if (isProductPage || reducedMotion) return;
@@ -678,13 +671,7 @@
             return rect.top <= window.innerHeight * 0.5 && rect.bottom > window.innerHeight * 0.5;
         }).pop() || scenes[0];
         const transitionColor = transitionScene?.dataset.artBg || getMeta().color;
-        window.clearTimeout(transitionCleanupTimer);
         transition.style.setProperty('--art-transition-bg', transitionColor);
-        transition.hidden = false;
-        // Commit the collapsed state before starting the expansion. Without
-        // this flush, browsers can batch `display: none` -> expanded and skip
-        // the outgoing animation entirely.
-        void transition.offsetWidth;
         body.classList.add('art-leaving');
         try {
             window.sessionStorage.setItem('art-page-transition', '1');
@@ -699,7 +686,6 @@
 
     window.addEventListener('pageshow', () => {
         body.classList.remove('art-leaving');
-        if (!body.classList.contains('art-entering')) hideTransition();
         requestFrame();
     });
 
@@ -713,13 +699,7 @@
 
             if (arrivingFromNavigation) {
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        body.classList.remove('art-entering');
-                        transitionCleanupTimer = window.setTimeout(
-                            hideTransition,
-                            reducedMotion ? 0 : 820
-                        );
-                    });
+                    requestAnimationFrame(() => body.classList.remove('art-entering'));
                 });
             }
         });
