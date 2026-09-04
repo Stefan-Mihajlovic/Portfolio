@@ -1906,7 +1906,7 @@ html:has(body.motion-portfolio) {
         -webkit-backdrop-filter: blur(24px) saturate(1.2);
         backdrop-filter: blur(24px) saturate(1.2);
         box-shadow: none;
-        z-index: 1000;
+        z-index: 1100;
     }
 
     .motion-portfolio > header .logo,
@@ -1941,17 +1941,8 @@ html:has(body.motion-portfolio) {
         -webkit-tap-highlight-color: transparent;
     }
 
-    body.motion-portfolio.mobile-menu-open > header {
+    body.motion-art.motion-portfolio > header {
         z-index: 1100;
-        border-bottom-color: transparent;
-        background: transparent;
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-    }
-
-    .motion-portfolio.mobile-menu-open > header .logo {
-        opacity: 0;
-        pointer-events: none;
     }
 
     .motion-portfolio.mobile-menu-open > header #mobileMenuButton {

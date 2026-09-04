@@ -144,14 +144,17 @@ body > header > button span:first-child {
     width: 21px;
 }
 
+body > header > button span:nth-child(2) {
+    transform-origin: right center;
+}
+
 body > header > button.is-open span:nth-child(1) {
     width: 30px;
     transform: translateY(9px) rotate(45deg);
 }
 
 body > header > button.is-open span:nth-child(2) {
-    width: 0;
-    opacity: 0;
+    transform: scaleX(0);
 }
 
 body > header > button.is-open span:nth-child(3) {
