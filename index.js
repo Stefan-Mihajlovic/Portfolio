@@ -122,6 +122,30 @@ function updateScrollUi() {
 window.addEventListener('scroll', updateScrollUi, { passive: true });
 updateScrollUi();
 
+// SHARED FOOTER ENHANCEMENTS
+
+document.querySelectorAll('#currentYearSpan').forEach((year) => {
+    year.textContent = new Date().getFullYear();
+});
+
+const socialLabels = [
+    ['linkedin.com', 'LinkedIn profile'],
+    ['github.com', 'GitHub profile'],
+    ['instagram.com', 'Instagram profile'],
+    ['threads.com', 'Threads profile'],
+    ['discord.com', 'Discord profile'],
+];
+
+document.querySelectorAll('.socials a[href]').forEach((link) => {
+    const social = socialLabels.find(([hostname]) => link.href.includes(hostname));
+    if (social) link.setAttribute('aria-label', social[1]);
+
+    link.querySelectorAll('svg').forEach((icon) => {
+        icon.setAttribute('aria-hidden', 'true');
+        icon.setAttribute('focusable', 'false');
+    });
+});
+
 // FADE IN OBSERVER
 
 function initFadeInObserver({
@@ -353,10 +377,10 @@ document?.getElementById("contactForm")?.addEventListener("submit", async (e) =>
     }, 4500);
     form.reset();
   } catch (err) {
-    alertMessage.innerHTML = `Your message was <span class="accentText red">not sent</span>! There was an error and now I'm sad 🥲`;
+    alertMessage.innerHTML = `Your message was <span class="accentText red">not sent</span>. Please email me directly at <a class="fallbackEmail" href="mailto:stefan@optiflowz.com">stefan@optiflowz.com</a>.`;
     alertMessage.classList.add("open");
     setTimeout(() => {
         alertMessage.classList.remove("open");
-    }, 4500);
+    }, 8000);
   }
 });

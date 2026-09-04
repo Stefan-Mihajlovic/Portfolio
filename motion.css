@@ -1942,11 +1942,18 @@ html:has(body.motion-portfolio) {
 
 .motion-portfolio #alertMessage.open {
     opacity: 1;
+    pointer-events: auto;
     transform: translate(-50%, -50%);
 }
 
 .motion-portfolio #alertMessage .red {
     color: #ff6f91;
+}
+
+.motion-portfolio #alertMessage .fallbackEmail {
+    color: var(--art-accent);
+    font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 @media (min-width: 901px) {
