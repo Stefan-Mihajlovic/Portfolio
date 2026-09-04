@@ -22,7 +22,6 @@
     --art-ink: #090909;
     --art-ease: cubic-bezier(.16, 1, .3, 1);
     --art-safe-top: env(safe-area-inset-top, 0px);
-    --art-header-bleed: max(64px, var(--art-safe-top));
 }
 
 html.art-motion-pending {
@@ -1895,11 +1894,11 @@ html:has(body.motion-portfolio) {
     .motion-portfolio > header,
     .motion-portfolio > header.has-scroll-backdrop,
     .motion-portfolio.mobile-menu-open > header {
-        inset: calc(0px - var(--art-header-bleed)) 0 auto;
+        inset: 0 0 auto;
         width: auto;
         max-width: none;
-        height: calc(70px + var(--art-safe-top) + var(--art-header-bleed));
-        padding: calc(var(--art-safe-top) + var(--art-header-bleed)) 0 0;
+        height: calc(70px + var(--art-safe-top));
+        padding: 0;
         transform: none;
         border: 0;
         border-bottom: 1px solid color-mix(in srgb, var(--art-header-ink) 34%, transparent);
@@ -1911,10 +1910,27 @@ html:has(body.motion-portfolio) {
         z-index: 1000;
     }
 
+    /* Safari 26 anchors fixed elements below its obscured top inset even with
+       viewport-fit=cover. Extend the header paint behind the status bar while
+       keeping the interactive header content inside the safe area. */
+    .motion-portfolio > header::after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        left: 0;
+        right: 0;
+        bottom: calc(100% - 1px);
+        height: 100px;
+        pointer-events: none;
+        background: var(--art-header-bg);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
     .motion-portfolio > header .logo,
     .motion-portfolio.mobile-menu-open > header .logo {
         position: absolute;
-        top: calc(var(--art-header-bleed) + var(--art-safe-top) + 35px);
+        top: calc(var(--art-safe-top) + 35px);
         left: max(16px, env(safe-area-inset-left));
         flex: none;
         padding: 0;
@@ -1927,7 +1943,7 @@ html:has(body.motion-portfolio) {
     .motion-portfolio > header button,
     .motion-portfolio.mobile-menu-open > header button {
         position: absolute;
-        top: calc(var(--art-header-bleed) + var(--art-safe-top) + 35px);
+        top: calc(var(--art-safe-top) + 35px);
         right: max(12px, env(safe-area-inset-right));
         flex: none;
         transform: translateY(-50%) !important;
@@ -2073,10 +2089,10 @@ html:has(body.motion-portfolio) {
     .motion-portfolio { --signal-gap: 6px; }
 
     .motion-portfolio > header {
-        inset: calc(0px - var(--art-header-bleed)) 0 auto;
+        inset: 0 0 auto;
         width: auto;
-        height: calc(70px + var(--art-safe-top) + var(--art-header-bleed));
-        padding: calc(var(--art-safe-top) + var(--art-header-bleed)) 0 0;
+        height: calc(70px + var(--art-safe-top));
+        padding: 0;
         border-radius: 0;
     }
 
