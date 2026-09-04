@@ -28,17 +28,17 @@
 
     const pageMeta = {
         home: { title: 'STEFAN MIHAJLOVIC', color: '#7147ff', ink: '#f8f5ee' },
-        about: { title: 'ABOUT STEFAN', color: '#ef7654', ink: '#090909' },
+        about: { title: 'ABOUT STEFAN', color: '#ff6438', ink: '#090909' },
         projects: { title: 'SELECTED WORK', color: '#c7f36b', ink: '#090909' },
         skills: { title: 'THE SKILLSET', color: '#3f7bff', ink: '#f8f5ee' },
-        contact: { title: 'LET’S TALK', color: '#ef76ad', ink: '#090909' },
+        contact: { title: 'LET’S TALK', color: '#ff3f9f', ink: '#090909' },
         optiflowz: {
             title: 'OPTIFLOWZ CASE STUDY',
             lines: [
                 { text: 'OPTIFLOWZ', outline: false },
                 { text: 'CASE STUDY', outline: true }
             ],
-            color: '#8fb7ff',
+            color: '#3d95ff',
             ink: '#090909'
         },
         'eaes-video-corner': {
@@ -47,33 +47,33 @@
                 { text: 'EAES VIDEO', outline: false },
                 { text: 'CORNER', outline: true }
             ],
-            color: '#ff784b',
+            color: '#ff6438',
             ink: '#090909'
         },
-        privacypolicies: { title: 'LEGAL', color: '#99a79a', ink: '#090909' },
-        '404.html': { title: '404', color: '#ff784b', ink: '#090909' }
+        privacypolicies: { title: 'LEGAL', color: '#39e875', ink: '#090909' },
+        '404.html': { title: '404', color: '#ff6438', ink: '#090909' }
     };
 
     const getMeta = () => {
         if (route.includes('privacypolicies')) return pageMeta.privacypolicies;
-        if (route.endsWith('terms.html')) return { title: 'TERMS', color: '#ef76ad', ink: '#090909' };
+        if (route.endsWith('terms.html')) return { title: 'TERMS', color: '#ff3f9f', ink: '#090909' };
         return pageMeta[pageKey] || { title: document.title.split('|')[0].trim().toUpperCase(), color: '#7147ff', ink: '#f8f5ee' };
     };
 
     const palette = [
-        { bg: '#99a79a', ink: '#090909' },
-        { bg: '#ef76ad', ink: '#090909' },
-        { bg: '#63adff', ink: '#090909' },
-        { bg: '#ff784b', ink: '#090909' },
+        { bg: '#39e875', ink: '#090909' },
+        { bg: '#ff3f9f', ink: '#090909' },
+        { bg: '#19b5ff', ink: '#090909' },
+        { bg: '#ff6438', ink: '#090909' },
         { bg: '#c7f36b', ink: '#090909' },
         { bg: '#7147ff', ink: '#f8f5ee' }
     ];
 
     const skillsPalette = [
-        { bg: '#ef76ad', ink: '#090909' },
+        { bg: '#ff3f9f', ink: '#090909' },
         { bg: '#3f7bff', ink: '#f8f5ee' },
-        { bg: '#63adff', ink: '#090909' },
-        { bg: '#ff784b', ink: '#090909' }
+        { bg: '#19b5ff', ink: '#090909' },
+        { bg: '#ff6438', ink: '#090909' }
     ];
 
     const contactPalette = [
@@ -82,22 +82,22 @@
 
     const caseStudyPalettes = {
         optiflowz: [
-            { bg: '#8fb7ff', ink: '#090909' },
-            { bg: '#ef76ad', ink: '#090909' },
-            { bg: '#63adff', ink: '#090909' },
-            { bg: '#ff784b', ink: '#090909' },
+            { bg: '#19b5ff', ink: '#090909' },
+            { bg: '#ff3f9f', ink: '#090909' },
+            { bg: '#3d95ff', ink: '#090909' },
+            { bg: '#ff6438', ink: '#090909' },
             { bg: '#7147ff', ink: '#f8f5ee' }
         ],
         'eaes-video-corner': [
-            { bg: '#8fb7ff', ink: '#090909' },
-            { bg: '#ef76ad', ink: '#090909' },
+            { bg: '#3d95ff', ink: '#090909' },
+            { bg: '#ff3f9f', ink: '#090909' },
             { bg: '#7147ff', ink: '#f8f5ee' }
         ]
     };
 
     const projectThemes = [
         { className: 'healthPlus', bg: '#0795bd', ink: '#f8f5ee' },
-        { className: 'eaes', bg: '#f78a3d', ink: '#090909' },
+        { className: 'eaes', bg: '#ff7c26', ink: '#090909' },
         { className: 'optiFlowz', bg: '#2778ee', ink: '#f8f5ee' },
         { className: 'crimsonMusic', bg: '#712fb4', ink: '#f8f5ee' },
         { className: 'palettePilot', bg: '#ee1760', ink: '#f8f5ee' },

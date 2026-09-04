@@ -13,10 +13,10 @@
 
 :root {
     --art-purple: #7147ff;
-    --art-coral: #ff784b;
-    --art-sage: #99a79a;
-    --art-pink: #ef76ad;
-    --art-blue: #63adff;
+    --art-coral: #ff6438;
+    --art-sage: #39e875;
+    --art-pink: #ff3f9f;
+    --art-blue: #19b5ff;
     --art-acid: #c7f36b;
     --art-paper: #f8f5ee;
     --art-ink: #090909;
@@ -392,12 +392,12 @@ body.art-entering .art-page-transition span {
     will-change: auto;
 }
 
-.art-hero-scene[data-art-bg="#ef7654"],
+.art-hero-scene[data-art-bg="#ff6438"],
 .art-hero-scene[data-art-bg="#c7f36b"],
-.art-hero-scene[data-art-bg="#99a79a"],
-.art-hero-scene[data-art-bg="#ef76ad"],
-.art-hero-scene[data-art-bg="#8fb7ff"],
-.art-hero-scene[data-art-bg="#ff784b"] {
+.art-hero-scene[data-art-bg="#39e875"],
+.art-hero-scene[data-art-bg="#ff3f9f"],
+.art-hero-scene[data-art-bg="#3d95ff"],
+.art-hero-scene[data-art-bg="#19b5ff"] {
     color: var(--art-ink);
 }
 
@@ -1116,11 +1116,22 @@ body.art-entering .art-page-transition span {
     max-width: none;
     margin: var(--signal-gap) auto !important;
     padding: 44px clamp(20px, 4vw, 72px);
-    border: 1px solid var(--art-paper);
+    border: 0;
     border-radius: 0;
     background: var(--art-ink);
     color: var(--art-paper);
     clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 34px 100%, 0 calc(100% - 34px));
+}
+
+.motion-portfolio footer::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: clamp(24px, 4vw, 72px);
+    width: clamp(72px, 6vw, 96px);
+    aspect-ratio: 1;
+    background: url('/images/favicon.png?v=3') center / contain no-repeat;
+    transform: translateY(-50%);
 }
 
 .motion-portfolio footer div,
@@ -2312,6 +2323,13 @@ html:has(body.motion-portfolio) {
     .motion-portfolio footer {
         width: calc(100% - 12px);
         margin: 6px auto !important;
+    }
+
+    .motion-portfolio footer::before {
+        position: static;
+        width: 64px;
+        margin-bottom: 6px;
+        transform: none;
     }
 }
 

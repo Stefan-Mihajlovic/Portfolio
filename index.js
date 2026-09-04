@@ -224,7 +224,7 @@ function initScreenshotLightbox() {
         activeIndex = index;
         const panel = slider.closest('.art-panel');
         const panelStyle = panel ? getComputedStyle(panel) : null;
-        overlay.style.setProperty('--lightbox-bg', panel?.dataset.artBg || panelStyle?.backgroundColor || '#8fb7ff');
+        overlay.style.setProperty('--lightbox-bg', panel?.dataset.artBg || panelStyle?.backgroundColor || '#3d95ff');
         overlay.style.setProperty('--lightbox-ink', panel?.dataset.artInk || panelStyle?.color || '#090909');
         renderImage();
         overlay.classList.add('open');

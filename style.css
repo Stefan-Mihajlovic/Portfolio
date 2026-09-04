@@ -194,7 +194,7 @@ main .content {
 
 /* Screenshot lightbox */
 .lightboxOverlay {
-    --lightbox-bg: #8fb7ff;
+    --lightbox-bg: #3d95ff;
     --lightbox-ink: #090909;
     position: fixed;
     inset: 0;
