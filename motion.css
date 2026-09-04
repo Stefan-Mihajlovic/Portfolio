@@ -1903,9 +1903,9 @@ html:has(body.motion-portfolio) {
         border: 0;
         border-bottom: 1px solid color-mix(in srgb, var(--art-header-ink) 34%, transparent);
         border-radius: 0;
-        background: var(--art-header-bg);
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
+        background: color-mix(in srgb, var(--art-header-bg) 66%, transparent);
+        -webkit-backdrop-filter: blur(24px) saturate(1.2);
+        backdrop-filter: blur(24px) saturate(1.2);
         box-shadow: none;
         z-index: 1000;
     }
@@ -1922,9 +1922,9 @@ html:has(body.motion-portfolio) {
         bottom: calc(100% - 1px);
         height: 100px;
         pointer-events: none;
-        background: var(--art-header-bg);
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
+        background: color-mix(in srgb, var(--art-header-bg) 66%, transparent);
+        -webkit-backdrop-filter: blur(24px) saturate(1.2);
+        backdrop-filter: blur(24px) saturate(1.2);
     }
 
     .motion-portfolio > header .logo,
