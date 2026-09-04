@@ -725,17 +725,64 @@ body.art-entering-armed .art-page-transition span {
 
 .motion-portfolio[data-art-page="about"] .shortBio.art-panel {
     display: grid;
-    place-items: center;
+    grid-template-columns: minmax(0, .72fr) minmax(340px, 1.15fr) minmax(0, .72fr);
+    align-items: end;
+    justify-items: center;
+    gap: clamp(16px, 2.4vw, 38px);
 }
 
-.motion-portfolio[data-art-page="about"] .shortBio img {
+.motion-portfolio[data-art-page="about"] .portraitShot {
+    position: relative;
+    margin: 0;
+    border: 8px solid var(--art-ink);
+    background: var(--art-ink);
+    box-shadow: 18px 18px 0 color-mix(in srgb, currentColor 28%, transparent);
+}
+
+.motion-portfolio[data-art-page="about"] .portraitShot img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.motion-portfolio[data-art-page="about"] .portraitShot--sleep {
+    grid-column: 1;
+    grid-row: 1;
+    width: min(260px, 21vw);
+    justify-self: end;
+    transform: translate(26px, 20px) rotate(-6deg);
+}
+
+.motion-portfolio[data-art-page="about"] .portraitShot--main {
+    grid-column: 2;
+    grid-row: 1;
     width: min(440px, 52vw);
     max-width: none;
-    margin: 0;
     border: 12px solid var(--art-ink);
-    border-radius: 0;
     animation: none;
     box-shadow: 28px 28px 0 color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.motion-portfolio[data-art-page="about"] .portraitShot--cat {
+    grid-column: 3;
+    grid-row: 1;
+    width: min(260px, 21vw);
+    justify-self: start;
+    transform: translate(-26px, -22px) rotate(6deg);
+}
+
+.motion-portfolio[data-art-page="about"] .portraitShot figcaption {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--art-paper);
+    background: var(--art-ink);
+    color: var(--art-paper);
+    font: 650 clamp(.68rem, .85vw, .82rem)/1 'Barlow Condensed', sans-serif;
+    letter-spacing: .12em;
+    text-transform: uppercase;
 }
 
 .motion-portfolio[data-art-page="about"] .detailedBio.art-panel {
@@ -764,6 +811,80 @@ body.art-entering-armed .art-page-transition span {
 .art-paper-card:hover {
     transform: translate3d(0, -8px, 0);
     box-shadow: 14px 14px 0 var(--art-ink);
+}
+
+.motion-portfolio[data-art-page="about"] .journey.art-panel {
+    display: grid;
+    grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
+    gap: 24px 6vw;
+    align-content: end;
+}
+
+.motion-portfolio[data-art-page="about"] .journey.art-panel > h2 {
+    grid-column: 1;
+    margin: 0;
+    font: 700 clamp(3rem, 6vw, 7rem)/.82 'Barlow Condensed', sans-serif;
+    letter-spacing: -.03em;
+    text-transform: uppercase;
+}
+
+.motion-portfolio[data-art-page="about"] .journeyIntro {
+    grid-column: 1;
+    margin: 0;
+    padding: clamp(20px, 2.2vw, 30px);
+    background: var(--art-ink);
+    color: var(--art-paper);
+    font-size: clamp(.95rem, 1.15vw, 1.15rem);
+    font-weight: 300;
+    line-height: 1.55;
+}
+
+.motion-portfolio[data-art-page="about"] .journeySteps {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.motion-portfolio[data-art-page="about"] .journeySteps li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(16px, 2vw, 28px);
+    margin: 0;
+    padding: clamp(18px, 2vw, 28px);
+    border: 1px solid currentColor;
+    background: var(--art-paper);
+    color: var(--art-ink);
+    box-shadow: 9px 9px 0 var(--art-ink);
+    clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+}
+
+.motion-portfolio[data-art-page="about"] .journeySteps li > span {
+    font: 700 clamp(1.5rem, 2.2vw, 2.4rem)/1 'Barlow Condensed', sans-serif;
+}
+
+.motion-portfolio[data-art-page="about"] .journeySteps h3 {
+    margin: 0 0 7px;
+    font: 650 clamp(1.25rem, 1.8vw, 1.8rem)/1 'Barlow Condensed', sans-serif;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+.motion-portfolio[data-art-page="about"] .journeySteps p {
+    margin: 0;
+    font-size: clamp(.9rem, 1.05vw, 1.05rem);
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.motion-portfolio[data-art-page="about"] .journey.art-panel > .actions {
+    grid-column: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .motion-portfolio[data-art-page="about"] .currentProject.art-panel {
@@ -1357,8 +1478,43 @@ body.art-entering-armed .art-page-transition span {
     }
 
     .motion-portfolio[data-art-page="about"] .detailedBio.art-panel,
+    .motion-portfolio[data-art-page="about"] .journey.art-panel,
     .motion-portfolio .metaCard.art-panel > div {
         grid-template-columns: 1fr;
+    }
+
+    .motion-portfolio[data-art-page="about"] .shortBio.art-panel {
+        grid-template-columns: 1fr 1fr;
+        align-content: end;
+        gap: 18px;
+    }
+
+    .motion-portfolio[data-art-page="about"] .portraitShot--main {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: min(390px, 68vw);
+    }
+
+    .motion-portfolio[data-art-page="about"] .portraitShot--sleep {
+        grid-column: 1;
+        grid-row: 2;
+        width: min(220px, 38vw);
+        transform: translate(10px, 4px) rotate(-5deg);
+    }
+
+    .motion-portfolio[data-art-page="about"] .portraitShot--cat {
+        grid-column: 2;
+        grid-row: 2;
+        width: min(220px, 38vw);
+        transform: translate(-10px, -8px) rotate(5deg);
+    }
+
+    .motion-portfolio[data-art-page="about"] .journey.art-panel > h2,
+    .motion-portfolio[data-art-page="about"] .journeyIntro,
+    .motion-portfolio[data-art-page="about"] .journeySteps,
+    .motion-portfolio[data-art-page="about"] .journey.art-panel > .actions {
+        grid-column: 1;
+        grid-row: auto;
     }
 
     .motion-portfolio .caseStudyTitle.art-panel {
@@ -1467,8 +1623,20 @@ body.art-entering-armed .art-page-transition span {
         font-size: clamp(2.2rem, 12vw, 4rem);
     }
 
-    .motion-portfolio[data-art-page="about"] .shortBio img {
-        width: min(78vw, 390px);
+    .motion-portfolio[data-art-page="about"] .portraitShot--main {
+        width: min(72vw, 340px);
+    }
+
+    .motion-portfolio[data-art-page="about"] .portraitShot--sleep,
+    .motion-portfolio[data-art-page="about"] .portraitShot--cat {
+        width: min(40vw, 175px);
+    }
+
+    .motion-portfolio[data-art-page="about"] .portraitShot figcaption {
+        right: 7px;
+        bottom: 7px;
+        padding: 6px 8px;
+        font-size: .6rem;
     }
 
     .motion-portfolio[data-art-page="about"] .detailedBio.art-panel {
@@ -1782,6 +1950,10 @@ html:has(body.motion-portfolio) {
 }
 
 @media (min-width: 901px) {
+    .motion-portfolio[data-art-page="about"] .detailedBio.art-panel {
+        min-height: 84svh;
+    }
+
     .motion-portfolio .projectCard.art-panel:nth-of-type(even),
     .motion-portfolio[data-art-page="projects"] .currentProject.art-panel:nth-of-type(even) {
         grid-template-columns: minmax(280px, .75fr) minmax(0, 1.25fr);

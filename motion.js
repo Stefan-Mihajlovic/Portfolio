@@ -349,7 +349,7 @@
             home: '.projects > .projectCard, .projects > .moreProjects',
             projects: '.content > .currentProject, .content > .moreProjects',
             skills: '.content > .skillCard, .content > .moreProjects',
-            about: '.content > .shortBio, .content > .detailedBio, .content > .currentProject, .content > .moreProjects',
+            about: '.content > .shortBio, .content > .detailedBio, .content > .journey, .content > .moreProjects',
             contact: '.content > form',
             optiflowz: '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
             'eaes-video-corner': '.content > .screenshotsSection, .content > .extensionDetails'
@@ -412,6 +412,7 @@
             const panelKind = panel.classList.contains('projectCard') || panel.classList.contains('currentProject') ? 'PROJECT'
                 : panel.classList.contains('shortBio') ? 'PORTRAIT'
                 : panel.classList.contains('detailedBio') ? 'STORY'
+                : panel.classList.contains('journey') ? 'JOURNEY'
                 : panel.classList.contains('skillCard') ? 'SKILL'
                 : panel.classList.contains('moreProjects') ? 'NEXT'
                 : panel.classList.contains('screenshotsSection') ? 'GALLERY'
@@ -428,7 +429,7 @@
             panel.prepend(chrome);
         }
 
-        const media = panel.querySelector(':scope > img, :scope > div > img, .screenshotsSlider, .shortBio img, .workflowVisual, .experienceVisual, .heroProduct, .browserFrame, .extensionPopup');
+        const media = panel.querySelector(':scope > img, :scope > div > img, .screenshotsSlider, .shortBio .portraitShot--main, .workflowVisual, .experienceVisual, .heroProduct, .browserFrame, .extensionPopup');
         if (media) {
             media.classList.add('art-float-media');
             media.style.setProperty('--art-media-rotate', `${index % 2 ? 2.5 : -2.5}deg`);
