@@ -1910,6 +1910,23 @@ html:has(body.motion-portfolio) {
         z-index: 1000;
     }
 
+    /* Safari 26 anchors fixed elements below its obscured top inset even with
+       viewport-fit=cover. Extend the header paint behind the status bar while
+       keeping the interactive header content inside the safe area. */
+    .motion-portfolio > header::after {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        left: 0;
+        right: 0;
+        bottom: calc(100% - 1px);
+        height: 100px;
+        pointer-events: none;
+        background: color-mix(in srgb, var(--art-header-bg) 66%, transparent);
+        -webkit-backdrop-filter: blur(24px) saturate(1.2);
+        backdrop-filter: blur(24px) saturate(1.2);
+    }
+
     .motion-portfolio > header .logo,
     .motion-portfolio.mobile-menu-open > header .logo {
         position: absolute;
