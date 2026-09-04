@@ -50,6 +50,24 @@
             color: '#ff6438',
             ink: '#090909'
         },
+        'palette-pilot': {
+            title: 'PALETTE PILOT CASE STUDY',
+            lines: [
+                { text: 'PALETTE PILOT', outline: false },
+                { text: 'CASE STUDY', outline: true }
+            ],
+            color: '#ee1760',
+            ink: '#f8f5ee'
+        },
+        'tab-volume-manager': {
+            title: 'TAB VOLUME MANAGER CASE STUDY',
+            lines: [
+                { text: 'TAB VOLUME', outline: false },
+                { text: 'MANAGER', outline: true }
+            ],
+            color: '#3f55d9',
+            ink: '#f8f5ee'
+        },
         privacypolicies: { title: 'LEGAL', color: '#39e875', ink: '#090909' },
         '404.html': { title: '404', color: '#ff6438', ink: '#090909' }
     };
@@ -92,6 +110,20 @@
             { bg: '#3d95ff', ink: '#090909' },
             { bg: '#ff3f9f', ink: '#090909' },
             { bg: '#7147ff', ink: '#f8f5ee' }
+        ],
+        'palette-pilot': [
+            { bg: '#ee1760', ink: '#f8f5ee' },
+            { bg: '#7147ff', ink: '#f8f5ee' },
+            { bg: '#ff8ab8', ink: '#090909' },
+            { bg: '#19b5ff', ink: '#090909' },
+            { bg: '#c7f36b', ink: '#090909' }
+        ],
+        'tab-volume-manager': [
+            { bg: '#3f55d9', ink: '#f8f5ee' },
+            { bg: '#19b5ff', ink: '#090909' },
+            { bg: '#7147ff', ink: '#f8f5ee' },
+            { bg: '#c7f36b', ink: '#090909' },
+            { bg: '#ff6438', ink: '#090909' }
         ]
     };
 
@@ -352,7 +384,9 @@
             about: '.content > .shortBio, .content > .detailedBio, .content > .journey, .content > .moreProjects',
             contact: '.content > form',
             optiflowz: '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
-            'eaes-video-corner': '.content > .screenshotsSection, .content > .extensionDetails'
+            'eaes-video-corner': '.content > .screenshotsSection, .content > .extensionDetails',
+            'palette-pilot': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
+            'tab-volume-manager': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock'
         };
 
         const selector = selectorsByPage[pageKey];
