@@ -218,21 +218,83 @@ body.art-entering-armed .art-page-transition span {
 }
 
 .motion-portfolio > header .logo {
+    --art-logo-cut: 10px;
+    position: relative;
+    display: grid;
+    width: 56px;
+    height: 56px;
+    place-items: center;
+    isolation: isolate;
     font-family: 'Medula One', cursive;
     font-size: 2.65rem;
     font-weight: 400;
     letter-spacing: 0;
     border: 0;
-    border-radius: 50px;
-    padding: 0 15px 3px;
-    margin-left: -15px;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    margin-left: -6px;
+}
+
+.motion-portfolio > header .logo::before,
+.motion-portfolio > header .logo::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.motion-portfolio > header .logo::before {
+    z-index: -2;
+    inset: 0;
+    background: var(--art-paper);
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--art-logo-cut)) 0,
+        100% var(--art-logo-cut),
+        100% 100%,
+        var(--art-logo-cut) 100%,
+        0 calc(100% - var(--art-logo-cut))
+    );
+    transform: rotate(-3deg) scale(.82);
+    transform-origin: center;
+    transition: opacity .2s ease, transform .4s var(--art-ease);
+}
+
+.motion-portfolio > header .logo::after {
+    z-index: -1;
+    top: 4px;
+    right: -1px;
+    width: 15px;
+    height: 2px;
+    background: var(--art-ink);
+    transform: rotate(45deg) scaleX(0);
+    transform-origin: center;
+    transition: opacity .18s ease .08s, transform .35s var(--art-ease) .04s;
 }
 
 .motion-portfolio > header .logo:hover,
 .motion-portfolio > header .logo:focus-visible {
-    background: var(--art-header-ink);
-    color: var(--art-header-bg);
-    transform: scaleX(.9) scaleY(1.08);
+    background: transparent;
+    color: var(--art-ink);
+    transform: translateY(-1px) rotate(-1deg);
+}
+
+.motion-portfolio > header .logo:hover::before,
+.motion-portfolio > header .logo:hover::after,
+.motion-portfolio > header .logo:focus-visible::before,
+.motion-portfolio > header .logo:focus-visible::after {
+    opacity: 1;
+}
+
+.motion-portfolio > header .logo:hover::before,
+.motion-portfolio > header .logo:focus-visible::before {
+    transform: rotate(0) scale(1);
+}
+
+.motion-portfolio > header .logo:hover::after,
+.motion-portfolio > header .logo:focus-visible::after {
+    transform: rotate(45deg) scaleX(1);
 }
 
 .motion-portfolio > header nav a {
