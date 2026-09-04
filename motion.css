@@ -39,6 +39,7 @@ html {
     max-width: 100%;
     overflow-x: clip;
     scroll-behavior: smooth;
+    background-color: var(--art-ink);
 }
 
 html:has(body.motion-art) {
@@ -88,7 +89,8 @@ body.motion-art {
 .art-page-transition {
     position: fixed;
     z-index: 100000;
-    inset: 0;
+    /* Keep the animated colour away from Safari's viewport sampling edges. */
+    inset: 1px 0;
     display: grid;
     place-items: center;
     pointer-events: none;
@@ -107,7 +109,8 @@ html.art-transition-pending::after {
 html.art-transition-pending::before {
     content: '';
     z-index: 100001;
-    inset: 0;
+    /* The black root remains visible at the sampling edge during navigation. */
+    inset: 1px 0;
     background: var(--art-transition-bootstrap-bg, #7147ff);
 }
 
