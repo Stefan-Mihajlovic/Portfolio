@@ -134,6 +134,7 @@
 
     let transitionCleanupTimer = 0;
     const hideTransition = () => {
+        body.classList.remove('art-entering-armed');
         if (body.classList.contains('art-leaving')) return;
         transition.hidden = true;
     };
@@ -713,11 +714,27 @@
 
             if (arrivingFromNavigation) {
                 requestAnimationFrame(() => {
+                    body.classList.add('art-entering-armed');
+                    // Chromium on Windows can otherwise coalesce the initial
+                    // full-screen state and the collapsed state into one paint.
+                    void transition.offsetWidth;
                     requestAnimationFrame(() => {
+                        let handleArrivalEnd;
+                        const finishArrival = () => {
+                            window.clearTimeout(transitionCleanupTimer);
+                            transition.removeEventListener('transitionend', handleArrivalEnd);
+                            hideTransition();
+                        };
+                        handleArrivalEnd = (event) => {
+                            if (event.target !== transition || event.propertyName !== 'clip-path') return;
+                            finishArrival();
+                        };
+
+                        transition.addEventListener('transitionend', handleArrivalEnd);
                         body.classList.remove('art-entering');
                         transitionCleanupTimer = window.setTimeout(
-                            hideTransition,
-                            reducedMotion ? 0 : 820
+                            finishArrival,
+                            reducedMotion ? 0 : 1400
                         );
                     });
                 });

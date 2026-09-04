@@ -153,6 +153,14 @@ body.art-entering .art-page-transition span {
     transition: none;
 }
 
+body.art-entering-armed .art-page-transition {
+    transition: clip-path .78s var(--art-ease);
+}
+
+body.art-entering-armed .art-page-transition span {
+    transition: transform .78s var(--art-ease);
+}
+
 /* Portfolio shell */
 
 .motion-portfolio {
