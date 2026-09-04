@@ -117,12 +117,6 @@
         return { desktop: 7, mobile: 10.2 };
     };
 
-    const rail = document.createElement('div');
-    rail.className = 'art-rail';
-    rail.setAttribute('aria-hidden', 'true');
-    rail.innerHTML = '<span class="art-rail-fill"></span><b>01</b><i>SCROLL</i>';
-    body.appendChild(rail);
-
     const transition = document.createElement('div');
     transition.className = 'art-page-transition';
     transition.setAttribute('aria-hidden', 'true');
@@ -557,15 +551,6 @@
 
             media.style.setProperty('--art-media-y', `${vertical * -54 + clamp(smoothVelocity * 0.13, -18, 18)}px`);
         });
-
-        const railFill = rail.querySelector('.art-rail-fill');
-        const railNumber = rail.querySelector('b');
-        if (railFill) railFill.style.transform = `scaleY(${progress})`;
-        const activeSampleY = scrollY + viewportHeight * 0.52;
-        const activeIndex = Math.max(0, sceneMetrics.findIndex(({ top, height }) => {
-            return top <= activeSampleY && top + height > activeSampleY;
-        }));
-        if (railNumber) railNumber.textContent = String(activeIndex + 1).padStart(2, '0');
 
         updateHeader();
 

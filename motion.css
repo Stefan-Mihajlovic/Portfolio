@@ -51,41 +51,6 @@ body.motion-art {
     overflow-x: clip;
 }
 
-.art-rail {
-    position: fixed;
-    z-index: 9997;
-    top: 50%;
-    right: clamp(18px, 2vw, 30px);
-    width: 2px;
-    height: 26vh;
-    min-height: 180px;
-    transform: translateY(-50%);
-    background: color-mix(in srgb, currentColor 18%, transparent);
-    color: currentColor;
-    mix-blend-mode: difference;
-    pointer-events: none;
-}
-
-.art-rail-fill {
-    position: absolute;
-    inset: 0;
-    background: currentColor;
-    transform: scaleY(0);
-    transform-origin: top;
-}
-
-.art-rail b,
-.art-rail i {
-    position: absolute;
-    right: 8px;
-    font: 600 .7rem/1 'Barlow Condensed', sans-serif;
-    letter-spacing: .12em;
-    writing-mode: vertical-rl;
-}
-
-.art-rail b { top: 0; }
-.art-rail i { bottom: 0; font-style: normal; }
-
 .art-page-transition {
     position: fixed;
     z-index: 100000;
@@ -1302,13 +1267,6 @@ body.art-entering-armed .art-page-transition span {
     line-height: 1.65;
 }
 
-/* Product pages keep their visual identity, but receive the same physical scroll language. */
-
-.motion-product .art-rail {
-    color: currentColor;
-    mix-blend-mode: difference;
-}
-
 .motion-product .art-product-panel {
     --art-panel-y: 0px;
     position: relative;
@@ -1427,10 +1385,6 @@ body.art-entering-armed .art-page-transition span {
 }
 
 @media (max-width: 650px) {
-    .art-rail { right: 5px; height: 25vh; }
-    .art-rail b,
-    .art-rail i { display: none; }
-
     .motion-portfolio > header .logo {
         font-family: 'Medula One', cursive;
         font-size: 2.35rem;
@@ -2041,10 +1995,6 @@ html:has(body.motion-portfolio) {
         background: var(--art-active-ink, var(--art-header-ink));
     }
 
-    .art-rail {
-        display: none;
-    }
-
     .art-hero-scene,
     .motion-portfolio .art-panel,
     .motion-product .art-product-panel {
@@ -2405,8 +2355,7 @@ html:has(body.motion-portfolio) {
 
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .art-page-transition,
-    .art-rail { display: none !important; }
+    .art-page-transition { display: none !important; }
     .art-hero-title > span,
     .art-outline-letter,
     .art-panel,
