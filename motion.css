@@ -89,8 +89,7 @@ body.motion-art {
 .art-page-transition {
     position: fixed;
     z-index: 100000;
-    /* Keep the animated colour away from Safari's viewport sampling edges. */
-    inset: 1px 0;
+    inset: 0;
     display: grid;
     place-items: center;
     pointer-events: none;
@@ -98,6 +97,12 @@ body.motion-art {
     clip-path: circle(0 at 50% 50%);
     transition: clip-path .78s var(--art-ease);
     will-change: clip-path;
+}
+
+/* Safari 26 extends the colour of viewport-fixed elements into its browser UI,
+   even when clip-path has reduced the element to a zero-sized circle. */
+.art-page-transition[hidden] {
+    display: none;
 }
 
 html.art-transition-pending::before,
@@ -109,8 +114,7 @@ html.art-transition-pending::after {
 html.art-transition-pending::before {
     content: '';
     z-index: 100001;
-    /* The black root remains visible at the sampling edge during navigation. */
-    inset: 1px 0;
+    inset: 0;
     background: var(--art-transition-bootstrap-bg, #7147ff);
 }
 
