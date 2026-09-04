@@ -134,6 +134,7 @@
     if (!arrivingFromNavigation) root.classList.remove('art-transition-pending');
 
     let transitionCleanupTimer = 0;
+    let arrivalInProgress = arrivingFromNavigation;
     let arrivalAnimations = [];
     const cancelArrivalAnimations = () => {
         arrivalAnimations.forEach((animation) => animation.cancel());
@@ -142,6 +143,7 @@
     const hideTransition = () => {
         body.classList.remove('art-entering-armed');
         if (body.classList.contains('art-leaving')) return;
+        arrivalInProgress = false;
         transition.hidden = true;
         cancelArrivalAnimations();
     };
@@ -674,6 +676,7 @@
         const link = event.target.closest('a[href]');
         if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         if (link.target === '_blank' || link.hasAttribute('download')) return;
+        if (body.classList.contains('art-leaving')) return;
 
         const url = new URL(link.href, window.location.href);
         if (url.origin !== window.location.origin) return;
@@ -687,6 +690,7 @@
         }).pop() || scenes[0];
         const transitionColor = transitionScene?.dataset.artBg || getMeta().color;
         window.clearTimeout(transitionCleanupTimer);
+        arrivalInProgress = false;
         cancelArrivalAnimations();
         body.classList.remove('art-entering', 'art-entering-armed');
         transition.style.setProperty('--art-transition-bg', transitionColor);
@@ -702,14 +706,34 @@
         } catch (error) {
             // Navigation still works when storage is unavailable.
         }
-        window.setTimeout(() => {
+
+        let navigationStarted = false;
+        let navigationFallbackTimer = 0;
+        const navigate = () => {
+            if (navigationStarted) return;
+            navigationStarted = true;
+            window.clearTimeout(navigationFallbackTimer);
+            transition.removeEventListener('transitionend', handleLeaveEnd);
             window.location.href = url.href;
-        }, reducedMotion ? 0 : 780);
+        };
+        const handleLeaveEnd = (transitionEvent) => {
+            if (transitionEvent.target !== transition || transitionEvent.propertyName !== 'clip-path') return;
+            navigate();
+        };
+
+        if (reducedMotion) {
+            navigate();
+        } else {
+            transition.addEventListener('transitionend', handleLeaveEnd);
+            navigationFallbackTimer = window.setTimeout(navigate, 1400);
+        }
     });
 
     window.addEventListener('pageshow', () => {
         body.classList.remove('art-leaving');
-        if (!body.classList.contains('art-entering')) hideTransition();
+        // On production the initial pageshow can land after the incoming
+        // animation has started. Do not let it hide that animation mid-flight.
+        if (!arrivalInProgress && !body.classList.contains('art-entering')) hideTransition();
         requestFrame();
     });
 
