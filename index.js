@@ -14,6 +14,70 @@ mobileMenu?.querySelectorAll('a').forEach((link) => {
     link.replaceChildren(label);
 });
 
+const normalizeMenuPath = (pathname) => {
+    const normalized = pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '');
+    return normalized || '/';
+};
+
+const createMenuWord = (className, text) => {
+    const word = document.createElement('span');
+    word.className = className;
+
+    Array.from(text).forEach((character, index) => {
+        const letter = document.createElement('span');
+        letter.className = 'mobileMenuMorphLetter';
+        letter.style.setProperty('--letter-index', index);
+        letter.textContent = character === ' ' ? '\u00a0' : character;
+        word.appendChild(letter);
+    });
+
+    return word;
+};
+
+mobileMenu?.querySelectorAll('a[href]').forEach((link) => {
+    const url = new URL(link.href, window.location.href);
+    const isCurrentPage = url.origin === window.location.origin
+        && normalizeMenuPath(url.pathname) === normalizeMenuPath(window.location.pathname)
+        && url.search === window.location.search;
+
+    if (!isCurrentPage) return;
+
+    const label = link.querySelector('.mobileMenuLabel');
+    if (!label) return;
+
+    const originalText = label.textContent.trim();
+    const originalWord = createMenuWord('mobileMenuOriginal', originalText);
+    const feedbackWord = createMenuWord('mobileMenuFeedback', 'YOU\u2019RE ALREADY HERE');
+    feedbackWord.setAttribute('aria-hidden', 'true');
+    label.replaceChildren(originalWord, feedbackWord);
+
+    link.classList.add('is-current-page');
+    link.setAttribute('aria-current', 'page');
+    link.setAttribute('aria-label', `${originalText}, current page`);
+
+    let returnTimer = 0;
+    let cleanupTimer = 0;
+
+    link.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+        event.preventDefault();
+        window.clearTimeout(returnTimer);
+        window.clearTimeout(cleanupTimer);
+        link.classList.remove('is-already-here', 'is-returning');
+        void link.offsetWidth;
+        link.classList.add('is-already-here');
+
+        returnTimer = window.setTimeout(() => {
+            link.classList.add('is-returning');
+        }, 1950);
+
+        cleanupTimer = window.setTimeout(() => {
+            link.classList.remove('is-already-here', 'is-returning');
+        }, 2900);
+    });
+});
+
 function setMobileMenuOpen(isOpen) {
     mobileMenuWrapper?.classList.toggle('closed', !isOpen);
     mobileMenuButton?.classList.toggle('is-open', isOpen);

@@ -140,7 +140,12 @@ body > header > button span {
     transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .25s ease, width .35s ease;
 }
 
+body > header > button span:first-child {
+    width: 21px;
+}
+
 body > header > button.is-open span:nth-child(1) {
+    width: 30px;
     transform: translateY(9px) rotate(45deg);
 }
 

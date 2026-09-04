@@ -1941,6 +1941,34 @@ html:has(body.motion-portfolio) {
         -webkit-tap-highlight-color: transparent;
     }
 
+    body.motion-portfolio.mobile-menu-open > header {
+        z-index: 1100;
+        border-bottom-color: transparent;
+        background: transparent;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .motion-portfolio.mobile-menu-open > header .logo {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .motion-portfolio.mobile-menu-open > header #mobileMenuButton {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        z-index: 1;
+    }
+
+    .motion-portfolio.mobile-menu-open > header #mobileMenuButton span {
+        width: 30px;
+        background: var(--art-active-ink, var(--art-header-ink));
+    }
+
     .art-rail {
         display: none;
     }
@@ -2018,6 +2046,7 @@ html:has(body.motion-portfolio) {
     }
 
     .motion-portfolio .mobileMenu a {
+        position: relative;
         width: fit-content;
         padding: .04em 0;
         border: 0;
@@ -2054,6 +2083,9 @@ html:has(body.motion-portfolio) {
     }
 
     .motion-portfolio .mobileMenuLabel {
+        position: relative;
+        display: inline-grid;
+        align-items: center;
         color: inherit;
         background: none;
         -webkit-background-clip: initial;
@@ -2061,6 +2093,73 @@ html:has(body.motion-portfolio) {
         -webkit-text-fill-color: currentColor;
         animation: none !important;
     }
+
+    .motion-portfolio .mobileMenuOriginal,
+    .motion-portfolio .mobileMenuFeedback {
+        grid-area: 1 / 1;
+        display: inline-flex;
+        align-items: baseline;
+        white-space: nowrap;
+    }
+
+    .motion-portfolio .mobileMenuFeedback {
+        font-size: clamp(2rem, 9.5vw, 3.2rem);
+        letter-spacing: .015em;
+        pointer-events: none;
+    }
+
+    .motion-portfolio .mobileMenuMorphLetter {
+        display: inline-block;
+        min-width: .01em;
+        transform-origin: 50% 70%;
+        will-change: transform, opacity, filter;
+    }
+
+    .motion-portfolio .mobileMenuFeedback .mobileMenuMorphLetter {
+        opacity: 0;
+        transform: translateY(.6em) rotate(7deg) scale(.72);
+        filter: blur(6px);
+    }
+
+    .motion-portfolio .mobileMenu a.is-already-here .mobileMenuOriginal .mobileMenuMorphLetter {
+        animation: mobileMenuOriginalOut .42s var(--art-ease) both;
+        animation-delay: calc(var(--letter-index) * 22ms);
+    }
+
+    .motion-portfolio .mobileMenu a.is-already-here .mobileMenuFeedback .mobileMenuMorphLetter {
+        animation: mobileMenuFeedbackIn .58s var(--art-ease) both;
+        animation-delay: calc(150ms + var(--letter-index) * 24ms);
+    }
+
+    .motion-portfolio .mobileMenu a.is-already-here.is-returning .mobileMenuOriginal .mobileMenuMorphLetter {
+        animation: mobileMenuOriginalIn .52s var(--art-ease) both;
+        animation-delay: calc(130ms + var(--letter-index) * 22ms);
+    }
+
+    .motion-portfolio .mobileMenu a.is-already-here.is-returning .mobileMenuFeedback .mobileMenuMorphLetter {
+        animation: mobileMenuFeedbackOut .34s ease both;
+        animation-delay: calc(var(--letter-index) * 12ms);
+    }
+}
+
+@keyframes mobileMenuOriginalOut {
+    from { opacity: 1; transform: translateY(0) rotate(0) scale(1); filter: blur(0); }
+    to { opacity: 0; transform: translateY(-.55em) rotate(-7deg) scale(.72); filter: blur(6px); }
+}
+
+@keyframes mobileMenuFeedbackIn {
+    from { opacity: 0; transform: translateY(.6em) rotate(7deg) scale(.72); filter: blur(6px); }
+    to { opacity: 1; transform: translateY(0) rotate(0) scale(1); filter: blur(0); }
+}
+
+@keyframes mobileMenuOriginalIn {
+    from { opacity: 0; transform: translateY(-.45em) rotate(-6deg) scale(.78); filter: blur(5px); }
+    to { opacity: 1; transform: translateY(0) rotate(0) scale(1); filter: blur(0); }
+}
+
+@keyframes mobileMenuFeedbackOut {
+    from { opacity: 1; transform: translateY(0) rotate(0) scale(1); filter: blur(0); }
+    to { opacity: 0; transform: translateY(.5em) rotate(5deg) scale(.78); filter: blur(5px); }
 }
 
 @media (max-width: 650px) {
@@ -2245,6 +2344,14 @@ html:has(body.motion-portfolio) {
 
     .motion-portfolio .mobileMenu a {
         transition: none !important;
+    }
+
+    .motion-portfolio .mobileMenu a.is-already-here .mobileMenuOriginal .mobileMenuMorphLetter,
+    .motion-portfolio .mobileMenu a.is-already-here .mobileMenuFeedback .mobileMenuMorphLetter,
+    .motion-portfolio .mobileMenu a.is-already-here.is-returning .mobileMenuOriginal .mobileMenuMorphLetter,
+    .motion-portfolio .mobileMenu a.is-already-here.is-returning .mobileMenuFeedback .mobileMenuMorphLetter {
+        animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
     }
 
     .art-hero-cta__arrow::before {
