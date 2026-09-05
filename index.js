@@ -371,6 +371,7 @@ document?.getElementById("contactForm")?.addEventListener("submit", async (e) =>
     if (!res.ok) throw new Error("Failed to send");
 
     alertMessage.innerHTML = `<span class="accentText">Your message</span> was sent successfully! I'll be replying as soon as I can 😁`;
+    alertMessage.hidden = false;
     alertMessage.classList.add("open");
     setTimeout(() => {
         alertMessage.classList.remove("open");
@@ -378,6 +379,7 @@ document?.getElementById("contactForm")?.addEventListener("submit", async (e) =>
     form.reset();
   } catch (err) {
     alertMessage.innerHTML = `Your message was <span class="accentText red">not sent</span>. Please email me directly at <a class="fallbackEmail" href="mailto:stefan@optiflowz.com">stefan@optiflowz.com</a>.`;
+    alertMessage.hidden = false;
     alertMessage.classList.add("open");
     setTimeout(() => {
         alertMessage.classList.remove("open");
