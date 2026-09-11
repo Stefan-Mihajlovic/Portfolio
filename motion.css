@@ -144,6 +144,7 @@ body.art-entering-armed .art-page-transition span {
 .motion-portfolio > header {
     --art-header-bg: var(--art-purple);
     --art-header-ink: var(--art-paper);
+    --art-header-inverse-ink: var(--art-ink);
     position: fixed;
     top: 0;
     left: 0;
@@ -212,7 +213,7 @@ body.art-entering-armed .art-page-transition span {
 .motion-portfolio > header .logo::before {
     z-index: -2;
     inset: 0;
-    background: var(--art-paper);
+    background: var(--art-header-ink);
     clip-path: polygon(
         0 0,
         calc(100% - var(--art-logo-cut)) 0,
@@ -223,7 +224,7 @@ body.art-entering-armed .art-page-transition span {
     );
     transform: rotate(-3deg) scale(.82);
     transform-origin: center;
-    transition: opacity .2s ease, transform .4s var(--art-ease);
+    transition: opacity .2s ease, transform .4s var(--art-ease), background-color .32s ease;
 }
 
 .motion-portfolio > header .logo::after {
@@ -232,7 +233,7 @@ body.art-entering-armed .art-page-transition span {
     right: -1px;
     width: 15px;
     height: 2px;
-    background: var(--art-ink);
+    background: currentColor;
     transform: rotate(45deg) scaleX(0);
     transform-origin: center;
     transition: opacity .18s ease .08s, transform .35s var(--art-ease) .04s;
@@ -241,7 +242,7 @@ body.art-entering-armed .art-page-transition span {
 .motion-portfolio > header .logo:hover,
 .motion-portfolio > header .logo:focus-visible {
     background: transparent;
-    color: var(--art-ink);
+    color: var(--art-header-inverse-ink);
     transform: translateY(-1px) rotate(-1deg);
 }
 
@@ -1105,6 +1106,12 @@ body.art-entering-armed .art-page-transition span {
     aspect-ratio: 16 / 10;
     object-fit: cover;
     cursor: pointer;
+}
+
+.motion-portfolio[data-art-page="crimson-music"] .screenshotCard img {
+    height: auto;
+    aspect-ratio: 2300 / 1294;
+    object-fit: contain;
 }
 
 .motion-portfolio .sectionHeading.galleryMeta {
@@ -2132,7 +2139,6 @@ html:has(body.motion-portfolio) {
         padding: 0;
         margin-left: 0;
         transform: translateY(-50%) !important;
-        color: var(--art-header-ink);
         transition: color .32s ease, background-color .32s ease;
     }
 

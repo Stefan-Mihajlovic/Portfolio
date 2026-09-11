@@ -50,6 +50,15 @@
             color: '#ff6438',
             ink: '#090909'
         },
+        'crimson-music': {
+            title: 'CRIMSON MUSIC CASE STUDY',
+            lines: [
+                { text: 'CRIMSON MUSIC', outline: false },
+                { text: 'CASE STUDY', outline: true }
+            ],
+            color: '#6c36bb',
+            ink: '#f8f5ee'
+        },
         'palette-pilot': {
             title: 'PALETTE PILOT CASE STUDY',
             lines: [
@@ -110,6 +119,15 @@
             { bg: '#3d95ff', ink: '#090909' },
             { bg: '#ff3f9f', ink: '#090909' },
             { bg: '#7147ff', ink: '#f8f5ee' }
+        ],
+        'crimson-music': [
+            { bg: '#9b72ed', ink: '#090909' },
+            { bg: '#5d2ba6', ink: '#f8f5ee' },
+            { bg: '#c7b3f2', ink: '#090909' },
+            { bg: '#47256c', ink: '#f8f5ee' },
+            { bg: '#a887e2', ink: '#090909' },
+            { bg: '#7650bf', ink: '#f8f5ee' },
+            { bg: '#d3c4f5', ink: '#090909' }
         ],
         'palette-pilot': [
             { bg: '#ee1760', ink: '#f8f5ee' },
@@ -385,6 +403,7 @@
             contact: '.content > form',
             optiflowz: '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
             'eaes-video-corner': '.content > .screenshotsSection, .content > .extensionDetails',
+            'crimson-music': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
             'palette-pilot': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
             'tab-volume-manager': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock'
         };
@@ -528,8 +547,10 @@
 
         if (!active || active === activeHeaderScene) return;
         activeHeaderScene = active;
+        const headerInk = active.dataset.artInk || '#090909';
         header.style.setProperty('--art-header-bg', active.dataset.artBg || '#f8f5ee');
-        header.style.setProperty('--art-header-ink', active.dataset.artInk || '#090909');
+        header.style.setProperty('--art-header-ink', headerInk);
+        header.style.setProperty('--art-header-inverse-ink', headerInk === '#090909' ? '#f8f5ee' : '#090909');
         body.style.setProperty('--art-active-bg', active.dataset.artBg || '#7147ff');
         body.style.setProperty('--art-active-ink', active.dataset.artInk || '#f8f5ee');
     };
