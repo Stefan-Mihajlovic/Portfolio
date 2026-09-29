@@ -413,3 +413,7 @@ a,button,.featureCard,.priceCard,.galleryGrid figure,.experienceCopy li,.faqList
 
 /* Slightly more generous FAQ type without changing its editorial layout. */
 .faqIntro p{font-size:12.5px}.faqList summary{font-size:14.5px}.faqList details p{font-size:12.5px;line-height:1.75}
+
+/* Single lifetime offer. */
+.pricingGrid { grid-template-columns: minmax(0, 560px); justify-content: center; }
+.lifetimePrice { width: 100%; }
