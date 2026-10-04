@@ -151,6 +151,7 @@
         { className: 'optiFlowz', bg: '#2778ee', ink: '#f8f5ee' },
         { className: 'crimsonMusic', bg: '#712fb4', ink: '#f8f5ee' },
         { className: 'palettePilot', bg: '#ee1760', ink: '#f8f5ee' },
+        { className: 'typePilot', bg: '#7954a7', ink: '#f8f5ee' },
         { className: 'krunaBoje', bg: '#c7f36b', ink: '#090909' },
         { className: 'roomRule', bg: '#ff6038', ink: '#090909' },
         { className: 'uehsWebsite', bg: '#28bda8', ink: '#090909' },
