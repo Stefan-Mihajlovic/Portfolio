@@ -146,6 +146,7 @@
     };
 
     const projectThemes = [
+        { className: 'fontPirate', bg: '#8054d9', ink: '#f8f5ee' },
         { className: 'healthPlus', bg: '#0795bd', ink: '#f8f5ee' },
         { className: 'eaes', bg: '#ff7c26', ink: '#090909' },
         { className: 'optiFlowz', bg: '#2778ee', ink: '#f8f5ee' },
@@ -482,7 +483,7 @@
             panel.prepend(chrome);
         }
 
-        const media = panel.querySelector(':scope > img, :scope > div > img, .screenshotsSlider, .shortBio .portraitShot--main, .workflowVisual, .experienceVisual, .heroProduct, .browserFrame, .extensionPopup');
+        const media = panel.querySelector(':scope > .font-pirate-banner, :scope > img, :scope > div > img, .screenshotsSlider, .shortBio .portraitShot--main, .workflowVisual, .experienceVisual, .heroProduct, .browserFrame, .extensionPopup');
         if (media) {
             media.classList.add('art-float-media');
             media.style.setProperty('--art-media-rotate', `${index % 2 ? 2.5 : -2.5}deg`);
