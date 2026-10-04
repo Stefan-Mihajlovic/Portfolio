@@ -12,7 +12,6 @@ let activeIndex = 0;
 let elapsed = 0;
 let previousTime = null;
 let visible = false;
-let hovering = false;
 let focused = false;
 let paused = reducedMotion.matches;
 
@@ -52,8 +51,6 @@ tabs.forEach((tab, i) => {
   });
 });
 playback.addEventListener('click', () => { paused = !paused; updatePlayback(); });
-showcase.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') hovering = true; });
-showcase.addEventListener('pointerleave', () => { hovering = false; previousTime = null; });
 // Keep a tab stable while someone navigates the gallery with the keyboard.
 showcase.addEventListener('focusin', event => { focused = event.target !== playback && event.target.matches(':focus-visible'); });
 showcase.addEventListener('focusout', event => {
@@ -67,7 +64,7 @@ new IntersectionObserver(([entry]) => {
 document.addEventListener('visibilitychange', () => { previousTime = null; });
 reducedMotion.addEventListener('change', event => { paused = event.matches; updatePlayback(); });
 function tick(time) {
-  if (visible && !document.hidden && !paused && !hovering && !focused) {
+  if (visible && !document.hidden && !paused && !focused) {
     if (previousTime !== null) elapsed += time - previousTime;
     previousTime = time;
     if (elapsed >= duration) select((activeIndex + 1) % tabs.length);
@@ -77,3 +74,8 @@ function tick(time) {
 }
 updatePlayback();
 requestAnimationFrame(tick);
+
+// Reveal the existing privacy details before following the footer anchor.
+document.getElementById('privacy-link').addEventListener('click', () => {
+  document.getElementById('privacy').open = true;
+});

@@ -22,3 +22,9 @@ The catalog is a bundled snapshot; the update script refreshes it. Remote font p
 - Extension's 14 tests passed; ZIP contents match source; all page asset references resolve.
 - Verified automatic advancement, visible progress, pause holding the same slide, arrow-key navigation and the 440×956 mobile layout in Edge.
 - User's dark extension theme restored after the light-theme screenshots. Changes remain local, without publication.
+
+## Publication approved — 4 October 2026
+- Removed hover pausing at Stefan's request; observed the gallery advance with the pointer over it. Explicit pause, keyboard navigation, visibility and reduced-motion behavior remain.
+- Header download CTA is solid white with dark text. Added the full footer with product, related extensions, contact and profile links; privacy link opens the existing details.
+- Added Font Pirate to the homepage, projects directory, project structured data and sitemap. Enabled indexing and added canonical and social sharing metadata.
+- Local asset links, JSON-LD, sitemap XML, JavaScript syntax and diff whitespace checks passed.

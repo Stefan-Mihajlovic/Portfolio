@@ -1,6 +1,6 @@
 # Font Pirate artwork
 
-Local preview only, not approved for publication.
+Publication approved by Stefan on 4 October 2026 after the visual review.
 
 Original hero: `assets/pirate-flag.png`; web derivative: `assets/pirate-flag.jpg`.
 Generated using the built-in image generation tool. Icon reference is the real export from Icon Composer, `TypePilot/assets/font-pirate/font-pirate-composer.png`. The logo is a custom vector letter and eyepatch, assembled in an editable `.icon` document, opened, adjusted and exported with Icon Composer.
