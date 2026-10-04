@@ -79,3 +79,19 @@ requestAnimationFrame(tick);
 document.getElementById('privacy-link').addEventListener('click', () => {
   document.getElementById('privacy').open = true;
 });
+
+// Match the compact floating navigation on the other extension pages.
+const floatingHeader = document.querySelector('.floating-header');
+let headerFrame = false;
+function updateFloatingHeader() {
+  const shown = window.scrollY > Math.min(document.querySelector('.hero').offsetHeight * .36, 390);
+  floatingHeader.classList.toggle('is-visible', shown);
+  floatingHeader.inert = !shown;
+  headerFrame = false;
+}
+function requestHeaderUpdate() {
+  if (!headerFrame) { headerFrame = true; requestAnimationFrame(updateFloatingHeader); }
+}
+window.addEventListener('scroll', requestHeaderUpdate, { passive: true });
+window.addEventListener('resize', requestHeaderUpdate);
+updateFloatingHeader();

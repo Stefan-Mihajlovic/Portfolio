@@ -1,0 +1,14 @@
+TVM photographic middle — local preview, October 4, 2026
+User direction: more photography and freely composed real screenshots, like Font Pirate.
+Preserved: speaker hero, light blue ribbon, download CTA, footer.
+Removed: interactive music mixer and comparison-table redesign.
+Palette: navy #081729, ink #102346, cobalt #3457ed, ice #edf2ff, white #ffffff.
+Type: existing Bricolage Grotesque headlines and Manrope supporting text.
+Layout: headphones photograph with overlapping volume and EQ captures; cinema photograph with Effects capture. Short left/right headings; no additional decorative labels.
+Real interface source: images/TabVolumeManagerScreen1.webp, Screen2.webp, Screen3.webp; unchanged screenshot pixels cropped with CSS.
+Photography: built-in image_gen, converted to WebP with cwebp q82.
+Assets: tab-volume-manager/assets/listening.webp; tab-volume-manager/assets/cinema.webp.
+Prompts:
+Use case: photorealistic-natural. Create an art-directed editorial photograph for an audio browser-extension landing page, landscape 16:9. A pair of beautiful unbranded over-ear headphones in brushed silver aluminum with deep blue padded ear cups resting on dark indigo ribbed upholstery. Close, tactile, genuine high-end photography, subtle film grain, directional late afternoon light and deep blue shadows. Composition: headphones dominate LOWER LEFT half, cropped dramatically beyond bottom and left edges, the headband curves upward near center-left; RIGHT HALF recedes into quietly lit midnight-blue upholstery and shadow, deliberately uncluttered so actual software screenshots can later be overlaid in HTML. TOP LEFT has calm darker negative space for a white headline. Confident asymmetric editorial composition. No text, no logos, no UI, no people, no decorative floating objects, no graphic sound waves. Avoid glossy plastic CGI look.
+
+Use case: photorealistic-natural. Create a wide cinematic editorial photograph for an audio-extension website, 16:9. Inside an intimate old cinema: rows of empty velvety muted cobalt-blue seats in lower half, a single shaft of warm projector light traveling diagonally from upper-right toward left through a slight atmospheric haze. Sophisticated real architectural photography, shadow, tangible velvet texture, subtle film grain. Camera low and oblique across seats, dramatic perspective. No visible screen, no audience. The LEFT THIRD is deep navy shadow for overlaying actual software screenshots. Upper RIGHT half has dark navy negative space for a short white headline, light beam lower than that. Restrained blue and amber palette, believable, rich yet not overly saturated. No text, no logos, no interfaces, no graphical icons, no neon, no speaker cones.

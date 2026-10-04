@@ -1,0 +1,9 @@
+Palette Pilot — October 4, 2026 local redesign
+Palette: pigment #FF006A, burgundy #250619, peach #FFCFBB, cobalt #4960DF, blush #FFF0F5, white #FFFFFF.
+Type: Bricolage Grotesque headlines; Manrope navigation and body.
+Composition: photographic pigment hero, quiet product screenshot gallery, physical color-sheet composition, clear lifetime Pro offer.
+Review: removed the previous generic feature cards, demo controls, labels and long introductory copy. Keep product imagery real; billing and store destinations remain intact.
+Generated asset: palette-pilot/assets/pigment-hero.webp
+Method: built-in image_gen; converted to WebP with cwebp quality 82.
+Prompt: Create a premium editorial macro photograph for a color picker browser extension landing page, landscape 16:9. A monumental glossy magenta paint ribbon curling diagonally through the RIGHT TWO THIRDS, merging into thick sculptural folds of hot pink pigment, with smaller apricot orange and cobalt blue glossy paint folds at the far right edge. Rich real tactile paint, specular studio light, luxurious beauty campaign photography, an unexpected sculptural closeup not paint splatter. Background deep burgundy #31051c, LEFT THIRD mostly dark clean negative space for white headline overlaid in HTML. Subject fills canvas, dynamic elegant silhouette. No text, no logos, no UI, no random decorative spheres. Ultra refined cinematic materials and sharp detailed surface.
+Product captures: existing images/PalettePilotScreen1.webp and PalettePilotScreen2.webp, clipped using CSS to show the actual interface without the old marketing copy. Source files unchanged.

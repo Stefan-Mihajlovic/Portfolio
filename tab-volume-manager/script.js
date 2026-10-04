@@ -191,7 +191,9 @@ function initializeScrollHeader() {
     let ticking = false;
     const update = () => {
         const revealPoint = Math.min(hero.offsetHeight * 0.36, 390);
-        header.classList.toggle('is-visible', window.scrollY > revealPoint);
+        const shown = window.scrollY > revealPoint;
+        header.classList.toggle('is-visible', shown);
+        header.inert = !shown;
         ticking = false;
     };
     const requestUpdate = () => {
@@ -379,8 +381,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDirectProAnchor();
     initializeScrollHeader();
     initializeSmoothFaq();
-    initializeMotion();
-    initializeAnimatedValues();
+
+
     initializeCheckoutButtons();
     initializeBillingPortal();
     initializeCheckoutStatus();

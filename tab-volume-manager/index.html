@@ -30,9 +30,9 @@
     <meta name="twitter:image:alt" content="Tab Volume Manager browser extension">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=responsive-seo-20260812">
-    <script src="script.js?v=smooth-faq-20260811" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../extension-pages.css?v=20261004">
+    <script src="script.js?v=20261004-redesign" defer></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -80,147 +80,29 @@
       ]
     }
     </script>
+<link rel="preload" as="image" href="assets/speaker-hero.webp"><script src="../extension-pages.js?v=20261004" defer></script><link rel="stylesheet" href="listening.css?v=20261004-corners"><link rel="stylesheet" href="../extension-images.css?v=20261004-images">
 </head>
-<body>
-    <header class="siteHeader">
-        <a class="brand" href="#top" aria-label="Tab Volume Manager home">
-            <img class="brandMark" src="icon.png" width="128" height="128" alt="">
-            <span>Tab Volume <b>Manager</b></span>
-        </a>
-        <nav class="desktopNav" aria-label="Main navigation"><a href="#features">Features</a><a href="#experience">Experience</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></nav>
-        <a class="headerCta" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer"><span class="chromeIcon"><img src="../images/chrome-web-store.png" width="960" height="834" alt=""></span>Get the extension</a>
-    </header>
-
-    <header class="scrollHeader" aria-label="Persistent navigation">
-        <a class="brand" href="#top" aria-label="Tab Volume Manager home"><img class="brandMark" src="icon.png" width="128" height="128" alt=""><span>Tab Volume <b>Manager</b></span></a>
-        <nav class="scrollNav" aria-label="Persistent page navigation"><a href="#features">Features</a><a href="#experience">Experience</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></nav>
-        <a class="scrollCta" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer"><span class="chromeIcon"><img src="../images/chrome-web-store.png" width="960" height="834" alt=""></span>Get the extension</a>
-    </header>
-
-    <main id="top">
-        <section class="heroSection">
-            <div class="heroContent">
-                <div class="heroCopy">
-                    <h1>Better sound.<br><em>Every tab.</em></h1>
-                    <p>Turn quiet videos up, tame loud websites, enhance voices, and shape your browser audio from one simple control center.</p>
-                    <div class="heroActions">
-                        <a class="primaryButton" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer"><span class="chromeIcon"><img src="../images/chrome-web-store.png" width="960" height="834" alt=""></span>Add to Chrome</a>
-                        <a class="secondaryButton" href="#features">Explore features</a>
-                    </div>
-                    <p class="heroNote">Free to start · Up to 500% volume · Chrome &amp; Edge</p>
-                </div>
-                <div class="heroProduct" aria-label="Tab Volume Manager preview">
-                    <div class="browserFrame">
-                        <div class="browserBar"><span></span><span></span><span></span><div>chrome-extension://tab-volume-manager</div></div>
-                        <img src="../images/TabVolumeManagerScreen1.webp" width="1280" height="800" fetchpriority="high" decoding="async" alt="Tab Volume Manager showing per-tab volume controls">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="signalStrip" aria-label="Tab Volume Manager highlights">
-            <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 8h18M8 13h3l3-3v8l-3-3H8zM17 12.5c1 .8 1 2.2 0 3"></path></svg>Per-tab control</span>
-            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-7 11h6l-1 9 7-12h-6z"></path></svg>Instant audio processing</span>
-            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"></path><path d="m9 10 2 2 4-4"></path></svg>Settings saved by site</span>
-            <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M3 8h18"></path><circle cx="12" cy="14" r="3"></circle><path d="M9 14h6M12 11a5 5 0 0 0 0 6"></path></svg>Chrome &amp; Edge</span>
-        </section>
-
-        <section class="introSection sectionShell" id="features">
-            <div class="sectionIntro"><h2>The volume control your browser should have shipped with.</h2><p>Simple when you need a quick fix. Deep when you want to tune every detail.</p></div>
-            <div class="featureGrid">
-                <article class="featureCard volumeCard">
-                    <h3>Make quiet tabs <strong>loud.</strong><br>Keep loud tabs under control.</h3>
-                    <p>Set an independent volume for every website, mute instantly, or reset to the original level in one click.</p>
-                    <div class="sliderDemo"><div><span>Website volume</span><b data-volume-value>240%</b></div><div class="sliderTrack"><span></span><i></i></div><small>0%</small><small>500%</small></div>
-                </article>
-                <article class="featureCard effectsCard">
-                    <h3><strong>Clearer</strong> voices.<br>Deeper sound.</h3>
-                    <p>Switch on Bass Boost or Voice Clarity, then dial the effect in exactly as far as you want.</p>
-                    <div class="effectPills">
-                        <div class="effectPanelHead"><b>Sound profile</b></div>
-                        <div class="effectOptions">
-                            <span class="effectOption active">Effects Off</span>
-                            <span class="effectOption">Bass Boost</span>
-                            <span class="effectOption">Voice Clarity</span>
-                        </div>
-                        <div class="effectIntensityDemo"><span><b>Effect Intensity</b><em><strong data-effect-value>50</strong>%</em></span><i class="effectLevelTrack"><u></u><em></em></i></div>
-                    </div>
-                </article>
-                <article class="featureCard equalizerCard">
-                    <div class="eqCopy"><h3>Shape the <strong>sound,</strong><br>not your workflow.</h3><p>Tune ten frequency bands, start with a sound profile, and save presets for the way you listen.</p><div class="profileTags"><span>Warm</span><span>Music</span><span>Podcast</span><span>Gaming</span></div></div>
-                    <div class="eqDemo" aria-label="Ten-band equalizer illustration styled like the extension">
-                        <div class="eqBandDemo" style="--thumb:63%;--pulse:6%;--eq-delay:-.3s"><output>+4 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>32 Hz</strong><small>Sub Bass</small></div>
-                        <div class="eqBandDemo" style="--thumb:60%;--pulse:5%;--eq-delay:-1.4s"><output>+3 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>64 Hz</strong><small>Bass</small></div>
-                        <div class="eqBandDemo" style="--thumb:57%;--pulse:4%;--eq-delay:-.8s"><output>+2 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>125 Hz</strong><small>Body</small></div>
-                        <div class="eqBandDemo" style="--thumb:50%;--pulse:6%;--eq-delay:-1.8s"><output>0 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>250 Hz</strong><small>Low Mid</small></div>
-                        <div class="eqBandDemo" style="--thumb:47%;--pulse:5%;--eq-delay:-.5s"><output>-1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>500 Hz</strong><small>Mid</small></div>
-                        <div class="eqBandDemo" style="--thumb:53%;--pulse:4%;--eq-delay:-1.1s"><output>+1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>1 kHz</strong><small>Presence</small></div>
-                        <div class="eqBandDemo" style="--thumb:60%;--pulse:5%;--eq-delay:-2s"><output>+3 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>2 kHz</strong><small>Detail</small></div>
-                        <div class="eqBandDemo" style="--thumb:57%;--pulse:6%;--eq-delay:-.7s"><output>+2 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>4 kHz</strong><small>Clarity</small></div>
-                        <div class="eqBandDemo" style="--thumb:50%;--pulse:5%;--eq-delay:-1.6s"><output>0 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>8 kHz</strong><small>Air</small></div>
-                        <div class="eqBandDemo" style="--thumb:47%;--pulse:4%;--eq-delay:-.2s"><output>-1 dB</output><span class="eqSliderRailDemo"><span class="eqLevelMeterDemo"></span><i></i></span><strong>16 kHz</strong><small>Brilliance</small></div>
-                    </div>
-                </article>
-                <article class="featureCard mixerCard"><h3>All your audible tabs.<br>One clean <strong>mixer.</strong></h3><p>See what is playing and balance everything without hunting through your tab bar.</p><div class="mixerRows"><span><i class="serviceLogo spotify"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ed760"></circle><path d="M6.1 9.1c4.1-1.2 8.8-.9 12.1.9M6.8 12.3c3.5-1 7.6-.7 10.6.8M7.5 15.2c2.9-.8 6.2-.5 8.8.7" fill="none" stroke="#08120c" stroke-width="1.7" stroke-linecap="round"></path></svg></i><b>Spotify</b><em><u style="--w:72%"></u></em><small>72</small></span><span><i class="serviceLogo youtube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="4.5" width="22" height="15" rx="4" fill="#ff0033"></rect><path d="m10 8.5 6 3.5-6 3.5z" fill="#fff"></path></svg></i><b>YouTube</b><em><u style="--w:44%"></u></em><small>44</small></span><span><i class="serviceLogo meet"><svg viewBox="0 0 87.5 72" aria-hidden="true"><path fill="#00832d" d="M49.5 36l8.53 9.75 11.47 7.33 2-17.02-2-16.64-11.69 6.44z"></path><path fill="#0066da" d="M0 51.5V66c0 3.315 2.685 6 6 6h14.5l3-10.96-3-9.54-9.95-3z"></path><path fill="#e94235" d="M20.5 0 0 20.5l10.55 3 9.95-3 2.95-9.41z"></path><path fill="#2684fc" d="M20.5 20.5H0v31h20.5z"></path><path fill="#00ac47" d="M82.6 8.68 69.5 19.42v33.66l13.16 10.79c1.97 1.54 4.85.135 4.85-2.37V11c0-2.535-2.945-3.925-4.91-2.32zM49.5 36v15.5h-29V72h43c3.315 0 6-2.685 6-6V53.08z"></path><path fill="#ffba00" d="M63.5 0h-43v20.5h29V36l20-16.57V6c0-3.315-2.685-6-6-6z"></path></svg></i><b>Meet</b><em><u style="--w:88%"></u></em><small>88</small></span></div></article>
-                <article class="featureCard adaptiveCard">
-                    <h3><strong>Balanced</strong> by itself.</h3>
-                    <p>Automatically smooth the jump between quiet dialogue and loud moments.</p>
-                    <div class="adaptiveFlow" aria-label="Smooth adaptive volume waveform">
-                        <svg viewBox="0 0 640 150" role="img" aria-hidden="true" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="adaptiveWaveGradient" x1="0" y1="0" x2="1" y2="0">
-                                    <stop offset="0" stop-color="#4167ff" stop-opacity="0"/>
-                                    <stop offset=".24" stop-color="#4167ff"/>
-                                    <stop offset=".72" stop-color="#65caff"/>
-                                    <stop offset="1" stop-color="#65caff" stop-opacity="0"/>
-                                </linearGradient>
-                            </defs>
-                            <path class="adaptiveBaseline" d="M0 75H640"/>
-                            <path class="adaptiveWavePath" pathLength="1" d="M0 75 C42 75 48 60 76 60 S112 101 142 75 S181 32 216 75 S258 111 292 75 S334 47 368 75 S407 95 441 75 S482 55 516 75 S565 84 640 75"/>
-                        </svg>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <section class="experienceSection" id="experience">
-            <div class="experienceInner sectionShell">
-                <div class="experienceCopy">
-                    <h2>Set it once.<br><em>Hear it every time.</em></h2>
-                    <p>Tab Volume Manager remembers how each website should sound, then restores that setup when you return.</p>
-                    <ol class="experienceSteps">
-                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 6 10 6-10 6z"></path></svg></span><div><strong>Open an audible tab</strong><small>Everything currently playing is ready to adjust.</small></div></li>
-                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"></path><circle cx="9" cy="8" r="1.7"></circle><circle cx="15" cy="16" r="1.7"></circle></svg></span><div><strong>Make it sound right</strong><small>Choose a level, effect, or complete sound profile.</small></div></li>
-                        <li><span class="stepGlyph" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"></path></svg></span><div><strong>Leave the rest to us</strong><small>Your settings return automatically on your next visit.</small></div></li>
-                    </ol>
-                </div>
-                <div class="experienceVisual">
-                    <div class="popupGlow" aria-hidden="true"></div>
-                    <div class="extensionPopup">
-                        <div class="popupHeader"><span><img src="icon.png" width="128" height="128" alt="">Tab Volume Manager</span><i class="popupTheme" aria-hidden="true"></i></div>
-                        <div class="popupTabs"><span>Volume</span><span class="active">Effects</span><span>Equalizer</span><span>✦ Pro</span></div>
-                        <div class="popupControlCard">
-                            <div class="popupHeading"><div><small>QUICK EFFECTS</small><h3>Sound profile</h3></div><div class="popupOrb" aria-hidden="true"><i></i></div></div>
-                            <div class="popupEffects"><span>Effects Off</span><span>Bass Boost</span><span class="active">Voice Clarity</span></div>
-                            <div class="popupIntensity"><div><b>Effect Intensity</b><span>50%</span></div><div class="popupSlider"><span></span><i></i></div></div>
-                        </div>
-                        <div class="popupSavedSite"><i class="spotifyMark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1ed760"></circle><path d="M6.1 9.1c4.1-1.2 8.8-.9 12.1.9M6.8 12.3c3.5-1 7.6-.7 10.6.8M7.5 15.2c2.9-.8 6.2-.5 8.8.7" fill="none" stroke="#08120c" stroke-width="1.7" stroke-linecap="round"></path></svg></i><span><small>Settings saved for</small><b>spotify.com</b></span><em><u></u> Remembered</em></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="gallerySection sectionShell">
-            <div class="sectionIntro centered"><h2>Powerful audio. Friendly interface.</h2></div>
-            <div class="galleryGrid"><figure><img src="../images/TabVolumeManagerScreen1.webp" width="1280" height="800" loading="lazy" decoding="async" alt="Tab Volume Manager volume controls"><figcaption><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4h4l4 4V6L9 10zM16 9c1.8 1.7 1.8 4.3 0 6"></path></svg></span>Volume</figcaption></figure><figure><img src="../images/TabVolumeManagerScreen2.webp" width="1280" height="800" loading="lazy" decoding="async" alt="Tab Volume Manager effects"><figcaption><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 1.4 4.1 4.1 1.4-4.1 1.4L12 15l-1.4-4.1-4.1-1.4 4.1-1.4zM18 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"></path></svg></span>Effects</figcaption></figure><figure><img src="../images/TabVolumeManagerScreen3.webp" width="1280" height="800" loading="lazy" decoding="async" alt="Tab Volume Manager equalizer"><figcaption><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5v14M12 5v14M19 5v14M3 9h4M10 14h4M17 8h4"></path><circle cx="5" cy="9" r="2"></circle><circle cx="12" cy="14" r="2"></circle><circle cx="19" cy="8" r="2"></circle></svg></span>Equalizer</figcaption></figure></div>
-        </section>
-
+<body class="tab-volume-manager"><header class="scrollHeader" aria-label="Persistent navigation" inert><a class="brand" href="#top"><img draggable="false" src="icon.png" width="40" height="40" alt=""><span>Tab Volume Manager</span></a><nav aria-label="Persistent page navigation"><a href="#features">Explore</a><a href="#pricing">Go Pro</a></nav><a class="button" href="#download">Get the extension</a></header><main><section class="heroSection" id="top"><img draggable="false" class="heroArtwork" src="assets/speaker-hero.webp" width="1672" height="941" alt="" fetchpriority="high"><header class="siteHeader"><a class="brand" href="#top"><img draggable="false" src="icon.png" width="40" height="40" alt=""><span>Tab Volume Manager</span></a><nav aria-label="Main navigation"><a href="#features">Take a look</a><a href="#pricing">Go Pro</a></nav><a class="button" href="#download">Get the extension</a></header><div class="heroCopy"><h1>Every tab.<br>Your sound.</h1><p>A little louder. A little clearer. Just right.</p><a class="button heroButton" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer">Get the extension<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><small>Free for Chrome &amp; Edge</small></div></section><div class="audioRibbon"><span>Music.</span><span>Movies.</span><span>Meetings.</span><span>Your mix.</span></div><div class="listeningStories" id="features">
+  <section class="listeningScene musicScene" aria-labelledby="musicTitle">
+    <img draggable="false" class="scenePhoto" src="assets/listening.webp" width="1672" height="941" alt="" loading="eager" decoding="async">
+    <div class="sceneCopy"><h2 id="musicTitle">Find your<br>sweet spot.</h2><p>Set the volume for each tab.<br>Fine-tune the frequencies you love.</p></div>
+    <div class="musicScreens" aria-label="Tab Volume Manager volume and equalizer views">
+      <figure class="realCapture tvm-volume musicVolume"><img draggable="false" src="../images/TabVolumeManagerScreen1.webp" width="1280" height="800" loading="eager" decoding="async" alt="Tab Volume Manager volume controls for an individual Spotify tab"></figure>
+      <figure class="realCapture tvm-eq musicEq"><img draggable="false" src="../images/TabVolumeManagerScreen3.webp" width="1280" height="800" loading="eager" decoding="async" alt="Tab Volume Manager six-band equalizer"></figure>
+    </div>
+  </section>
+  <section class="listeningScene cinemaScene" id="experience" aria-labelledby="cinemaTitle">
+    <img draggable="false" class="scenePhoto" src="assets/cinema.webp" width="1672" height="941" alt="" loading="eager" decoding="async">
+    <div class="sceneCopy"><h2 id="cinemaTitle">Catch every<br>word.</h2><p>Bring voices forward with Voice Clarity.<br>Keep the atmosphere with Bass Boost.</p><a href="#pricing">Explore Pro audio tools <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div>
+    <figure class="realCapture tvm-effects cinemaEffects"><img draggable="false" src="../images/TabVolumeManagerScreen2.webp" width="1280" height="800" loading="eager" decoding="async" alt="Tab Volume Manager effects with Voice Clarity selected and adjustable intensity"></figure>
+  </section>
+</div>
         <section class="pricingSection" id="pricing">
             <span class="anchorTarget" id="pro" aria-hidden="true"></span>
             <div class="pricingInner sectionShell">
                 <div class="pricingHeading"><h2>Get Pro. Keep it for life.</h2><p>One payment of $12.49 unlocks the complete Pro audio suite. No subscription or renewal.</p></div>
                 <div class="pricingGrid">
-                    <article class="priceCard featuredPrice lifetimePrice"><span class="popularBadge">PAY ONCE</span><span class="planName">Lifetime Pro</span><div class="price"><sup>$</sup>12<small>.49</small></div><p>One-time payment. All Pro audio tools.</p><ul><li>Stereo balance, channel swap &amp; width</li><li>Smart Limiter &amp; Adaptive Volume</li><li>Movie Dialogue &amp; 10-band EQ</li><li>Multi-tab Mixer &amp; Sleep Timer</li><li>Volume up to 1500%</li><li>Unlimited custom presets</li><li>Future Pro updates</li></ul><button class="checkoutButton" data-plan="lifetime" type="button">Get Lifetime Pro — $12.49</button><small class="saving">No recurring charges</small></article>
+                    <article class="priceCard featuredPrice lifetimePrice"><span class="planName">Lifetime Pro</span><div class="price"><sup>$</sup>12<small>.49</small></div><p>One-time payment. All Pro audio tools.</p><ul><li>Stereo balance, channel swap &amp; width</li><li>Smart Limiter &amp; Adaptive Volume</li><li>Movie Dialogue &amp; 10-band EQ</li><li>Multi-tab Mixer &amp; Sleep Timer</li><li>Volume up to 1500%</li><li>Unlimited custom presets</li><li>Future Pro updates</li></ul><button class="checkoutButton" data-plan="lifetime" type="button">Get Lifetime Pro — $12.49</button><small class="saving">No recurring charges</small></article>
                 </div>
                 <form class="manageForm" id="manageLicenseForm"><label for="billingLicenseKey">Already have Pro? Access your purchase with your license key.</label><div><input id="billingLicenseKey" type="text" autocomplete="off" placeholder="TVM-XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"><button type="submit">Manage billing</button></div><p id="billingMessage" role="status"></p></form>
             </div>
@@ -229,7 +111,7 @@
         <section class="faqSection sectionShell" id="faq">
             <div class="faqIntro"><h2>Before you turn it up.</h2><p>Need a hand? <a href="../contact/">Get in touch.</a></p></div>
             <div class="faqList">
-                <details open><summary>What is included for free?<span></span></summary><p>Per-tab volume up to 500%, mute and reset, Bass Boost, Voice Clarity, adjustable effect intensity, a six-band equalizer, one custom preset, per-site settings, and light/dark themes.</p></details>
+                <details><summary>What is included for free?<span></span></summary><p>Per-tab volume up to 500%, mute and reset, Bass Boost, Voice Clarity, adjustable effect intensity, a six-band equalizer, one custom preset, per-site settings, and light/dark themes.</p></details>
                 <details><summary>What does Pro include?<span></span></summary><p>Pro unlocks stereo balance, channel swap and width, Smart Limiter, Adaptive Volume, Movie Dialogue, the full 10-band equalizer, Multi-tab Mixer, Sleep Timer, unlimited presets, and volume up to 1500%.</p></details>
                 <details><summary>Is Pro a subscription?<span></span></summary><p>No. Pro costs $12.49 once for a lifetime license. There are no monthly or yearly renewals. Existing licenses remain supported.</p></details>
                 <details><summary>Where are settings and presets stored?<span></span></summary><p>Your settings and presets stay in the extension’s local storage on your device, rather than in an online account.</p></details>
@@ -237,14 +119,5 @@
             </div>
         </section>
 
-        <section class="finalCta">
-            <div class="finalWave" aria-hidden="true"><svg viewBox="0 0 1440 520" preserveAspectRatio="none"><defs><linearGradient id="waveStroke" x1="0" x2="1"><stop offset="0" stop-color="#68dbff" stop-opacity="0"></stop><stop offset=".2" stop-color="#68dbff"></stop><stop offset=".5" stop-color="#ffffff"></stop><stop offset=".8" stop-color="#7792ff"></stop><stop offset="1" stop-color="#7792ff" stop-opacity="0"></stop></linearGradient></defs><path class="wave waveOne" d="M0 260 C90 260 105 166 180 166 S270 354 350 354 S440 100 530 100 S620 390 710 390 S800 130 890 130 S980 350 1070 350 S1160 185 1245 185 S1350 260 1440 260"></path><path class="wave waveTwo" d="M0 260 C120 260 145 220 220 220 S315 302 390 302 S485 180 570 180 S660 330 735 330 S830 188 920 188 S1010 300 1090 300 S1190 220 1270 220 S1360 260 1440 260"></path><path class="waveCore" d="M0 260 H1440"></path></svg></div>
-            <div class="finalCtaContent"><h2>Every tab.<br><span>Your volume.</span></h2><p>Turn it up, tune it right, and let every site remember.</p><a class="lightButton" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer"><span class="chromeIcon"><img src="../images/chrome-web-store.png" width="960" height="834" alt=""></span>Add to Chrome, it’s free</a></div>
-        </section>
-    </main>
-
-    <footer><a class="brand footerBrand" href="#top"><img class="brandMark" src="icon.png" width="128" height="128" alt=""><span>Tab Volume <b>Manager</b></span></a><p>A browser audio extension built by <a href="../">Stefan Mihajlovic</a>.</p><nav aria-label="Footer navigation"><a href="https://microsoftedge.microsoft.com/addons/detail/pkninbkmgnhgiahpgcifjebbkgmafhoo" target="_blank" rel="noopener noreferrer">Edge Add-ons</a><a href="../privacypolicies/tabvolumemanager.html">Privacy</a><a href="terms.html">Pro terms</a><a href="../projects/">All projects</a></nav></footer>
-
-    <section class="checkoutStatus" id="checkoutStatus" role="dialog" aria-modal="true" aria-labelledby="checkoutStatusTitle" hidden><button class="checkoutBackdrop" type="button" aria-label="Close checkout message"></button><div class="checkoutPanel"><button class="checkoutClose" type="button" aria-label="Close">×</button><h2 id="checkoutStatusTitle">Checkout status</h2><p id="checkoutStatusMessage"></p><div class="licenseResult" id="licenseResult" hidden><small>Your license key</small><code id="purchasedLicenseKey"></code><button id="copyLicenseButton" type="button">Copy license key</button></div><button class="checkoutDone" id="checkoutDoneButton" type="button">Done</button></div></section>
-</body>
-</html>
+<section class="downloadSection" id="download"><img draggable="false" src="assets/speaker-hero.webp" class="downloadArtwork" alt="" width="1672" height="941" loading="eager"><div><img draggable="false" class="downloadIcon" src="icon.png" alt="" width="64" height="64"><h2>Sounds like you.</h2><p>Make every tab worth listening to.</p><div class="storeButtons"><a class="button" href="https://chromewebstore.google.com/detail/tab-volume-manager/hnpafnldgablhjgagcfhjjaaalliegef" target="_blank" rel="noopener noreferrer">Add to Chrome <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><a class="button secondary" href="https://microsoftedge.microsoft.com/addons/detail/pkninbkmgnhgiahpgcifjebbkgmafhoo" target="_blank" rel="noopener noreferrer">Add to Edge <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a></div><small>Free to start. No account needed.</small></div></section></main><footer><div class="footerTop"><div><a class="brand" href="#top"><img draggable="false" src="icon.png" width="40" height="40" alt=""><span>Tab Volume Manager</span></a><p>Make every tab worth listening to.</p></div><div><h3>Tab Volume Manager</h3><a href="#features">Explore</a><a href="#pricing">Get Pro</a><a href="#faq">Questions</a></div><div><h3>Support</h3><a href="../contact/">Get in touch</a><a href="../privacypolicies/tabvolumemanager.html">Privacy policy</a><a href="terms.html">Pro terms</a></div><div><h3>More by Stefan</h3><a href="../font-pirate/">Font Pirate</a><a href="../palette-pilot/">Palette Pilot</a><a href="../projects/">All projects</a></div></div><div class="footerBottom"><span>© 2026 Tab Volume Manager</span><a href="../">Designed &amp; built by Stefan Mihajlovic</a></div></footer>    <section class="checkoutStatus" id="checkoutStatus" role="dialog" aria-modal="true" aria-labelledby="checkoutStatusTitle" hidden><button class="checkoutBackdrop" type="button" aria-label="Close checkout message"></button><div class="checkoutPanel"><button class="checkoutClose" type="button" aria-label="Close">×</button><h2 id="checkoutStatusTitle">Checkout status</h2><p id="checkoutStatusMessage"></p><div class="licenseResult" id="licenseResult" hidden><small>Your license key</small><code id="purchasedLicenseKey"></code><button id="copyLicenseButton" type="button">Copy license key</button></div><button class="checkoutDone" id="checkoutDoneButton" type="button">Done</button></div></section>
+</body></html>

@@ -1,0 +1,7 @@
+/* Images are presentation only; their surrounding links remain interactive. */
+img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}

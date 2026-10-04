@@ -1,0 +1,9 @@
+Tab Volume Manager — October 4, 2026 local redesign
+Palette: midnight #07142D, ink #102346, cobalt #3457ED, signal blue #1E46D9, ice #EDF2FF, white #FFFFFF.
+Type: Bricolage Grotesque headlines; Manrope navigation and body.
+Composition: monumental speaker photograph, real product views, a large volume figure with sound-bar silhouette, lifetime Pro offer.
+Review: replaced simulated product controls and dense feature cards with actual screenshot crops and short product explanations.
+Generated asset: tab-volume-manager/assets/speaker-hero.webp
+Method: built-in image_gen; converted to WebP with cwebp quality 82.
+Prompt: Create a premium art directed studio photograph for a browser audio extension website, landscape 16:9. A giant sculptural deep cobalt blue speaker cone, satin metallic outer rim with precise fine grooves, shown from an oblique frontal angle filling RIGHT TWO THIRDS, tightly cropped past top and right edge. Two concentric sculptural rings echo the vibration of sound around the cone, physically rendered not graphic waves. Tangible blue anodized aluminum, finely textured diaphragm, brilliant cool edge light and rich shadows. BACKGROUND left third dark midnight blue #07142d, clean negative space for white HTML headline. High end audio campaign, confident photographic composition, dramatic architectural scale, no text, no UI, no labels, no logos, no headphones, no miscellaneous objects.
+Product captures: existing images/TabVolumeManagerScreen1.webp through Screen3.webp, clipped using CSS to show the actual interface without the old marketing copy. Source files unchanged.
