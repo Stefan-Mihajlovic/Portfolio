@@ -1,0 +1,7 @@
+# Coastal type
+
+Original hero artwork generated with the built-in image generator. Master: coastal-type.png. Web derivative: coastal-type.jpg. The rest of the product imagery consists of actual screenshots from the running Microsoft Edge extension.
+
+## Prompt
+
+Use case: photorealistic-natural / art-directed website hero. Create a very wide 16:9 editorial photograph of a monumental sculptural lowercase letter a, single-storey geometric a with a circular counter and thick upright right stem, made of softly brushed silver aluminum, standing on a small dark weathered coastal rock shelf in a still deep-blue sea. Real physical sculpture, understated beautiful art installation. It occupies the RIGHT HALF of the frame, around 65-75 percent across. Far horizon low with quiet indigo coastal mountains. Blue hour with subtle pale apricot light at horizon, mostly rich blue ocean and slate. Left half has uninterrupted dark open water and sky, enough clean negative space for large white web typography. Medium-format photographic realism, fine grain, restrained natural reflections, slight sea haze, tiny ripples, imperfect real rock texture. Carefully framed magazine art photograph, sophisticated, cinematic but not fantastical. No floating objects, no bubbles, no neon, no glowing edges, no lens flare, no purple gradient, no UI, no graphic overlays, no words, no logos, no captions, no watermark. The only typographic object is the single physically believable silver lowercase a sculpture. Wide landscape composition.
