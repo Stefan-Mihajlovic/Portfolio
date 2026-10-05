@@ -52,6 +52,7 @@
       reveal('.product-stage', {kind:'capture', delay:100, step:0});
       reveal('.inspect-copy > *', {step:100});
       reveal('.inspect-collage figure', {kind:'capture', step:140});
+      reveal('.plus-intro > *, .plus-features li, .plus-price, .plus-purchase > .button, .plus-fine, .plus-manage', {step:70});
       reveal('.download-section > img, .download-section > h2, .download-section > .button, .download-section > p, .download-section > .details', {step:90});
     }
   }
