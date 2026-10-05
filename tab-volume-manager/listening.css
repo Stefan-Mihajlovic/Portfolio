@@ -28,3 +28,10 @@
 @media(max-width:760px){.listeningStories{padding:22px 16px;gap:22px}.listeningScene{height:auto;min-height:780px;border-radius:16px}.sceneCopy{left:25px;right:20px;top:35px;max-width:none}.sceneCopy h2{font-size:52px}.sceneCopy p{font-size:15px;line-height:1.6;margin-top:20px}.musicScene .scenePhoto{object-position:30% center}.musicScene:after{background:linear-gradient(180deg,#041426bb 0%,#04142622 65%)}.musicScreens{width:86%;max-width:470px;height:440px;right:7%;bottom:40px}.musicScreens .musicVolume{width:72%;top:0}.musicScreens .musicEq{width:56%;bottom:0;right:0}.cinemaScene{min-height:750px}.cinemaScene .scenePhoto{object-position:65% center}.cinemaScene .sceneCopy{top:35px;left:25px;right:20px}.cinemaScene .sceneCopy h2{font-size:52px}.cinemaScene .sceneCopy a{font-size:13px;margin-top:21px}.cinemaEffects{width:75%;max-width:350px;left:12.5%;top:auto;bottom:38px;transform:rotate(-4deg)}.tab-volume-manager .pricingSection{padding:60px 24px}.tab-volume-manager .faqSection{padding:60px 24px}}
 @media(max-width:430px){.listeningScene{min-height:700px}.musicScreens{height:350px;bottom:42px}.cinemaScene{min-height:730px}.cinemaEffects{width:81%;left:9.5%;bottom:40px}.sceneCopy p{font-size:14px}.sceneCopy h2,.cinemaScene .sceneCopy h2{font-size:48px}}
 @media(max-width:370px){.listeningScene{min-height:650px}.musicScreens{height:300px}.cinemaScene{min-height:680px}.sceneCopy{left:22px}.sceneCopy h2,.cinemaScene .sceneCopy h2{font-size:44px}.cinemaScene .sceneCopy{left:22px}.sceneCopy p{font-size:13px}}
+
+/* Keep the page links beside the download action, as on Font Pirate. */
+.tab-volume-manager .scrollHeader nav{margin-left:auto}
+/* A consistent frame covers resampling seams around the cropped captures. */
+.tab-volume-manager .realCapture{box-shadow:0 0 0 1.5px #fff,0 26px 55px #0007}
+.tab-volume-manager .realCapture img{transform:scale(1.008);transform-origin:76% 70%}
+.tab-volume-manager .tvm-eq img{transform-origin:80% 60%}

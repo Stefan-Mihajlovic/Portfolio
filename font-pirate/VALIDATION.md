@@ -12,7 +12,7 @@
 - Local preview: http://127.0.0.1:8766/font-pirate/
 
 ## Known scope
-The catalog is a bundled snapshot; the update script refreshes it. Remote font previews require network/cache. Non-Google site fonts may fall back locally. Identification reads the CSS stack, not image lettering or per-glyph font fallback. Selecting multiple styles identifies the start of the selection. Browser-protected pages and inaccessible frames cannot be inspected. Repository URL and development folder remain TypePilot to keep the installed extension identity and history stable.
+The catalog is a bundled snapshot; the update script refreshes it. Remote font previews require network/cache. Non-Google site fonts may fall back locally. Identification reads the CSS stack, not image lettering or per-glyph font fallback. Selecting multiple styles identifies the start of the selection. Browser-protected pages and inaccessible frames cannot be inspected. Repository: https://github.com/Stefan-Mihajlovic/Font-Pirate. The existing local development folder is retained to preserve the installed unpacked extension identity and saved data.
 
 ## Refinement — arrows, gallery and Retina imagery
 - Replaced Unicode CTA arrows with rounded SVG arrows; removed the hero down-arrow cue.

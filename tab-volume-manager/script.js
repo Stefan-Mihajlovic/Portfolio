@@ -222,56 +222,43 @@ function initializeDirectProAnchor() {
 }
 
 function initializeSmoothFaq() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     document.querySelectorAll('.faqList details').forEach((details) => {
         const summary = details.querySelector('summary');
-        const answer = details.querySelector('p');
-        if (!summary || !answer) return;
-
+        if (!summary) return;
         let animation = null;
-        let answerAnimation = null;
-
-        const finish = (open) => {
-            details.open = open;
-            details.style.height = '';
-            details.style.overflow = '';
-            details.classList.remove('is-opening', 'is-closing');
-            animation = null;
-            answerAnimation = null;
-        };
+        let expanded = details.open;
 
         summary.addEventListener('click', (event) => {
             event.preventDefault();
-            const isOpen = details.open;
-            const startHeight = `${details.offsetHeight}px`;
+            const startHeight = details.getBoundingClientRect().height;
+            expanded = !expanded;
+            // Detach the previous completion before reversing an in-flight animation.
+            if (animation) {
+                animation.onfinish = null;
+                animation.cancel();
+                animation = null;
+            }
+            details.style.height = '';
+            details.style.overflow = '';
+            details.open = expanded;
+            // Measure the complete natural box, including margins, padding and border.
+            const endHeight = details.getBoundingClientRect().height;
+            if (reducedMotion.matches) return;
 
-            animation?.cancel();
-            answerAnimation?.cancel();
-            details.style.height = startHeight;
+            details.open = true;
+            details.style.height = `${startHeight}px`;
             details.style.overflow = 'hidden';
-
-            if (!isOpen) details.open = true;
-            const endHeight = isOpen ? `${summary.offsetHeight}px` : `${summary.offsetHeight + answer.offsetHeight}px`;
-            details.classList.toggle('is-opening', !isOpen);
-            details.classList.toggle('is-closing', isOpen);
-
-            animation = details.animate({ height: [startHeight, endHeight] }, {
-                duration: 380,
-                easing: 'cubic-bezier(.2,.75,.2,1)'
-            });
-            answerAnimation = answer.animate({
-                opacity: isOpen ? [1, 0] : [0, 1],
-                transform: isOpen ? ['translateY(0)', 'translateY(-7px)'] : ['translateY(-7px)', 'translateY(0)']
-            }, {
-                duration: isOpen ? 230 : 340,
-                easing: 'cubic-bezier(.2,.75,.2,1)',
-                fill: 'both'
-            });
-            animation.onfinish = () => finish(!isOpen);
-            animation.oncancel = () => {
+            animation = details.animate(
+                { height: [`${startHeight}px`, `${endHeight}px`] },
+                { duration: 280, easing: 'cubic-bezier(.2,.75,.2,1)' }
+            );
+            animation.onfinish = () => {
+                details.open = expanded;
                 details.style.height = '';
                 details.style.overflow = '';
+                animation = null;
             };
         });
     });
