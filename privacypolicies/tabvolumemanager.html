@@ -79,7 +79,7 @@
     <main>
         <section class="content policyContent">
             <h1 class="hero"><span class="accentText">Tab Volume Manager</span> Privacy Policy</h1>
-            <p><strong>Effective date:</strong> July 13, 2026</p>
+            <p><strong>Effective date:</strong> October 6, 2026</p>
 
             <div>
                 <p>Tab Volume Manager is a browser extension for controlling and shaping audio in browser tabs. This policy explains what is processed locally, what is sent to our licensing service when Pro is used, and how Stripe processes purchases.</p>
@@ -93,11 +93,12 @@
 
             <div>
                 <h2>2. Data stored locally</h2>
-                <p>Volume levels, equalizer settings, presets, theme choice, Pro tool settings, a randomly generated installation identifier, and an activated license key are stored in your browser using the extension storage API. This information is used to restore your settings and operate the extension.</p>
+                <p>Volume levels, equalizer settings, presets, theme choice, Pro tool settings, a randomly generated installation identifier, trial status, whether you have opened the store review link, and an activated license key are stored in your browser using the extension storage API. This information is used to restore your settings and operate the extension.</p>
             </div>
 
             <div>
                 <h2>3. Pro licensing data</h2>
+                <p>For the optional free trial, the extension sends its product identifier and random installation identifier to our licensing service to check eligibility, start the trial, or cancel it. We retain a cryptographic hash of the installation identifier and trial start, expiry, and cancellation records to enforce one trial per installation. No email address or payment card is required, and the trial does not create a charge or subscription.</p>
                 <p>When you activate or validate Pro, the extension sends the license key, random installation identifier, and extension version to our Cloudflare-hosted licensing service. The service stores cryptographic hashes of license keys and installation identifiers rather than the original values.</p>
                 <p>For license administration, we also store the purchase email, selected plan, license status, Stripe customer and transaction identifiers, subscription period information, activation timestamps, and the last four license-key characters. This data is used only to provide, secure, and support Pro access.</p>
             </div>
