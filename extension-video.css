@@ -1,0 +1,146 @@
+/* The trailer is embedded directly; only its surrounding layout differs by page. */
+.videoStage {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #090909;
+}
+.videoStage iframe {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.videoExternalLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid currentColor;
+    color: inherit;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.4;
+}
+.videoExternalLink:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+
+/* Product site: a compact navy section, matching the rounded listening scenes. */
+.productVideo {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(190px, .62fr) minmax(0, 1.65fr);
+    align-items: center;
+    gap: clamp(28px, 4vw, 64px);
+    padding: clamp(32px, 4vw, 64px);
+    border-radius: 20px;
+    background: #07142d;
+    color: #fff;
+    scroll-margin-top: 105px;
+}
+.productVideo .trailerPhoto {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 65%;
+    transform: scaleX(-1);
+}
+.productVideo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(90deg, #04142680, #04142626 60%);
+    pointer-events: none;
+}
+.productVideo h2 {
+    font-size: clamp(36px, 3.8vw, 58px);
+    line-height: 1.04;
+    letter-spacing: -.05em;
+}
+.productVideo p {
+    max-width: 26ch;
+    margin-top: 20px;
+    color: #e0e8f5;
+    font-size: 15px;
+    line-height: 1.65;
+}
+.productVideo .videoStage {
+    border-radius: 12px;
+    box-shadow: 0 0 0 1px #ffffff26;
+}
+.productVideo .videoExternalLink { color: #fff; border-color: #ffffff60; gap: 22px; padding-bottom: 8px; font-size: 14px; }
+.productVideo .videoExternalLink svg { width: 17px; height: 17px; }
+.productVideo .videoExternalLink:hover { color: #fff; border-color: #fff; }
+
+/* Portfolio: use the chapter frame, with a small title beside the actual film. */
+.caseVideo,
+.motion-portfolio .caseVideo.art-panel {
+    display: grid;
+    grid-template-columns: minmax(190px, .6fr) minmax(0, 1.65fr);
+    align-items: center;
+    gap: clamp(28px, 4vw, 64px);
+    min-height: 0;
+    padding: 100px clamp(24px, 4.5vw, 76px) 54px !important;
+    background: #f8f5ee;
+    color: #090909;
+    scroll-margin-top: 100px;
+}
+.motion-portfolio .caseVideo.art-panel::before,
+.motion-portfolio .caseVideo.art-panel::after { display: none; }
+.caseVideo h2 {
+    margin: 0;
+    font: 800 clamp(48px, 5.1vw, 76px)/.92 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: -.035em;
+}
+.caseVideo p {
+    max-width: 25ch;
+    margin-top: 20px;
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.6;
+}
+.caseVideo .videoStage { outline: 6px solid #090909; }
+.caseVideo .caseVideoCta {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: 320px;
+    min-height: 88px;
+    margin-top: 28px;
+    padding: 18px 22px;
+    gap: 14px;
+}
+.caseVideoCta .art-hero-cta__label { font-size: clamp(22px, 2vw, 30px); }
+.caseVideoCta .art-hero-cta__arrow { width: 46px; }
+
+@media (max-width: 900px) {
+    .productVideo { grid-template-columns: minmax(160px, .6fr) minmax(0, 1.3fr); padding: 30px; gap: 28px; }
+    .productVideo h2 { font-size: 38px; }
+    .productVideo p, .caseVideo p { font-size: 14px; }
+}
+@media (max-width: 700px) {
+    .productVideo,
+    .caseVideo,
+    .motion-portfolio .caseVideo.art-panel { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .productVideo { padding: 30px 22px 24px; border-radius: 16px; }
+    .productVideo h2 { font-size: 38px; }
+    .productVideo h2 br { display: none; }
+    .productVideo p, .caseVideo p { max-width: 34ch; margin-top: 12px; }
+    .productVideo .videoStage { border-radius: 8px; }
+    .videoExternalLink { margin-top: 18px; }
+    .caseVideo,
+    .motion-portfolio .caseVideo.art-panel { padding: 82px 18px 34px !important; }
+    .caseVideo h2 { font-size: 52px; }
+    .caseVideo .videoStage { outline-width: 4px; }
+}

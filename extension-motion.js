@@ -71,7 +71,10 @@
     el.style.setProperty('--wander-time', `${[23,29,26,31,21,27][i]}s`);
     el.style.setProperty('--wander-phase', `${-i*3.8}s`);
   });
-  const scenes = [...document.querySelectorAll('.showcase, .inspect-section, .listeningScene, .download-section, .downloadSection')];
+  const sceneSelector = isVolume
+    ? '.heroSection, .listeningScene, .productVideo, .downloadSection'
+    : '.showcase, .inspect-section, .listeningScene, .download-section, .downloadSection';
+  const scenes = [...document.querySelectorAll(sceneSelector)];
   let frame = null;
   const visibleScenes = new Set();
   function updateDepth() {
@@ -79,8 +82,9 @@
     if (document.hidden || reduced.matches) return;
     visibleScenes.forEach(scene => {
       const box = scene.getBoundingClientRect();
-      const progress = Math.max(-1,Math.min(1,(innerHeight/2 - box.top-box.height/2)/(innerHeight+box.height)));
-      scene.style.setProperty('--scene-depth', `${progress * (innerWidth < 700 ? 22 : 52)}px`);
+      const progress = Math.max(-.5,Math.min(.5,(innerHeight/2 - box.top-box.height/2)/(innerHeight+box.height)));
+      const travel = isVolume ? (innerWidth < 700 ? 32 : 80) : (innerWidth < 700 ? 22 : 52);
+      scene.style.setProperty('--scene-depth', `${progress * travel}px`);
     });
   }
   function scheduleDepth() { if (frame === null) frame = requestAnimationFrame(updateDepth); }

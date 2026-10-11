@@ -406,7 +406,7 @@
             'eaes-video-corner': '.content > .screenshotsSection, .content > .extensionDetails',
             'crimson-music': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
             'palette-pilot': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock',
-            'tab-volume-manager': '.content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock'
+            'tab-volume-manager': '.content > .caseVideo, .content > .screenshotsSection, .content > .caseStudyTitle, .content > .metaCard, .content > .caseBlock'
         };
 
         const selector = selectorsByPage[pageKey];
@@ -429,6 +429,7 @@
     buildHeroScene();
 
     const panels = selectPortfolioPanels();
+    let videoPanels = 0;
     panels.forEach((panel, index) => {
         panel.classList.add('art-panel');
         if (isProductPage) panel.classList.add('art-product-panel');
@@ -439,7 +440,11 @@
             : pageKey === 'contact'
                 ? contactPalette
                 : caseStudyPalettes[pageKey] || palette;
-        const theme = projectTheme || pagePalette[index % pagePalette.length];
+        const isVideoPanel = panel.classList.contains('caseVideo');
+        const theme = projectTheme || (isVideoPanel
+            ? { bg: '#f8f5ee', ink: '#090909' }
+            : pagePalette[(index - videoPanels) % pagePalette.length]);
+        if (isVideoPanel) videoPanels += 1;
         panel.style.setProperty('--art-panel-bg', theme.bg);
         panel.style.setProperty('--art-panel-ink', theme.ink);
         panel.style.setProperty('--art-index', index);
@@ -469,6 +474,7 @@
                 : panel.classList.contains('journey') ? 'JOURNEY'
                 : panel.classList.contains('skillCard') ? 'SKILL'
                 : panel.classList.contains('moreProjects') ? 'NEXT'
+                : panel.classList.contains('caseVideo') ? 'VIDEO'
                 : panel.classList.contains('screenshotsSection') ? 'GALLERY'
                 : panel.classList.contains('caseStudyTitle') ? 'STUDY'
                 : panel.classList.contains('metaCard') ? 'DETAILS'

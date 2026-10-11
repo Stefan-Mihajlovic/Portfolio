@@ -21,9 +21,19 @@
 .motion-enhanced .stage-letter{animation:specimen-orbit 18s ease-in-out infinite alternate;animation-play-state:paused}
 .motion-enhanced .motion-active .stage-letter{animation-play-state:running}
 @keyframes specimen-orbit{from{transform:translate(-8px,5px) rotate(-14deg)}to{transform:translate(18px,-12px) rotate(-7deg)}}
+/* TVM backgrounds share a stronger scroll depth; overscan keeps their edges covered.
+   Individual translate preserves the trailer photograph's horizontal flip. */
+.tab-volume-manager.motion-enhanced :is(.heroArtwork,.scenePhoto,.trailerPhoto,.downloadArtwork){
+  top:-48px;bottom:-48px;height:calc(100% + 96px);
+  scale:1;translate:0 var(--scene-depth,0px);
+}
+@media(max-width:699px){
+  .tab-volume-manager.motion-enhanced :is(.heroArtwork,.scenePhoto,.trailerPhoto,.downloadArtwork){top:-24px;bottom:-24px;height:calc(100% + 48px)}
+}
 @media(max-width:700px){.motion-capture.motion-pending{translate:0 26px}}
 @media(prefers-reduced-motion:reduce){
   .motion-enter,.motion-enter.motion-pending{opacity:1;translate:none;scale:none;rotate:none;transition:none}
   .motion-float:not(.motion-pending),.floating-type span,.stage-letter{animation:none!important}
   .inspect-art,.scenePhoto,.downloadArtwork{scale:none;translate:none}
+  .tab-volume-manager.motion-enhanced :is(.heroArtwork,.scenePhoto,.trailerPhoto,.downloadArtwork){top:0;bottom:0;height:100%;scale:none;translate:none}
 }
