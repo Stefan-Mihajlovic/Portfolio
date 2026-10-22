@@ -1,6 +1,7 @@
-import { createScrollStars } from "/assets/sky/scroll-stars.js";
+import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261022-3";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+const touchScroll = matchMedia('(hover: none) and (pointer: coarse)');
 const sky = createScrollStars(document.querySelector(".starfield"));
 const planets = document.createElement('div');
 planets.className = 'case-planets';
@@ -40,6 +41,7 @@ let lenis,
   refreshScrollCopy = () => {},
   revealObserver,
   videoObserver,
+  ambientObserver,
   navigating = false,
   returnFocus;
 let currentKey = history.state?.portfolioKey || crypto.randomUUID();
@@ -150,7 +152,7 @@ function updateMotion() {
     lenis.destroy();
     lenis = undefined;
   }
-  if (motionEnabled() && window.Lenis) {
+  if (motionEnabled() && !touchScroll.matches && window.Lenis) {
     lenis = new window.Lenis({
       autoRaf: true,
       duration: 1.15,
@@ -180,9 +182,11 @@ function updateVideo(video) {
   });
 }
 reduced.addEventListener("change", updateMotion);
-document.addEventListener("visibilitychange", () =>
-  document.querySelectorAll(".project-film").forEach(updateVideo),
-);
+touchScroll.addEventListener('change', updateMotion);
+document.addEventListener("visibilitychange", () => {
+  document.body.classList.toggle('document-hidden', document.hidden);
+  document.querySelectorAll(".project-film").forEach(updateVideo);
+});
 
 function initProjectNameStars() {
   const sparkle = '<svg class="name-spark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 0C18 11 21 14 32 16C21 18 18 21 16 32C14 21 11 18 0 16C11 14 14 11 16 0Z" fill="currentColor"/></svg>';
@@ -339,10 +343,13 @@ function initScrollCopy() {
     const count = enabled ? lines.reduce((total, line) =>
       total + clamp((frontier - line.top) / line.height) * line.length, 0) : letters.length;
     if (count === previousCount) return;
-    letters.forEach((letter, i) => {
+    // Only the interval crossed by the reading frontier can have changed.
+    const from = previousCount < 0 ? 0 : Math.floor(Math.min(previousCount, count));
+    const to = previousCount < 0 ? letters.length : Math.min(letters.length, Math.ceil(Math.max(previousCount, count)));
+    for (let i = from; i < to; i++) {
       const opacity = String(.24 + .76 * clamp(count - i));
-      if (letter.style.opacity !== opacity) letter.style.opacity = opacity;
-    });
+      if (letters[i].style.opacity !== opacity) letters[i].style.opacity = opacity;
+    }
     if (enabled && allowBounce && forward && previousCount >= 0) {
       words.forEach(word => {
         if (word.end > count || word.end <= previousCount) return;
@@ -387,7 +394,14 @@ function initScrollCopy() {
   }
   refreshScrollCopy = refresh;
   addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', refresh);
+  let measuredWidth = innerWidth;
+  const onResize = () => {
+    // Safari's toolbar changes viewport height without rewrapping these lines.
+    if (touchScroll.matches && innerWidth === measuredWidth) { onScroll(); return; }
+    measuredWidth = innerWidth;
+    refresh();
+  };
+  addEventListener('resize', onResize);
   document.fonts.ready.then(() => { if (!disposed) refresh(); });
   refresh();
   return () => {
@@ -395,7 +409,7 @@ function initScrollCopy() {
     cancelAnimationFrame(frame);
     animations.forEach(animation => animation.cancel());
     removeEventListener('scroll', onScroll);
-    removeEventListener('resize', refresh);
+    removeEventListener('resize', onResize);
     records.forEach(({ paragraph, words }) => {
       words.forEach(({ element }) => element.replaceWith(element.textContent));
       paragraph.normalize();
@@ -545,6 +559,7 @@ function initPage() {
   disposeReveals();
   revealObserver?.disconnect();
   videoObserver?.disconnect();
+  ambientObserver?.disconnect();
   if ("IntersectionObserver" in window) {
     document.documentElement.classList.add("js-motion");
     document.documentElement.dataset.motionReady = 'true';
@@ -616,6 +631,11 @@ function initPage() {
     document
       .querySelectorAll(".project-film")
       .forEach((el) => videoObserver.observe(el));
+    // Keep all visible motion, but suspend decorative loops outside the viewport.
+    ambientObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.target.classList.toggle('motion-offscreen', !entry.isIntersecting));
+    }, { rootMargin: '80px' });
+    main.querySelectorAll('.name-spark, .about-title-spark, .portrait-strip figure').forEach(el => ambientObserver.observe(el));
   }
   header.querySelectorAll("nav a").forEach((link) => {
     link.removeAttribute("aria-current");

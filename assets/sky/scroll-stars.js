@@ -2,8 +2,10 @@
 // Route changes advance the camera; stars never snap back to their starting positions.
 export function createScrollStars(host) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const touch = matchMedia('(hover: none) and (pointer: coarse)');
   let paused = false, ready = false, initializing = false, frame = 0, previous = 0;
   let width = 0, height = 0, scroll = window.scrollY, scrollOffset = 0, velocity = 0;
+  let targetScrollOffset = 0, maxScroll = 0, pixelRatio = 0;
   let panX = 0, panY = 0, targetX = 0, targetY = 0;
   let travelStart = -10000, ignoreUntil = 0, elapsed = 0;
   let meteor = null, nextMeteor = 3 + Math.random() * 2;
@@ -13,6 +15,11 @@ export function createScrollStars(host) {
   const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const smooth = t => t * t * (3 - 2 * t);
   const enabled = () => !paused && !reduced.matches && !document.hidden;
+  const updateScrollBounds = () => { maxScroll = Math.max(0, document.documentElement.scrollHeight - innerHeight); };
+  const readScroll = () => touch.matches ? Math.max(0, Math.min(window.scrollY, maxScroll)) : window.scrollY;
+  updateScrollBounds();
+  new ResizeObserver(updateScrollBounds).observe(document.body);
+  addEventListener('resize', updateScrollBounds, { passive: true });
   function envelope(time) {
     const t = (time - travelStart) / DURATION;
     if (t < 0 || t >= 1) return 0;
@@ -20,11 +27,14 @@ export function createScrollStars(host) {
   }
   function render(dt, time) {
     ctx.clearRect(0, 0, width, height);
-    const warp = enabled() ? envelope(time) : 0;
-    const speed = enabled() ? .014 + warp * 3.8 : 0;
+    const moving = enabled();
+    const warp = moving ? envelope(time) : 0;
+    const speed = moving ? .014 + warp * 3.8 : 0;
     const focal = Math.max(width, height) * .72;
     const cx = width * .5 + panX, cy = height * .46 + panY;
     ctx.lineCap = 'round';
+    // Constant colors plus globalAlpha avoid allocating/parsing a color per star.
+    ctx.fillStyle = 'rgb(248,249,255)';
     for (const star of stars) {
       star.z -= speed * dt;
       if (star.z < .14) star.z += 3.8;
@@ -38,31 +48,33 @@ export function createScrollStars(host) {
       const trailZ = star.z + warp * (.09 + .12 / star.z);
       const tx = cx + star.x / trailZ * focal;
       const ty = cy + sy / trailZ * focal + Math.max(-32, Math.min(32, velocity * .009 / star.z));
-      if (Math.hypot(x - tx, y - ty) > 1) {
+      const dx = x - tx, dy = y - ty;
+      ctx.globalAlpha = alpha;
+      if (dx * dx + dy * dy > 1) {
         const gradient = ctx.createLinearGradient(tx, ty, x, y);
         gradient.addColorStop(0, 'rgba(194,210,239,0)');
-        gradient.addColorStop(.65, `rgba(210,222,244,${alpha * .35})`);
-        gradient.addColorStop(1, `rgba(238,241,250,${alpha})`);
+        gradient.addColorStop(.65, 'rgba(210,222,244,.35)');
+        gradient.addColorStop(1, 'rgb(238,241,250)');
         ctx.strokeStyle = gradient;
         ctx.lineWidth = radius * .9;
         ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke();
       }
-      ctx.fillStyle = `rgba(248,249,255,${alpha})`;
       ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
       // Sparse Spinners glints: more distant stars remain simple dots.
       if (star.glint && star.z < 2.2 && warp < .2) {
         const size = radius * 3.5;
-        ctx.globalAlpha = .45 + Math.sin(elapsed * .5 + star.phase) * .15;
+        ctx.globalAlpha = alpha * (.45 + Math.sin(elapsed * .5 + star.phase) * .15);
         ctx.beginPath();
         ctx.moveTo(x, y - size); ctx.lineTo(x + radius * .45, y - radius * .45);
         ctx.lineTo(x + size, y); ctx.lineTo(x + radius * .45, y + radius * .45);
         ctx.lineTo(x, y + size); ctx.lineTo(x - radius * .45, y + radius * .45);
         ctx.lineTo(x - size, y); ctx.lineTo(x - radius * .45, y - radius * .45);
-        ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+        ctx.closePath(); ctx.fill();
       }
     }
+    ctx.globalAlpha = 1;
     // A brief, occasional diagonal meteor, separate from the radial travel trails.
-    if (enabled() && warp < .02 && elapsed >= nextMeteor && !meteor) {
+    if (moving && warp < .02 && elapsed >= nextMeteor && !meteor) {
       meteor = {
         x: width * (.08 + Math.random() * .55),
         y: height * (.05 + Math.random() * .28),
@@ -71,7 +83,7 @@ export function createScrollStars(host) {
       };
       nextMeteor = elapsed + 6 + Math.random() * 5;
     }
-    if (meteor && enabled()) {
+    if (meteor && moving) {
       meteor.age += dt;
       const progress = meteor.age / meteor.life;
       if (progress >= 1 || warp > .05) { meteor = null; return; }
@@ -93,26 +105,38 @@ export function createScrollStars(host) {
   }
   function tick(time) {
     frame = 0;
-    if (innerWidth < 768 && previous && time - previous < 30) {
+    const sampledScroll = readScroll();
+    const interacting = Math.abs(sampledScroll - scroll) > .1 ||
+      Math.abs(targetScrollOffset - scrollOffset) > .1 || Math.abs(velocity) > .5 || envelope(time) > 0 || meteor;
+    // Save power at rest, but never impose a 30fps ceiling on a swipe or warp.
+    if ((touch.matches || innerWidth < 768) && previous && time - previous < (interacting ? 14 : 30)) {
       frame = requestAnimationFrame(tick); return;
     }
     const dt = previous ? Math.min((time - previous) / 1000, .045) : 0;
     previous = time;
     const moving = enabled();
     if (moving) {
-      const delta = time > ignoreUntil ? window.scrollY - scroll : 0;
-      scrollOffset -= delta;
-      velocity += ((dt ? delta / dt : 0) - velocity) * (1 - Math.exp(-dt * 10));
+      const delta = time > ignoreUntil ? sampledScroll - scroll : 0;
+      targetScrollOffset -= delta;
+      const oldOffset = scrollOffset;
+      // Interpolate the camera, never the page: sparse native scroll samples
+      // and iOS overscroll must not teleport stars or spike their trails.
+      scrollOffset = touch.matches
+        ? scrollOffset + (targetScrollOffset - scrollOffset) * (1 - Math.exp(-dt * 18))
+        : targetScrollOffset;
+      const cameraDelta = oldOffset - scrollOffset;
+      velocity += ((dt ? cameraDelta / dt : 0) - velocity) * (1 - Math.exp(-dt * 10));
       panX += (targetX - panX) * (1 - Math.exp(-dt * 3));
       panY += (targetY - panY) * (1 - Math.exp(-dt * 3));
       elapsed += dt;
     } else velocity = 0;
-    scroll = window.scrollY;
+    scroll = sampledScroll;
     render(moving ? dt : 0, time);
     if (moving) frame = requestAnimationFrame(tick);
   }
   function resume() {
-    cancelAnimationFrame(frame); frame = 0; previous = 0; scroll = window.scrollY;
+    cancelAnimationFrame(frame); frame = 0; previous = 0; scroll = readScroll();
+    targetScrollOffset = scrollOffset;
     if (ready) frame = requestAnimationFrame(tick);
   }
   async function initialize() {
@@ -136,8 +160,10 @@ export function createScrollStars(host) {
           z: .14 + hash(i + .42) * 3.8, radius, alpha, glint: i % 49 === 0, phase: i};
       });
       new ResizeObserver(() => {
-        width = host.clientWidth; height = host.clientHeight;
+        const nextWidth = host.clientWidth, nextHeight = host.clientHeight;
         const ratio = Math.min(devicePixelRatio || 1, 1.75);
+        if (nextWidth === width && nextHeight === height && ratio === pixelRatio) return;
+        width = nextWidth; height = nextHeight; pixelRatio = ratio;
         canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0); render(0, performance.now());
       }).observe(host);
@@ -156,6 +182,9 @@ export function createScrollStars(host) {
   return {
     travel() { if (!enabled()) return; meteor = null; nextMeteor = elapsed + 3 + Math.random() * 3; travelStart = performance.now(); resume(); },
     setPaused(value) { paused = value; if (value) { travelStart = -10000; meteor = null; } resume(); },
-    resetScroll() { scroll = window.scrollY; velocity = 0; ignoreUntil = performance.now() + 160; },
+    resetScroll() {
+      updateScrollBounds(); scroll = readScroll(); targetScrollOffset = scrollOffset;
+      velocity = 0; ignoreUntil = performance.now() + 160;
+    },
   };
 }

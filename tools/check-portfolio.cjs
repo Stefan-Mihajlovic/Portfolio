@@ -12,6 +12,25 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
     viewport: { width: 1440, height: 1000 },
   });
   const page = await context.newPage();
+  // Sample the animated frames too: settled-page checks miss exit-scale overflow.
+  await page.addInitScript(() => {
+    window.transitionOverflow = [];
+    let frame = 0;
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href]');
+      if (!link || link.origin !== location.origin || link.pathname === location.pathname) return;
+      cancelAnimationFrame(frame);
+      const started = performance.now();
+      const sample = () => {
+        if (document.body.classList.contains('in-transit')) {
+          const excess = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+          if (excess > 1) window.transitionOverflow.push(excess);
+        }
+        if (performance.now() - started < 2000) frame = requestAnimationFrame(sample);
+      };
+      frame = requestAnimationFrame(sample);
+    });
+  });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("response", (response) => {
@@ -75,6 +94,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.locator('nav a[href="/projects/"]').click();
   await page.waitForURL("**/projects/");
   await page.waitForTimeout(1000);
+  assert.deepEqual(await page.evaluate(() => window.transitionOverflow), [], 'Desktop transitions do not create horizontal scrolling');
   assert.equal(await page.locator(".work-card").count(), 10);
   // Keep the persistent sky through page changes.
   await page
@@ -155,6 +175,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.locator('nav a[href="/projects/"]').click();
   await page.waitForURL("**/projects/");
   await page.waitForTimeout(1100);
+  assert.deepEqual(await page.evaluate(() => window.transitionOverflow), [], 'Mobile transitions do not create horizontal scrolling');
   assert.equal(
     await page.locator(".menu-toggle").getAttribute("aria-expanded"),
     "false",
