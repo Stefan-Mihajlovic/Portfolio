@@ -303,6 +303,7 @@ main.is-arriving {
   margin-bottom: -0.07em;
 }
 .name-line { perspective: 900px; overflow: visible; }
+.name-anchor { display: inline-block; }
 .name-char {
   display: inline-block;
   transform-origin: 50% 85%;
@@ -311,9 +312,9 @@ main.is-arriving {
   animation-delay: calc(80ms + var(--char) * 29ms);
 }
 @keyframes name-form {
-  0% { opacity: 0; transform: translate3d(0, 85%, -180px) rotateX(-85deg) rotateY(18deg); filter: blur(5px); }
-  68% { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: none; filter: blur(0); }
+  0% { opacity: 0; transform: translate3d(0, 85%, -180px) rotateX(-85deg) rotateY(18deg); }
+  68% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
 }
 .hero-details {
   display: flex;

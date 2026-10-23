@@ -58,16 +58,20 @@ const origin = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = []; page.on('pageerror', error => errors.push(error.message));
     await page.goto(origin, { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('h1 .name-char');
-    const hover = await page.evaluate(async () => {
+    await page.waitForSelector('h1.animated-title .name-anchor');
+    const anchor = await page.locator('h1 .name-anchor').first().boundingBox();
+    await page.mouse.move(anchor.x + anchor.width / 2, anchor.y + anchor.height / 2);
+    await page.waitForTimeout(50);
+    const hover = await page.evaluate(() => {
       const title = document.querySelector('h1'), letter = title.querySelector('.name-char');
-      const r = letter.getBoundingClientRect();
-      title.dispatchEvent(new PointerEvent('pointermove', { pointerType: 'mouse', clientX: r.x + r.width / 2, clientY: r.y + r.height / 2 }));
-      await new Promise(resolve => setTimeout(resolve, 120));
       return { entranceStillPlaying: !title.classList.contains('name-ready'), translate: parseFloat(letter.style.translate.split(' ')[1]) };
     });
     assert.equal(hover.entranceStillPlaying, true, 'Hover works before entrance ends');
-    assert.ok(hover.translate < -10, 'Title reacts within 120ms');
+    assert.ok(hover.translate < -10, 'Title reacts within 50ms');
+    // Keep the pointer still across the end of the entrance: hover must not reset.
+    await page.locator('h1.name-ready').waitFor();
+    assert.ok(await page.locator('h1 .name-char').first().evaluate(el => parseFloat(el.style.translate.split(' ')[1])) < -15,
+      'Stationary cursor remains active when entrance finishes');
     await page.evaluate(() => {
       window.lenisRestarts = 0;
       const Original = window.Lenis;
@@ -78,6 +82,13 @@ const origin = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
     await page.waitForFunction(() => !document.body.classList.contains('in-transit'));
     assert.equal(await page.evaluate(() => lenisRestarts), 0, 'Navigation preserves scroll engine');
     assert.equal(await page.evaluate(() => scrollY), 0, 'New route starts at top');
+    const title = page.locator('h1');
+    const point = await title.locator('.name-anchor').nth(2).boundingBox();
+    await page.mouse.move(point.x + point.width / 2, point.y + point.height / 2);
+    await page.waitForTimeout(50);
+    assert.ok(await title.locator('.name-char').nth(2).evaluate(el => parseFloat(el.style.translate.split(' ')[1])) < -10,
+      'Real mouse hover responds immediately on the next route');
+    assert.equal(await title.locator('.name-char').first().evaluate(el => getComputedStyle(el).filter), 'none');
     assert.deepEqual(errors, []);
     console.log('Title responds during entrance; navigation preserves scroll engine; no page errors');
   } finally { await browser.close(); }

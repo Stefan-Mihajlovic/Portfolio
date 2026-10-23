@@ -50,13 +50,13 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
     "/case-studies/tab-volume-manager/",
     "/404.html",
   ];
-  // Projects can enter with the title, but the home subtitle waits for the name.
+  // The subtitle gives the name a head start, then joins its entrance.
   await page.goto(origin, { waitUntil: "domcontentloaded" });
   await page.locator('.work-card.revealed').first().waitFor();
   assert.equal(await page.locator('h1').evaluate(el => el.classList.contains('name-ready')), false, 'Project enters before title animation ends');
-  assert.equal(await page.locator('.hero-details > p').first().evaluate(el => el.classList.contains('revealed')), false, 'Subtitle waits for name');
-  await page.locator('h1.name-ready').waitFor();
+  assert.equal(await page.locator('.hero-details > p').first().evaluate(el => el.classList.contains('revealed')), false, 'Subtitle gives name a head start');
   await page.locator('.hero-details > p.revealed').waitFor();
+  assert.equal(await page.locator('h1').evaluate(el => el.classList.contains('name-ready')), false, 'Subtitle starts before name animation ends');
   for (const route of routes) {
     await page.goto(origin + route, { waitUntil: "networkidle" });
     assert.equal(

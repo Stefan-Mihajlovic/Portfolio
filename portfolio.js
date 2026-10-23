@@ -2,6 +2,13 @@ import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261023-1";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const touchScroll = matchMedia('(hover: none) and (pointer: coarse)');
+// Preserve the mouse position when a new page appears beneath a stationary cursor.
+let mousePosition;
+document.addEventListener('pointermove', event => {
+  if (event.pointerType === 'mouse') mousePosition = { clientX: event.clientX, clientY: event.clientY, pointerType: 'mouse' };
+}, { capture: true, passive: true });
+window.addEventListener('blur', () => { mousePosition = undefined; });
+document.addEventListener('pointerleave', () => { mousePosition = undefined; });
 const sky = createScrollStars(document.querySelector(".starfield"));
 const planets = document.createElement('div');
 planets.className = 'case-planets';
@@ -195,7 +202,7 @@ function initProjectNameStars() {
     letter.classList.add(`name-star-${character}`);
     letter.innerHTML = (character === 'i' ? 'ı' : '<span class="j-stem">j</span>') + sparkle;
   };
-  document.querySelectorAll('.case-page h1 .name-char').forEach(letter => {
+  document.querySelectorAll('.case-page h1 .name-char, main[data-page="skills"] h1 .name-char').forEach(letter => {
     if (/^[ij]$/.test(letter.textContent)) decorate(letter, letter.textContent);
   });
   document.querySelectorAll('.work-caption h3 a:not([data-starred])').forEach(link => {
@@ -236,7 +243,8 @@ function initName() {
           [...word].forEach(character => {
             const letter = document.createElement('span'); letter.className = 'name-char';
             letter.style.setProperty('--char', index++); letter.textContent = character;
-            wrapper.append(letter);
+            const anchor = document.createElement('span'); anchor.className = 'name-anchor';
+            anchor.append(letter); wrapper.append(anchor);
           });
           fragment.append(wrapper);
         });
@@ -250,13 +258,20 @@ function initName() {
   title?.classList.add('animated-title');
   if (!title) return () => {};
   const letters = [...title.querySelectorAll('.name-char')];
-  const values = letters.map(() => ({ y: 0, velocity: 0, target: 0 }));
+  // Home ships pre-split letters in its HTML; give those the same stable anchors.
+  letters.forEach(letter => {
+    if (letter.parentElement.classList.contains('name-anchor')) return;
+    const anchor = document.createElement('span'); anchor.className = 'name-anchor';
+    letter.replaceWith(anchor); anchor.append(letter);
+  });
+  const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
-  let centers = [];
+  let centers = [], bounds;
   const finishEntrance = () => {
     if (title.classList.contains('name-ready')) return;
     title.classList.add('name-ready');
     title.dispatchEvent(new Event('title-ready'));
+    refreshPointer();
   };
   const onEntranceEnd = event => {
     if (event.animationName === 'name-form' &&
@@ -272,13 +287,10 @@ function initName() {
     let moving = false;
     values.forEach((value, index) => {
       const target = motionEnabled() ? value.target : 0;
-      // Exact critically damped spring: responsive and identical at any refresh rate.
-      const offset = value.y - target, speed = 32;
-      const impulse = value.velocity + speed * offset, decay = Math.exp(-speed * dt);
-      value.y = target + (offset + impulse * dt) * decay;
-      value.velocity = (value.velocity - speed * impulse * dt) * decay;
-      if (Math.abs(value.y - target) > .025 || Math.abs(value.velocity) > .025) moving = true;
-      else { value.y = target; value.velocity = 0; }
+      // Follow immediately, with only a short time-based smoothing of the motion.
+      value.y += (target - value.y) * (1 - Math.exp(-40 * dt));
+      if (Math.abs(value.y - target) > .025) moving = true;
+      else value.y = target;
       // Independent transforms let hover respond even during the entrance animation.
       letters[index].style.translate = `0 ${value.y}px`;
       letters[index].style.rotate = `x ${value.y * -.75}deg`;
@@ -286,25 +298,45 @@ function initName() {
     if (moving) frame = requestAnimationFrame(settle);
   }
   function start() { if (!frame) { previous = performance.now(); frame = requestAnimationFrame(settle); } }
-  function enter() {
-    centers = letters.map(el => {const r = el.getBoundingClientRect(); return {x: r.x + r.width / 2, y: r.y + r.height / 2};});
-    active = true;
+  function measure() {
+    bounds = title.getBoundingClientRect();
+    // Anchors stay in the text layout while their children enter and react to hover.
+    centers = letters.map(el => {
+      const r = el.parentElement.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    });
   }
   function move(e) {
     if (!motionEnabled() || e.pointerType !== 'mouse') return;
-    if (!active) enter();
+    if (!bounds) bounds = title.getBoundingClientRect();
+    const inside = e.clientX >= bounds.left && e.clientX <= bounds.right &&
+      e.clientY >= bounds.top && e.clientY <= bounds.bottom;
+    if (!inside) { if (active) leave(); return; }
+    if (!centers.length) measure();
+    active = true;
     values.forEach((value, i) => {value.target = -19 * Math.exp(-(((e.clientX - centers[i].x) / 100) ** 2 + ((e.clientY - centers[i].y) / 95) ** 2));});
     start();
   }
   function leave() { active = false; values.forEach(v => v.target = 0); start(); }
-  title.addEventListener('pointermove', move);
-  title.addEventListener('pointerleave', leave);
+  function refreshPointer() { bounds = undefined; centers = []; if (mousePosition) move(mousePosition); }
+  let disposed = false;
+  document.addEventListener('pointermove', move, { capture: true, passive: true });
+  document.addEventListener('pointerleave', leave);
+  window.addEventListener('blur', leave);
+  window.addEventListener('scroll', refreshPointer, { passive: true });
+  window.addEventListener('resize', refreshPointer);
+  document.fonts.ready.then(() => { if (!disposed) refreshPointer(); });
+  refreshPointer();
   return () => {
+    disposed = true;
     cancelAnimationFrame(frame);
     title.removeEventListener('animationend', onEntranceEnd);
     title.removeEventListener('animationcancel', onEntranceEnd);
-    title.removeEventListener('pointermove', move);
-    title.removeEventListener('pointerleave', leave);
+    document.removeEventListener('pointermove', move, true);
+    document.removeEventListener('pointerleave', leave);
+    window.removeEventListener('blur', leave);
+    window.removeEventListener('scroll', refreshPointer);
+    window.removeEventListener('resize', refreshPointer);
   };
 }
 
@@ -583,6 +615,7 @@ function initPage() {
     const started = performance.now();
     // Content starts alongside the title, independent of its animation length.
     const introStart = 160;
+    const supportingStart = intro?.classList.contains('home-intro') ? 900 : introStart;
     const atTop = scrollY < 120;
     const contentStart = atTop ? started + introStart + (supporting.length ? (supporting.length - 1) * 80 + 120 : 100) : started;
     const pending = new Map();
@@ -606,19 +639,13 @@ function initPage() {
         if (!pending.size) nextSlot = Math.max(now, contentStart);
         const introIndex = supporting.indexOf(el);
         const due = introIndex >= 0 && atTop
-          ? Math.max(now, started + introStart + introIndex * 80)
+          ? Math.max(now, started + supportingStart + introIndex * 80)
           : Math.max(now, contentStart, nextSlot);
         if (introIndex < 0) nextSlot = due + 80;
         pending.set(el, setTimeout(() => show(el), due - now));
       });
     }, { threshold: 0.06 });
-    // The home subtitle starts only after the last name character has settled.
-    const waitForName = intro?.classList.contains('home-intro') && motionEnabled() && !title.classList.contains('name-ready');
-    const revealSubtitle = () => supporting.forEach(el => revealObserver.observe(el));
-    if (waitForName) title.addEventListener('title-ready', revealSubtitle, { once: true });
-    main.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
-      if (!waitForName || !supporting.includes(el)) revealObserver.observe(el);
-    });
+    main.querySelectorAll('.reveal:not(.revealed)').forEach(el => revealObserver.observe(el));
     const revealFocused = event => {
       let el = event.target;
       while (el && el !== main) {
@@ -630,7 +657,6 @@ function initPage() {
     };
     main.addEventListener('focusin', revealFocused);
     disposeReveals = () => {
-      title?.removeEventListener('title-ready', revealSubtitle);
       pending.forEach(clearTimeout);
       pending.clear();
       main.removeEventListener('focusin', revealFocused);
