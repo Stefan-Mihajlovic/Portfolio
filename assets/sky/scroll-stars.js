@@ -106,12 +106,8 @@ export function createScrollStars(host) {
   function tick(time) {
     frame = 0;
     const sampledScroll = readScroll();
-    const interacting = Math.abs(sampledScroll - scroll) > .1 ||
-      Math.abs(targetScrollOffset - scrollOffset) > .1 || Math.abs(velocity) > .5 || envelope(time) > 0 || meteor;
-    // Save power at rest, but never impose a 30fps ceiling on a swipe or warp.
-    if ((touch.matches || innerWidth < 768) && previous && time - previous < (interacting ? 14 : 30)) {
-      frame = requestAnimationFrame(tick); return;
-    }
+    // Draw every frame offered by the display, including 120/144Hz screens.
+    // Motion remains time-based so a higher refresh rate does not speed it up.
     const dt = previous ? Math.min((time - previous) / 1000, .045) : 0;
     previous = time;
     const moving = enabled();
@@ -180,8 +176,8 @@ export function createScrollStars(host) {
   document.addEventListener('visibilitychange', () => { travelStart = -10000; meteor = null; resume(); });
   initialize();
   return {
-    travel() { if (!enabled()) return; meteor = null; nextMeteor = elapsed + 3 + Math.random() * 3; travelStart = performance.now(); resume(); },
-    setPaused(value) { paused = value; if (value) { travelStart = -10000; meteor = null; } resume(); },
+    travel() { if (!enabled()) return; meteor = null; nextMeteor = elapsed + 3 + Math.random() * 3; travelStart = performance.now(); if (!frame) resume(); },
+    setPaused(value) { if (paused === value) return; paused = value; if (value) { travelStart = -10000; meteor = null; } resume(); },
     resetScroll() {
       updateScrollBounds(); scroll = readScroll(); targetScrollOffset = scrollOffset;
       velocity = 0; ignoreUntil = performance.now() + 160;

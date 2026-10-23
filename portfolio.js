@@ -1,4 +1,4 @@
-import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261022-3";
+import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261023-1";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const touchScroll = matchMedia('(hover: none) and (pointer: coarse)');
@@ -148,11 +148,12 @@ function updateMotion() {
   refreshScrollCopy();
   sky.setPaused(!motionEnabled());
   document.body.classList.toggle("motion-paused", !motionEnabled());
-  if (lenis) {
+  const smoothWheel = motionEnabled() && !touchScroll.matches && window.Lenis;
+  if (lenis && !smoothWheel) {
     lenis.destroy();
     lenis = undefined;
   }
-  if (motionEnabled() && !touchScroll.matches && window.Lenis) {
+  if (!lenis && smoothWheel) {
     lenis = new window.Lenis({
       autoRaf: true,
       duration: 1.15,
@@ -250,33 +251,47 @@ function initName() {
   if (!title) return () => {};
   const letters = [...title.querySelectorAll('.name-char')];
   const values = letters.map(() => ({ y: 0, velocity: 0, target: 0 }));
-  let frame = 0, previous = 0, active = false, ready = false;
+  let frame = 0, previous = 0, active = false;
   let centers = [];
-  const timer = setTimeout(() => {
-    ready = true;
+  const finishEntrance = () => {
+    if (title.classList.contains('name-ready')) return;
     title.classList.add('name-ready');
-  }, 1460 + Math.max(0, letters.length - 1) * 29);
+    title.dispatchEvent(new Event('title-ready'));
+  };
+  const onEntranceEnd = event => {
+    if (event.animationName === 'name-form' &&
+        (event.target === letters.at(-1) || !motionEnabled())) finishEntrance();
+  };
+  title.addEventListener('animationend', onEntranceEnd);
+  title.addEventListener('animationcancel', onEntranceEnd);
+  if (!motionEnabled() || !letters.length) finishEntrance();
   function settle(time) {
     frame = 0;
-    const dt = previous ? Math.min((time - previous) / 1000, .035) : .016;
+    const dt = Math.max(0, Math.min((time - previous) / 1000, .05));
     previous = time;
     let moving = false;
     values.forEach((value, index) => {
       const target = motionEnabled() ? value.target : 0;
-      value.velocity += ((target - value.y) * 180 - value.velocity * 20) * dt;
-      value.y += value.velocity * dt;
+      // Exact critically damped spring: responsive and identical at any refresh rate.
+      const offset = value.y - target, speed = 32;
+      const impulse = value.velocity + speed * offset, decay = Math.exp(-speed * dt);
+      value.y = target + (offset + impulse * dt) * decay;
+      value.velocity = (value.velocity - speed * impulse * dt) * decay;
       if (Math.abs(value.y - target) > .025 || Math.abs(value.velocity) > .025) moving = true;
-      letters[index].style.transform = `translate3d(0, ${value.y}px, 0) rotateX(${value.y * -.75}deg)`;
+      else { value.y = target; value.velocity = 0; }
+      // Independent transforms let hover respond even during the entrance animation.
+      letters[index].style.translate = `0 ${value.y}px`;
+      letters[index].style.rotate = `x ${value.y * -.75}deg`;
     });
     if (moving) frame = requestAnimationFrame(settle);
   }
-  function start() { if (!frame && ready) { previous = 0; frame = requestAnimationFrame(settle); } }
+  function start() { if (!frame) { previous = performance.now(); frame = requestAnimationFrame(settle); } }
   function enter() {
     centers = letters.map(el => {const r = el.getBoundingClientRect(); return {x: r.x + r.width / 2, y: r.y + r.height / 2};});
     active = true;
   }
   function move(e) {
-    if (!motionEnabled() || !ready || e.pointerType !== 'mouse') return;
+    if (!motionEnabled() || e.pointerType !== 'mouse') return;
     if (!active) enter();
     values.forEach((value, i) => {value.target = -19 * Math.exp(-(((e.clientX - centers[i].x) / 100) ** 2 + ((e.clientY - centers[i].y) / 95) ** 2));});
     start();
@@ -285,7 +300,9 @@ function initName() {
   title.addEventListener('pointermove', move);
   title.addEventListener('pointerleave', leave);
   return () => {
-    clearTimeout(timer); cancelAnimationFrame(frame);
+    cancelAnimationFrame(frame);
+    title.removeEventListener('animationend', onEntranceEnd);
+    title.removeEventListener('animationcancel', onEntranceEnd);
     title.removeEventListener('pointermove', move);
     title.removeEventListener('pointerleave', leave);
   };
@@ -330,18 +347,24 @@ function initScrollCopy() {
     return result;
   });
   let lines = [], previousCount = -1;
-  let frame = 0, lastScroll = scrollY, disposed = false;
-  const animations = new Map();
+  let frame = 0, previousTime = 0, disposed = false;
   const clamp = value => Math.max(0, Math.min(1, value));
-  function render(allowBounce = false) {
+  function render(time) {
     frame = 0;
     const enabled = motionEnabled();
-    const forward = scrollY > lastScroll;
-    lastScroll = scrollY;
     // A single reading frontier follows the actual wrapped lines across all paragraphs.
-    const frontier = scrollY + innerHeight * .68;
-    const count = enabled ? lines.reduce((total, line) =>
+    const frontier = scrollY + innerHeight * .56;
+    const targetCount = enabled ? lines.reduce((total, line) =>
       total + clamp((frontier - line.top) / line.height) * line.length, 0) : letters.length;
+    // Ease only the color frontier, keeping words still and in reading order.
+    // Layout refreshes and reduced motion settle immediately.
+    const dt = previousTime && time ? Math.max(0, Math.min((time - previousTime) / 1000, .05)) : 1 / 60;
+    previousTime = time || 0;
+    const easing = enabled && time && previousCount >= 0;
+    const count = easing && Math.abs(targetCount - previousCount) > .02
+      ? previousCount + (targetCount - previousCount) * (1 - Math.exp(-dt * 12))
+      : targetCount;
+    if (Math.abs(count - targetCount) > .02) frame = requestAnimationFrame(render);
     if (count === previousCount) return;
     // Only the interval crossed by the reading frontier can have changed.
     const from = previousCount < 0 ? 0 : Math.floor(Math.min(previousCount, count));
@@ -350,40 +373,26 @@ function initScrollCopy() {
       const opacity = String(.24 + .76 * clamp(count - i));
       if (letters[i].style.opacity !== opacity) letters[i].style.opacity = opacity;
     }
-    if (enabled && allowBounce && forward && previousCount >= 0) {
-      words.forEach(word => {
-        if (word.end > count || word.end <= previousCount) return;
-        const line = lines.find(line => word.end <= line.end);
-        if (!line || line.top < scrollY || line.top > scrollY + innerHeight) return;
-        animations.get(word.element)?.cancel();
-        const animation = word.element.animate([
-          { transform: 'translateY(0)' },
-          { transform: 'translateY(-3px)', offset: .35 },
-          { transform: 'translateY(.6px)', offset: .72 },
-          { transform: 'translateY(0)' }
-        ], { duration: 420, easing: 'cubic-bezier(.22,.61,.36,1)' });
-        animations.set(word.element, animation);
-        animation.onfinish = () => animations.delete(word.element);
-      });
-    }
     previousCount = count;
   }
 
   function onScroll() {
-    if (!frame) frame = requestAnimationFrame(() => render(true));
+    if (!frame) { previousTime = performance.now(); frame = requestAnimationFrame(render); }
   }
   function refresh() {
     cancelAnimationFrame(frame);
-    animations.forEach(animation => animation.cancel());
-    animations.clear();
     lines = [];
     let start = 0;
+    const lineHeights = new Map(records.map(({ paragraph }) =>
+      [paragraph, parseFloat(getComputedStyle(paragraph).lineHeight)]));
     words.forEach(word => {
       const rect = word.element.getBoundingClientRect();
       const top = rect.top + scrollY;
       let line = lines.at(-1);
       if (!line || Math.abs(line.top - top) > 2) {
-        line = { top, height: rect.height, length: 0, end: 0 };
+        // Fill over the full line spacing, rather than just the glyph height.
+        const paragraph = word.element.closest('.scroll-copy');
+        line = { top, height: Math.max(rect.height, lineHeights.get(paragraph) || 0), length: 0, end: 0 };
         lines.push(line);
       }
       line.length += word.end - start;
@@ -407,7 +416,6 @@ function initScrollCopy() {
   return () => {
     disposed = true;
     cancelAnimationFrame(frame);
-    animations.forEach(animation => animation.cancel());
     removeEventListener('scroll', onScroll);
     removeEventListener('resize', onResize);
     records.forEach(({ paragraph, words }) => {
@@ -604,7 +612,13 @@ function initPage() {
         pending.set(el, setTimeout(() => show(el), due - now));
       });
     }, { threshold: 0.06 });
-    main.querySelectorAll('.reveal:not(.revealed)').forEach(el => revealObserver.observe(el));
+    // The home subtitle starts only after the last name character has settled.
+    const waitForName = intro?.classList.contains('home-intro') && motionEnabled() && !title.classList.contains('name-ready');
+    const revealSubtitle = () => supporting.forEach(el => revealObserver.observe(el));
+    if (waitForName) title.addEventListener('title-ready', revealSubtitle, { once: true });
+    main.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
+      if (!waitForName || !supporting.includes(el)) revealObserver.observe(el);
+    });
     const revealFocused = event => {
       let el = event.target;
       while (el && el !== main) {
@@ -616,6 +630,7 @@ function initPage() {
     };
     main.addEventListener('focusin', revealFocused);
     disposeReveals = () => {
+      title?.removeEventListener('title-ready', revealSubtitle);
       pending.forEach(clearTimeout);
       pending.clear();
       main.removeEventListener('focusin', revealFocused);
@@ -872,12 +887,16 @@ async function navigate(url, { pop = false, key, point } = {}) {
         existing = document.querySelector(selector);
       if (replacement && existing) existing.replaceWith(replacement);
     }
+    // Prepare the new DOM invisibly; no uninitialized content can flash on screen.
+    nextMain.classList.add('route-preparing');
     oldMain.replaceWith(nextMain);
     const top = pop ? positions.get(currentKey) || 0 : 0;
-    window.scrollTo({ top, behavior: "instant" });
+    if (lenis) { lenis.resize(); lenis.scrollTo(top, { immediate: true, force: true }); }
+    else window.scrollTo({ top, behavior: "instant" });
     sky.resetScroll();
     initPage();
     if (animate) nextMain.classList.add("is-arriving");
+    nextMain.classList.remove('route-preparing');
     nextMain.focus({ preventScroll: true });
     if (url.hash) {
       const target = document.getElementById(
@@ -888,7 +907,10 @@ async function navigate(url, { pop = false, key, point } = {}) {
         else target.scrollIntoView();
       }
     }
-    if (animate) await wait(790);
+    if (animate) {
+      const arrival = nextMain.getAnimations().find(animation => animation.animationName === 'page-arrive');
+      if (arrival) await arrival.finished.catch(() => {});
+    }
     nextMain.classList.remove("is-arriving");
   } catch {
     location.assign(url.href);
