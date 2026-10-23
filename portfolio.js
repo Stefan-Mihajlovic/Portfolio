@@ -255,7 +255,6 @@ function initName() {
     };
     [...title.childNodes].forEach(split);
   }
-  title?.classList.add('animated-title');
   if (!title) return () => {};
   const letters = [...title.querySelectorAll('.name-char')];
   // Home ships pre-split letters in its HTML; give those the same stable anchors.
@@ -264,6 +263,8 @@ function initName() {
     const anchor = document.createElement('span'); anchor.className = 'name-anchor';
     letter.replaceWith(anchor); anchor.append(letter);
   });
+  // Start only after the pre-split home letters have their final DOM structure.
+  title.classList.add('animated-title');
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
   let centers = [], bounds;
@@ -293,7 +294,6 @@ function initName() {
       else value.y = target;
       // Independent transforms let hover respond even during the entrance animation.
       letters[index].style.translate = `0 ${value.y}px`;
-      letters[index].style.rotate = `x ${value.y * -.75}deg`;
     });
     if (moving) frame = requestAnimationFrame(settle);
   }

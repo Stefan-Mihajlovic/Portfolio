@@ -68,6 +68,13 @@ const origin = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
     });
     assert.equal(hover.entranceStillPlaying, true, 'Hover works before entrance ends');
     assert.ok(hover.translate < -10, 'Title reacts within 50ms');
+    const entrance = await page.locator('h1 .name-char').first().evaluate(el => {
+      const style = getComputedStyle(el);
+      return { transform: style.transform, rotate: style.rotate, filter: style.filter };
+    });
+    assert.ok(!entrance.transform.startsWith('matrix3d'), 'Title entrance stays in 2D');
+    assert.equal(entrance.rotate, 'none', 'Hover does not add a competing 3D rotation');
+    assert.equal(entrance.filter, 'none');
     // Keep the pointer still across the end of the entrance: hover must not reset.
     await page.locator('h1.name-ready').waitFor();
     assert.ok(await page.locator('h1 .name-char').first().evaluate(el => parseFloat(el.style.translate.split(' ')[1])) < -15,

@@ -302,17 +302,17 @@ main.is-arriving {
   padding-bottom: 0.07em;
   margin-bottom: -0.07em;
 }
-.name-line { perspective: 900px; overflow: visible; }
+.name-line { overflow: visible; }
 .name-anchor { display: inline-block; }
 .name-char {
   display: inline-block;
-  transform-origin: 50% 85%;
-  backface-visibility: hidden;
   animation: name-form 1.35s var(--ease) both;
   animation-delay: calc(80ms + var(--char) * 29ms);
+  animation-play-state: paused;
 }
+.animated-title .name-char { animation-play-state: running; }
 @keyframes name-form {
-  0% { opacity: 0; transform: translate3d(0, 85%, -180px) rotateX(-85deg) rotateY(18deg); }
+  0% { opacity: 0; transform: translateY(65%); }
   68% { opacity: 1; }
   100% { opacity: 1; transform: none; }
 }
@@ -949,7 +949,6 @@ html.lenis body {
     opacity: 0; visibility: hidden; transition: opacity .5s, visibility .5s;
   }
   .menu-open .menu-scrim { opacity: 1; visibility: visible; }
-  .menu-open main { transform: translateX(-24px) scale(.97); }
   .menu-toggle { border: 0; border-radius: 0; background: transparent; }
   .home-intro h1 {
     font-size: 17vw;
@@ -1247,8 +1246,7 @@ main[data-page="projects"] .page-intro { max-width: 1040px; margin-inline: auto;
 }
 .portrait-strip img { height: auto; }
 
-.animated-title { perspective: 1000px; }
-.title-word { display: inline-block; white-space: nowrap; perspective: 900px; }
+.title-word { display: inline-block; white-space: nowrap; }
 .page-intro.reveal:has(.animated-title) { clip-path: none !important; }
 @media (max-width: 1050px) {
   .page-content { width: calc(100% - 64px); }

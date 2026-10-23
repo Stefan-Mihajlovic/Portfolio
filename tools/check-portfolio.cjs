@@ -160,7 +160,12 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.locator('#primary-nav').evaluate(el => getComputedStyle(el).visibility), 'hidden', 'Resize keeps closed menu hidden');
   assert.equal(await page.locator('#primary-nav').evaluate(el => getComputedStyle(el).transitionDuration), '0s', 'Breakpoint has no menu animation');
+  const contentBeforeMenu = await page.locator('main').boundingBox();
   await page.locator(".menu-toggle").click();
+  const contentWithMenu = await page.locator('main').boundingBox();
+  assert.equal(contentWithMenu.x, contentBeforeMenu.x, 'Opening menu keeps content in place');
+  assert.equal(contentWithMenu.width, contentBeforeMenu.width, 'Opening menu does not scale content');
+  assert.equal(await page.locator('main').evaluate(el => getComputedStyle(el).transform), 'none');
   assert.ok(await page.locator('#primary-nav').evaluate(el => getComputedStyle(el).transitionDuration.includes('0.7s')), 'User toggle retains slide animation');
   await page.setViewportSize({ width: 900, height: 844 });
   // Let the breakpoint change dispatch before crossing back; back-to-back
