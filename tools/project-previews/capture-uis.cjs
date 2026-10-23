@@ -39,7 +39,6 @@ const root = path.resolve(__dirname, '../..');
       document.querySelector('#eqValue' + i).textContent = (values[i] > 0 ? '+' : '') + values[i] + ' dB';
     });
   });
-  await page.locator('.appWrapper').screenshot({ path: path.join(root, 'assets/covers/ui/tvm-eq.png') });
   await page.locator('.equalizerBoard').screenshot({ path: path.join(root, 'assets/covers/ui/tvm-eq-board.png') });
   await page.addInitScript(() => {
     localStorage.setItem('colors-list', JSON.stringify(['#FF006A', '#FF8DBD', '#F7D8E7', '#7D2254', '#39223D', '#171321']));

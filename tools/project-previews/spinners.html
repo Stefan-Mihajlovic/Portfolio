@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="robots" content="noindex"><title>Stefan’s Spinners — portfolio compositions</title>
+<link rel="stylesheet" href="./spinners-source/styles.css">
+<style>
+@font-face{font-family:Cabinet;src:url('/fonts/cabinet-grotesk-variable.woff2');font-weight:100 900}
+*{box-sizing:border-box}body{margin:0;font-family:Cabinet,sans-serif;color:#f1f0f4}.stage{position:relative;width:1600px;height:1000px;overflow:hidden;background:#08090b}
+.spinner{position:absolute;display:grid;place-items:center}.ss-spinner{overflow:visible}.brand{position:absolute;display:flex;align-items:center;gap:18px;font-size:30px;font-weight:600;letter-spacing:-.7px}.brand svg{width:38px;height:38px}.signature{left:70px;top:54px}.site{position:absolute;right:70px;top:65px;font-size:19px;color:#8d8e96}
+.gallery{background:radial-gradient(ellipse at center,#1c1d22 0%,#0c0d10 39%,#08090b 80%)}.gallery::before{content:"";position:absolute;inset:0;background-image:url("/assets/sky/stars-far.svg"),url("/assets/sky/stars-near.svg");background-size:900px 900px,1100px 1100px;background-position:0 0,150px -90px;opacity:.8;pointer-events:none}.gallery .brand{inset:0;display:flex;flex-direction:column;justify-content:center;gap:27px;font-size:35px;letter-spacing:-1px}.gallery .brand svg{width:180px;height:180px}.gallery .ring{position:absolute;border:1px solid #ffffff06;border-radius:50%;left:800px;top:500px;transform:translate(-50%,-50%)}
+
+.playground{background:#eae9ed;color:#29262f}
+.playground .signature,.workflow .signature{left:96px;top:68px;font-size:27px;gap:13px}
+.playground .signature svg,.workflow .signature svg{width:32px;height:32px}
+.playground .site,.workflow .site{right:96px;top:77px;font-size:21px;color:#827c8c}
+.playground .board{position:absolute;left:170px;top:195px;width:1260px;height:670px;border-radius:24px;background:#f6f5f8;box-shadow:0 28px 65px #2820350d;overflow:hidden}
+.playground .component-name{position:absolute;left:58px;top:40px;font-size:29px;font-weight:500}
+.playground .bloom-main{position:absolute;left:228px;top:187px;width:280px;height:280px}
+.playground .controls{position:absolute;right:34px;top:34px;width:355px;border-radius:18px;overflow:hidden;background:#111}
+.playground .controls img{display:block;width:100%}
+.playground .preview-label{position:absolute;left:58px;bottom:43px;color:#9d95a6;font-size:21px}
+.playground .variation{position:absolute;left:298px;bottom:43px;display:flex;align-items:center;gap:36px}
+.playground .variation > span{display:grid;place-items:center;width:40px;height:40px}
+.playground .caption{position:absolute;left:0;right:0;bottom:68px;text-align:center;color:#8a8392;font-size:22px}
+.workflow{background:radial-gradient(ellipse at 50% 50%,#24212d 0,transparent 68%),#0b0b10}
+.workflow::before{content:"";position:absolute;inset:0;background:url('/assets/sky/stars-far.svg') 20px 0/1000px 1000px;opacity:.42}
+.workflow .board{position:absolute;left:170px;top:240px;width:1260px;height:560px;border:1px solid #ffffff0d;border-radius:24px;overflow:hidden;background:#15141be8}
+.workflow .preview{position:absolute;inset:0 auto 0 0;width:440px;border-right:1px solid #ffffff0c;background:radial-gradient(ellipse at 50% 50%,#29233466,transparent 75%)}
+.workflow .component-name{position:absolute;left:45px;top:33px;font-size:25px;color:#c7c2d0}
+.workflow .orbital{position:absolute;inset:0;display:grid;place-items:center}
+.workflow .preview-label{position:absolute;left:45px;bottom:34px;font-size:20px;color:#797381}
+.workflow .code{position:absolute;left:440px;right:0;top:0;bottom:0}
+.workflow .code-label{position:absolute;top:35px;left:48px;font-size:21px;color:#847e90}
+.workflow pre{position:absolute;left:48px;top:90px;margin:0;font-family:ui-monospace,Menlo,monospace;font-size:23px;line-height:1.85;color:#d8d3df;white-space:pre}
+.workflow .kw{color:#b7a6cf}.workflow .str{color:#b6bfc5}.workflow .prop{color:#b4aaba}.workflow .num{color:#c3b1e1}
+.workflow .install{position:absolute;inset:864px 0 auto;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:21px;color:#827b90}
+.workflow .install span{margin-right:16px;color:#5c5568}
+</style>
+</head><body><main class="stage"></main>
+<script type="module">
+import {spinners} from './spinners-source/catalog.js';
+const stage=document.querySelector('.stage');const view=new URLSearchParams(location.search).get('view')||'gallery';stage.classList.add(view);
+const logo=await fetch('./spinners-source/logo.svg').then(r=>r.text());
+const brand=`<div class="brand ${view==='gallery'?'':'signature'}">${logo}<span>Stefan’s Spinners</span></div>`;
+const spinner=(id,size,color='#dddce2',extra='')=>{const s=spinners.find(s=>s.id===id);return `<span class="ss-spinner ss-${id}" style="--ss-size:${size}px;--ss-color:${color};--ss-speed:1.2s;${extra}">${Array.from({length:s.count},(_,i)=>`<span style="--ss-i:${i}"></span>`).join('')}</span>`};
+if(view==='gallery'){
+  const selected=['bloom','orbit','asterisk','chase','pinwheel','flare','grid','wave','dual','spark','flower','helix','beads','ring','crosshair','vortex','bars','diamond','twinkle','comet','tetris','constellation','fan','steps'];
+  const rings=[{r:330,n:8,size:62},{r:590,n:14,size:68},{r:850,n:18,size:74}];
+  let index=0;
+  for(const [ri,{r,n,size}] of rings.entries()){
+    for(let i=0;i<n;i++){
+      const angle=i/n*Math.PI*2+(ri%2?.08:0),x=800+Math.cos(angle)*r,y=500+Math.sin(angle)*r;
+      const id=selected[(index++*7+ri*3)%selected.length];
+      stage.insertAdjacentHTML('beforeend',`<div class="spinner" style="left:${x-size/2}px;top:${y-size/2}px;width:${size}px;height:${size}px;opacity:${[.68,.5,.34][ri]};transform:rotate(${Math.round(angle*180/Math.PI+90)}deg)">${spinner(id,size)}</div>`);
+    }
+  }
+  stage.insertAdjacentHTML('beforeend',brand);
+ }else if(view==='playground'){
+  stage.innerHTML=brand+'<div class="site">The playground</div>'+`<div class="board"><div class="component-name">Bloom</div><div class="bloom-main">${spinner('bloom',280,'#74648e')}</div><div class="controls"><img src="/assets/covers/ui/spinners-bloom-controls.webp" alt="Actual Bloom customization controls"></div><div class="preview-label">Live preview</div><div class="variation"><span>${spinner('bloom',32,'#a9a1b1')}</span><span>${spinner('bloom',32,'#a9a1b1','--ss-petal-width:15%;--ss-petal-length:48%;')}</span><span>${spinner('bloom',32,'#a9a1b1','--ss-petal-width:34%;--ss-petal-length:35%;')}</span></div></div><div class="caption">A little motion, made your own.</div>`;
+}else{
+  stage.innerHTML=brand+'<div class="site">Made for React</div>'+`<div class="board"><div class="preview"><div class="component-name">Orbit</div><div class="orbital">${spinner('orbit',215,'#b5a0ff','--ss-stroke-width:6px;')}</div><div class="preview-label">Live preview</div></div><div class="code"><div class="code-label">Your next component</div><pre><span class="kw">import</span> { Orbit } <span class="kw">from</span> <span class="str">"stefans-spinners"</span>;
+
+<span class="kw">export function</span> Loading() {
+  <span class="kw">return</span> &lt;Orbit
+    <span class="prop">size</span>={<span class="num">96</span>}
+    <span class="prop">color</span>=<span class="str">"#b5a0ff"</span>
+    <span class="prop">speed</span>={<span class="num">1.8</span>}
+  /&gt;;
+}</pre></div></div><div class="install"><span>$</span>npm install stefans-spinners</div>`;
+}
+// Freeze the actual CSS animations at a deliberate, repeatable moment for export.
+await document.fonts.ready;
+await new Promise(requestAnimationFrame);
+for(const [i,animation] of document.getAnimations().entries()){animation.pause();animation.currentTime=380+(i%7)*83;}
+window.compositionReady=true;
+</script></body></html>

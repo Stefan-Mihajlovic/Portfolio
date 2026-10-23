@@ -1,0 +1,8 @@
+# Local scratch output and browser verification artifacts
+/tmp/
+/state/
+/test-results/
+/playwright-report/
+.DS_Store
+__pycache__/
+*.pyc

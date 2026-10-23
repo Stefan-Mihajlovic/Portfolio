@@ -1,0 +1,239 @@
+.ss-spinner{--ss-size:32px;--ss-color:currentColor;--ss-speed:1.2s;display:inline-flex;position:relative;width:var(--ss-size);height:var(--ss-size);color:var(--ss-color);flex-shrink:0;vertical-align:middle;box-sizing:border-box;align-items:center;justify-content:center}
+.ss-spinner>span{position:absolute;box-sizing:border-box;display:block;animation-duration:var(--ss-speed);animation-iteration-count:infinite;animation-timing-function:var(--ss-easing,ease-in-out)}
+.ss-orbit>span{inset:0;border:var(--ss-stroke-width,calc(var(--ss-size)*.045)) solid currentColor;border-radius:50%;transform:rotate(calc(var(--ss-i)*60deg)) rotateX(60deg);animation-name:ss-orbit;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+.ss-arc>span{inset:8%;border:var(--ss-stroke-width,calc(var(--ss-size)*.085)) solid transparent;border-top-color:currentColor;border-right-color:currentColor;border-radius:50%;animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-ring>span{inset:4%;border:var(--ss-stroke-width,calc(var(--ss-size)*.075)) solid color-mix(in srgb,currentColor calc(var(--ss-track-opacity,.18)*100%),transparent);border-top-color:currentColor;border-radius:50%;animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-dots>span,.ss-bounce>span,.ss-pendulum>span{width:var(--ss-dot-size,21%);height:var(--ss-dot-size,21%);border-radius:var(--ss-radius,50%);background:currentColor;left:calc(50% - var(--ss-dot-size,var(--ss-size)*.21)/2 + (var(--ss-i) - 1)*var(--ss-size)*.36);animation-name:ss-dot;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-6)}
+.ss-wave>span,.ss-bars>span,.ss-zigzag>span{width:var(--ss-bar-width,12%);height:80%;background:currentColor;border-radius:var(--ss-radius,10px);left:calc(10% - var(--ss-bar-width,var(--ss-size)*.12)/2 + var(--ss-i)*20%);animation-name:ss-wave;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-7)}
+.ss-pulse>span{inset:12%;border-radius:var(--ss-radius,50%);background:currentColor;animation-name:ss-pulse}
+.ss-ripple>span{inset:0;border:var(--ss-stroke-width,calc(var(--ss-size)*.045)) solid currentColor;border-radius:50%;animation-name:ss-ripple;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+.ss-bars>span{width:var(--ss-bar-width,17%);left:calc(9.5% - var(--ss-bar-width,var(--ss-size)*.17)/2 + var(--ss-i)*27%);height:65%;border-radius:var(--ss-radius,1px);animation-name:ss-bars}
+.ss-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--ss-gap,12%);padding:calc(var(--ss-size)*.05)}
+.ss-grid>span{position:relative;width:100%;height:100%;background:currentColor;border-radius:var(--ss-radius,calc(var(--ss-size)*.033));animation-name:ss-grid;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-9)}
+.ss-breathe>span{inset:5%;border:var(--ss-stroke-width,calc(var(--ss-size)*.035)) solid currentColor;border-radius:50%;animation-name:ss-breathe;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-2)}
+.ss-comet>span{inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent,currentColor);mask:radial-gradient(farthest-side,transparent calc(100% - var(--ss-stroke-width,var(--ss-size)*.105) - .5px),#000 calc(100% - var(--ss-stroke-width,var(--ss-size)*.105) + .5px));animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-dual>span{inset:0;border:var(--ss-stroke-width,calc(var(--ss-size)*.06)) solid transparent;border-top-color:currentColor;border-bottom-color:currentColor;border-radius:50%;animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-dual>span:nth-child(2){inset:24%;animation-direction:reverse;opacity:.55}
+.ss-flare>span{background:currentColor;width:var(--ss-bar-width,8%);height:24%;top:0;left:calc(50% - var(--ss-bar-width,var(--ss-size)*.08)/2);border-radius:var(--ss-radius,9px);transform-origin:50% calc(var(--ss-size)*.5);transform:rotate(calc(var(--ss-i)*45deg));animation-name:ss-fade;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-8)}
+.ss-flip>span{inset:12%;background:currentColor;border-radius:var(--ss-radius,16%);animation-name:ss-flip}
+.ss-bloom>span{background:currentColor;width:var(--ss-petal-width,25%);height:var(--ss-petal-length,45%);border-radius:60% 60% 30% 30%;top:0;left:calc(50% - var(--ss-petal-width,var(--ss-size)*.25)/2);transform-origin:50% calc(var(--ss-size)*.5);transform:rotate(calc(var(--ss-i)*60deg));animation-name:ss-fade;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-6)}
+.ss-chase>span{width:var(--ss-dot-size,17%);height:var(--ss-dot-size,17%);border-radius:var(--ss-radius,50%);background:currentColor;top:0;left:calc(50% - var(--ss-dot-size,var(--ss-size)*.17)/2);transform-origin:50% calc(var(--ss-size)*.5);transform:rotate(calc(var(--ss-i)*45deg));animation-name:ss-fade;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-8)}
+.ss-bounce>span{animation-name:ss-bounce}
+.ss-pendulum>span{animation-name:ss-pendulum;transform-origin:50% -100%;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-9)}
+.ss-square>span{inset:8%;border-radius:var(--ss-radius,0);border:var(--ss-stroke-width,calc(var(--ss-size)*.05)) solid currentColor;animation-name:ss-spin}
+.ss-square>span:nth-child(2){inset:30%;animation-direction:reverse;opacity:.55}
+.ss-stack>span{width:85%;height:16%;background:currentColor;border-radius:var(--ss-radius,2px);top:calc(50% - (var(--ss-size)*.48 + var(--ss-gap,var(--ss-size)*.11)*2)/2 + var(--ss-i)*(var(--ss-size)*.16 + var(--ss-gap,var(--ss-size)*.11)));animation-name:ss-stack;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-6)}
+.ss-zigzag>span{height:50%;border-radius:var(--ss-radius,1px);animation-name:ss-zigzag}
+.ss-hourglass>span{inset:6%;background:currentColor;mask-image:var(--ss-hourglass-mask,url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2088%2088%22%3E%3Cpath%20d%3D%22M10.8524%2012.6492%20L10.8524%2012.6492%20Q0%200%2016.6667%200%20L71.3333%200%20Q88%200%2077.1476%2012.6492%20L61.1024%2031.3508%20Q50.25%2044%2061.1024%2056.6492%20L77.1476%2075.3508%20Q88%2088%2071.3333%2088%20L16.6667%2088%20Q0%2088%2010.8524%2075.3508%20L26.8976%2056.6492%20Q37.75%2044%2026.8976%2031.3508Z%22%2F%3E%3C%2Fsvg%3E'));mask-size:100% 100%;mask-repeat:no-repeat;animation-name:ss-hourglass}
+.ss-radar>span:first-child{inset:0;border:var(--ss-stroke-width,calc(var(--ss-size)*.035)) solid currentColor;border-radius:50%;opacity:.3}
+.ss-radar>span:last-child{inset:0;border-radius:50%;background:conic-gradient(transparent calc(360deg - var(--ss-sweep-angle,126deg)),currentColor);animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-spark>span{width:var(--ss-dot-size,25%);height:var(--ss-dot-size,25%);background:currentColor;top:0;left:calc(50% - var(--ss-dot-size,var(--ss-size)*.25)/2);transform-origin:50% calc(var(--ss-size)*.5);transform:rotate(calc(45deg + var(--ss-i)*90deg));animation-name:ss-fade;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-4);border-radius:var(--ss-radius,25%)}
+@keyframes ss-spin{to{transform:rotate(360deg)}}
+@keyframes ss-orbit{0%{transform:rotate(0) rotateX(var(--ss-tilt,65deg)) rotateZ(0)}100%{transform:rotate(360deg) rotateX(var(--ss-tilt,65deg)) rotateZ(180deg)}}
+@keyframes ss-dot{0%,80%,100%{transform:scale(.6);opacity:.35}40%{transform:scale(1);opacity:1}}
+@keyframes ss-wave{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+@keyframes ss-pulse{0%,100%{transform:scale(var(--ss-pulse-scale,.45));opacity:.35}50%{transform:scale(1);opacity:1}}
+@keyframes ss-ripple{0%{transform:scale(.1);opacity:0}15%{opacity:1}100%{transform:scale(1);opacity:0}}
+@keyframes ss-bars{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes ss-grid{0%,70%,100%{transform:scale(1);opacity:1}35%{transform:scale(.35);opacity:.25}}
+@keyframes ss-breathe{0%,100%{transform:scale(.5);opacity:.3}50%{transform:scale(1);opacity:1}}
+@keyframes ss-fade{0%,100%{opacity:1}65%{opacity:.15}}
+@keyframes ss-flip{0%{transform:perspective(100px) rotateY(0) rotateX(0)}50%{transform:perspective(100px) rotateY(180deg) rotateX(0)}100%{transform:perspective(100px) rotateY(180deg) rotateX(180deg)}}
+@keyframes ss-bounce{0%,70%,100%{transform:translateY(30%)}35%{transform:translateY(calc(-1*var(--ss-bounce-height,var(--ss-size)*.21)))}}
+@keyframes ss-pendulum{0%,100%{transform:rotate(calc(-1*var(--ss-swing,30deg)))}50%{transform:rotate(var(--ss-swing,30deg))}}
+@keyframes ss-stack{0%,100%{transform:translateX(-12%);opacity:.35}50%{transform:translateX(12%);opacity:1}}
+@keyframes ss-zigzag{0%,100%{transform:skewY(-30deg) scaleY(.45)}50%{transform:skewY(30deg) scaleY(1)}}
+@keyframes ss-hourglass{0%,35%{transform:rotate(0)}65%,100%{transform:rotate(180deg)}}
+.ss-paused>span{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.ss-spinner>span{animation:none!important}}
+
+/* Independent part widths; strokeWidth remains a shared fallback. */
+.ss-dual>span:first-child,.ss-square>span:first-child{border-width:var(--ss-outer-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.06)))}
+.ss-dual>span:nth-child(2),.ss-square>span:nth-child(2){border-width:var(--ss-inner-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.06)))}
+.ss-square>span:first-child{border-width:var(--ss-outer-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.05)))}
+.ss-square>span:nth-child(2){border-width:var(--ss-inner-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.05)))}
+.ss-breathe>span:first-child{border-width:var(--ss-first-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.035)))}
+.ss-breathe>span:nth-child(2){border-width:var(--ss-second-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.035)))}
+.ss-radar>span:first-child{border-width:var(--ss-outer-stroke-width,var(--ss-stroke-width,calc(var(--ss-size)*.035)))}
+.ss-radar>span:last-child{mask-image:radial-gradient(farthest-side,transparent calc(100% - var(--ss-sweep-width,var(--ss-size)*.5)),#000 calc(100% - var(--ss-sweep-width,var(--ss-size)*.5) + .5px))}
+
+.ss-star>span{inset:4%;background:currentColor;clip-path:polygon(50.00000% 0.00000%,calc(50% + 29.38926%*var(--ss-inner-radius,.45)) calc(50% + -40.45085%*var(--ss-inner-radius,.45)),97.55283% 34.54915%,calc(50% + 47.55283%*var(--ss-inner-radius,.45)) calc(50% + 15.45085%*var(--ss-inner-radius,.45)),79.38926% 90.45085%,calc(50% + 0.00000%*var(--ss-inner-radius,.45)) calc(50% + 50.00000%*var(--ss-inner-radius,.45)),20.61074% 90.45085%,calc(50% + -47.55283%*var(--ss-inner-radius,.45)) calc(50% + 15.45085%*var(--ss-inner-radius,.45)),2.44717% 34.54915%,calc(50% + -29.38926%*var(--ss-inner-radius,.45)) calc(50% + -40.45085%*var(--ss-inner-radius,.45)));animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-twinkle>span{inset:4%;background:currentColor;clip-path:polygon(50% 0,calc(50% + 35.355%*var(--ss-inner-radius,.25)) calc(50% - 35.355%*var(--ss-inner-radius,.25)),100% 50%,calc(50% + 35.355%*var(--ss-inner-radius,.25)) calc(50% + 35.355%*var(--ss-inner-radius,.25)),50% 100%,calc(50% - 35.355%*var(--ss-inner-radius,.25)) calc(50% + 35.355%*var(--ss-inner-radius,.25)),0 50%,calc(50% - 35.355%*var(--ss-inner-radius,.25)) calc(50% - 35.355%*var(--ss-inner-radius,.25)));animation-name:ss-twinkle}
+.ss-satellite>span:first-child{inset:10%;border:var(--ss-outer-stroke-width,calc(var(--ss-size)*.025)) solid currentColor;opacity:.25;border-radius:50%}
+.ss-satellite>span:last-child{width:var(--ss-dot-size,calc(var(--ss-size)*.18));height:var(--ss-dot-size,calc(var(--ss-size)*.18));background:currentColor;border-radius:50%;top:calc(10% - var(--ss-dot-size,var(--ss-size)*.18)/2);left:calc(50% - var(--ss-dot-size,var(--ss-size)*.18)/2);transform-origin:50% calc(var(--ss-size)*.4 + var(--ss-dot-size,var(--ss-size)*.18)/2);animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-eclipse>span{inset:4%;border-radius:50%;background:currentColor;mask-image:radial-gradient(circle at 65% 35%,transparent calc(var(--ss-size)*.5 - var(--ss-stroke-width,var(--ss-size)*.18)),#000 calc(var(--ss-size)*.5 - var(--ss-stroke-width,var(--ss-size)*.18) + .5px));animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear)}
+.ss-helix>span{width:var(--ss-dot-size,calc(var(--ss-size)*.12));height:var(--ss-dot-size,calc(var(--ss-size)*.12));background:currentColor;border-radius:50%;top:calc(8% + var(--ss-i)*12% - var(--ss-dot-size,var(--ss-size)*.12)/2);left:calc(50% - var(--ss-dot-size,var(--ss-size)*.12)/2);animation-name:ss-helix;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-8)}
+.ss-pinwheel>span{width:var(--ss-petal-width,calc(var(--ss-size)*.28));height:var(--ss-petal-length,calc(var(--ss-size)*.42));background:currentColor;left:50%;top:calc(50% - var(--ss-petal-length,var(--ss-size)*.42));clip-path:polygon(0 0,100% 22%,0 100%);transform-origin:0 100%;transform:rotate(calc(var(--ss-i)*60deg));animation-name:ss-pinwheel;animation-timing-function:var(--ss-easing,linear)}
+@keyframes ss-twinkle{0%{transform:rotate(0) scale(var(--ss-pulse-scale,.65));opacity:.45}50%{transform:rotate(90deg) scale(1);opacity:1}100%{transform:rotate(180deg) scale(var(--ss-pulse-scale,.65));opacity:.45}}
+@keyframes ss-helix{0%,100%{transform:translateX(calc(-1*var(--ss-travel-distance,var(--ss-size)*.25))) scale(.65);opacity:.4}50%{transform:translateX(var(--ss-travel-distance,var(--ss-size)*.25)) scale(1);opacity:1}}
+@keyframes ss-pinwheel{from{transform:rotate(calc(var(--ss-i)*60deg))}to{transform:rotate(calc(var(--ss-i)*60deg + 360deg))}}
+
+/* Rounded, adjustable arcs. The static masks come from geometry.ts. */
+.ss-arc>span,.ss-ring>span,.ss-comet>span,.ss-dual>span{border:0;background:currentColor;mask-image:var(--ss-arc-mask);mask-size:100% 100%;mask-repeat:no-repeat}
+.ss-ring::before{content:"";position:absolute;inset:4%;border:var(--ss-track-stroke-width) solid currentColor;border-radius:50%;opacity:var(--ss-track-opacity);box-sizing:border-box}
+.ss-comet>span{background:conic-gradient(from calc((var(--ss-arc-length) - 360deg)/2),transparent,transparent calc((360deg - var(--ss-arc-length))/2),currentColor calc((360deg + var(--ss-arc-length))/2),currentColor)}
+.ss-dual>span:nth-child(2){mask-image:var(--ss-inner-arc-mask)}
+.ss-dots>span,.ss-bounce>span,.ss-pendulum>span{left:calc(50% - var(--ss-dot-size)/2 + (var(--ss-i) - 1)*(var(--ss-dot-size) + var(--ss-gap)))}
+@keyframes ss-wave{0%,100%{transform:scaleY(var(--ss-pulse-scale,.3));opacity:.4}50%{transform:scaleY(1);opacity:1}}
+@keyframes ss-bars{0%,100%{transform:scaleY(var(--ss-pulse-scale,.25))}50%{transform:scaleY(1)}}
+@keyframes ss-ripple{0%{transform:scale(var(--ss-pulse-scale,.1));opacity:0}15%{opacity:1}100%{transform:scale(1);opacity:0}}
+
+/* Twenty more small ways to pass the time. */
+.ss-asterisk>span{width:var(--ss-bar-width);height:var(--ss-petal-length);top:calc(50% - var(--ss-petal-length) - var(--ss-size)*.06);left:calc(50% - var(--ss-bar-width)/2);background:currentColor;border-radius:var(--ss-radius);transform-origin:50% calc(var(--ss-petal-length) + var(--ss-size)*.06);animation-name:ss-asterisk;animation-timing-function:var(--ss-easing,linear)}
+@keyframes ss-asterisk{from{transform:rotate(calc(var(--ss-i)*60deg))}to{transform:rotate(calc(var(--ss-i)*60deg + 360deg))}}
+.ss-binary>span{width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:50%;left:calc(50% - var(--ss-dot-size)/2);top:calc(50% - var(--ss-gap) - var(--ss-dot-size)/2);transform-origin:50% calc(var(--ss-gap) + var(--ss-dot-size)/2);animation-name:ss-binary;animation-timing-function:var(--ss-easing,linear)}
+.ss-binary>span:last-child{opacity:.4}
+@keyframes ss-binary{from{transform:rotate(calc(var(--ss-i)*180deg))}to{transform:rotate(calc(var(--ss-i)*180deg + 360deg))}}
+.ss-beads>span{inset:0;transform:rotate(calc(var(--ss-i)*30deg))}
+.ss-beads>span::before{content:"";position:absolute;top:2%;left:calc(50% - var(--ss-dot-size)/2);width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:50%;animation:ss-bead var(--ss-speed) var(--ss-easing,ease-in-out) infinite;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-12)}
+@keyframes ss-bead{0%,100%{transform:scale(1);opacity:1}65%{transform:scale(var(--ss-pulse-scale));opacity:.15}}
+.ss-constellation>span{width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation-name:ss-pulse;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-5)}
+.ss-constellation>span:nth-child(1){left:3%;top:30%}.ss-constellation>span:nth-child(2){left:32%;top:2%}.ss-constellation>span:nth-child(3){right:2%;top:25%}.ss-constellation>span:nth-child(4){right:14%;bottom:4%}.ss-constellation>span:nth-child(5){left:20%;bottom:15%}
+.ss-vortex>span{inset:calc(var(--ss-i)*16%);background:currentColor;mask:var(--ss-arc-mask-0) center/100% 100% no-repeat;animation-name:ss-spin;animation-timing-function:var(--ss-easing,linear);animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+.ss-vortex>span:nth-child(2){mask-image:var(--ss-arc-mask-1);animation-direction:reverse;opacity:.65}.ss-vortex>span:nth-child(3){mask-image:var(--ss-arc-mask-2);opacity:.4}
+.ss-gyro>span{inset:3%;border:var(--ss-outer-stroke-width) solid currentColor;border-radius:50%;animation-name:ss-gyro;animation-timing-function:var(--ss-easing,linear)}
+.ss-gyro>span:last-child{border-width:var(--ss-inner-stroke-width);animation-direction:reverse;opacity:.55}
+@keyframes ss-gyro{from{transform:rotate(calc(var(--ss-i)*90deg)) rotateX(var(--ss-tilt))}to{transform:rotate(calc(var(--ss-i)*90deg + 360deg)) rotateX(var(--ss-tilt))}}
+.ss-infinity>span{left:0;top:0;width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:50%;offset-path:var(--ss-path);offset-rotate:0deg;animation-name:ss-infinity;animation-timing-function:var(--ss-easing,linear);animation-delay:calc(var(--ss-speed)*var(--ss-i)/-2)}
+.ss-infinity>span:last-child{opacity:.4}
+@keyframes ss-infinity{from{offset-distance:0%}to{offset-distance:100%}}
+.ss-newton>span{width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:50%;left:calc(50% - var(--ss-dot-size)/2 + (var(--ss-i) - 1)*var(--ss-dot-size));top:58%;transform-origin:50% calc(var(--ss-size)*-.5)}
+.ss-newton>span:first-child{animation-name:ss-newton-left}.ss-newton>span:last-child{animation-name:ss-newton-right}
+@keyframes ss-newton-left{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(var(--ss-swing))}}@keyframes ss-newton-right{0%,50%,100%{transform:rotate(0)}75%{transform:rotate(calc(-1*var(--ss-swing)))}}
+.ss-shuttle::before{content:"";position:absolute;width:100%;height:var(--ss-stroke-width);border-radius:99px;background:currentColor;opacity:.18}
+.ss-shuttle>span{width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:50%;animation-name:ss-shuttle}
+@keyframes ss-shuttle{0%,100%{transform:translateX(calc(-1*var(--ss-travel-distance)))}50%{transform:translateX(var(--ss-travel-distance))}}
+.ss-typing>span{width:var(--ss-dot-size);height:var(--ss-dot-size);border-radius:50%;background:currentColor;left:calc(50% - var(--ss-dot-size)/2 + (var(--ss-i) - 1)*(var(--ss-dot-size) + var(--ss-gap)));transform-origin:50% 100%;animation-name:ss-typing;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-6)}
+@keyframes ss-typing{0%,60%,100%{transform:scaleY(var(--ss-pulse-scale));opacity:.4}30%{transform:scaleY(1.3);opacity:1}}
+.ss-domino>span{width:var(--ss-bar-width);height:55%;left:calc(6% + var(--ss-i)*18%);top:23%;border-radius:var(--ss-radius);background:currentColor;transform-origin:50% 100%;animation-name:ss-domino;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-8)}
+@keyframes ss-domino{0%,100%{transform:rotate(0);opacity:.4}50%{transform:rotate(var(--ss-tilt));opacity:1}}
+.ss-steps>span{width:var(--ss-dot-size);height:var(--ss-dot-size);left:calc(2% + var(--ss-i)*19%);bottom:calc(5% + var(--ss-i)*16%);border-radius:var(--ss-radius);background:currentColor;animation-name:ss-step;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-5)}
+@keyframes ss-step{0%,70%,100%{transform:translateY(0);opacity:.25}35%{transform:translateY(-35%);opacity:1}}
+.ss-tetris>span{width:var(--ss-dot-size);height:var(--ss-dot-size);left:calc(50% - var(--ss-dot-size)/2);top:calc(50% - var(--ss-dot-size)/2);border-radius:var(--ss-radius);background:currentColor;animation-name:ss-tetris;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-4)}
+@keyframes ss-tetris{0%,100%{transform:translate(-65%,-65%);opacity:1}25%{transform:translate(65%,-65%);opacity:.7}50%{transform:translate(65%,65%);opacity:.4}75%{transform:translate(-65%,65%);opacity:.7}}
+.ss-checker{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--ss-gap);padding:calc(var(--ss-size)*.08)}
+.ss-checker>span{position:relative;width:100%;height:100%;background:currentColor;border-radius:var(--ss-radius);animation-name:ss-checker;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-4)}
+@keyframes ss-checker{0%,100%{transform:perspective(80px) rotateY(0);opacity:1}50%{transform:perspective(80px) rotateY(180deg);opacity:.3}}
+.ss-diamond>span{inset:19%;border:var(--ss-stroke-width) solid currentColor;border-radius:var(--ss-radius);animation-name:ss-diamond}
+@keyframes ss-diamond{0%{transform:rotate(45deg) scale(var(--ss-pulse-scale));opacity:.4}50%{transform:rotate(135deg) scale(1);opacity:1}100%{transform:rotate(225deg) scale(var(--ss-pulse-scale));opacity:.4}}
+.ss-prism>span{width:var(--ss-petal-width);height:75%;background:currentColor;clip-path:polygon(50% 0,100% 100%,0 100%);animation-name:ss-prism}
+@keyframes ss-prism{0%{transform:rotate(var(--ss-tilt)) rotateY(0)}50%{transform:rotate(var(--ss-tilt)) rotateY(180deg);opacity:.4}100%{transform:rotate(var(--ss-tilt)) rotateY(360deg);opacity:1}}
+.ss-fan>span{width:var(--ss-petal-width);height:var(--ss-petal-length);background:currentColor;border-radius:var(--ss-radius);left:50%;top:calc(50% - var(--ss-petal-length));transform-origin:0 100%;animation-name:ss-fan;animation-timing-function:var(--ss-easing,linear)}
+@keyframes ss-fan{from{transform:rotate(calc(var(--ss-i)*90deg))}to{transform:rotate(calc(var(--ss-i)*90deg + 360deg))}}
+.ss-flower>span{width:var(--ss-petal-width);height:var(--ss-petal-length);background:currentColor;border-radius:var(--ss-radius);left:calc(50% - var(--ss-petal-width)/2);top:calc(50% - var(--ss-petal-length) - var(--ss-size)*.1);transform-origin:50% calc(var(--ss-petal-length) + var(--ss-size)*.1);animation-name:ss-flower;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-8)}
+@keyframes ss-flower{0%,100%{transform:rotate(calc(var(--ss-i)*45deg)) scale(.55);opacity:.25}50%{transform:rotate(calc(var(--ss-i)*45deg)) scale(1);opacity:1}}
+.ss-crosshair>span{width:var(--ss-petal-length);height:var(--ss-petal-length);border-top:var(--ss-stroke-width) solid currentColor;border-left:var(--ss-stroke-width) solid currentColor;border-top-left-radius:var(--ss-radius);left:10%;top:10%;transform-origin:calc(var(--ss-size)*.4) calc(var(--ss-size)*.4);animation-name:ss-crosshair}
+@keyframes ss-crosshair{0%,100%{transform:rotate(calc(var(--ss-i)*90deg)) scale(.7);opacity:.4}50%{transform:rotate(calc(var(--ss-i)*90deg)) scale(1);opacity:1}}
+.ss-paused>span::before,.ss-paused>span::after{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.ss-spinner>span::before,.ss-spinner>span::after{animation:none!important}}
+
+/* Default geometry for direct CSS markup. Inline React props override these. */
+.ss-orbit{--ss-stroke-width:calc(var(--ss-size)*0.045);--ss-tilt:65deg}
+.ss-arc{--ss-stroke-width:calc(var(--ss-size)*0.085);--ss-radius:calc(var(--ss-size)*0.0425);--ss-arc-length:180deg;--ss-arc-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2084%2084%22%3E%3Cpath%20d%3D%22M42.00000%204.25000%20A37.75%2037.75%200%200%201%2042.00000%2079.75000%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%228.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E')}
+.ss-ring{--ss-stroke-width:calc(var(--ss-size)*0.075);--ss-radius:calc(var(--ss-size)*0.0425);--ss-arc-length:90deg;--ss-track-stroke-width:calc(var(--ss-size)*0.075);--ss-track-opacity:0.18;--ss-arc-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2092%2092%22%3E%3Cpath%20d%3D%22M46.00000%203.75000%20A42.25%2042.25%200%200%201%2088.25000%2046.00000%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%227.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E')}
+.ss-dots{--ss-dot-size:calc(var(--ss-size)*0.21);--ss-radius:calc(var(--ss-size)*0.105);--ss-gap:calc(var(--ss-size)*0.15)}
+.ss-wave{--ss-bar-width:calc(var(--ss-size)*0.12);--ss-radius:10px;--ss-pulse-scale:0.3}
+.ss-pulse{--ss-radius:calc(var(--ss-size)*0.38);--ss-pulse-scale:0.45}
+.ss-ripple{--ss-stroke-width:calc(var(--ss-size)*0.045);--ss-pulse-scale:0.1}
+.ss-bars{--ss-bar-width:calc(var(--ss-size)*0.17);--ss-radius:1px;--ss-pulse-scale:0.25}
+.ss-grid{--ss-gap:calc(var(--ss-size)*0.12);--ss-radius:calc(var(--ss-size)*0.033)}
+.ss-breathe{--ss-first-stroke-width:calc(var(--ss-size)*0.035);--ss-second-stroke-width:calc(var(--ss-size)*0.035)}
+.ss-comet{--ss-stroke-width:calc(var(--ss-size)*0.105);--ss-radius:calc(var(--ss-size)*0.0425);--ss-arc-length:300deg;--ss-arc-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M50.00000%204.25000%20A45.75%2045.75%200%201%201%2010.37934%2027.12500%20L12.11139%2028.12500%20A43.75%2043.75%200%201%200%2050.00000%206.25000Z%22%20fill%3D%22black%22%20stroke%3D%22black%22%20stroke-width%3D%228.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E')}
+.ss-dual{--ss-outer-stroke-width:calc(var(--ss-size)*0.06);--ss-inner-stroke-width:calc(var(--ss-size)*0.06);--ss-outer-radius:calc(var(--ss-size)*0.0425);--ss-inner-radius-px:calc(var(--ss-size)*0.0425);--ss-outer-arc-length:70deg;--ss-inner-arc-length:70deg;--ss-arc-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M50.00000%203.00000%20A47%2047%200%200%201%2094.16555%2033.92505%20M50.00000%2097.00000%20A47%2047%200%200%201%205.83445%2066.07495%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E');--ss-inner-arc-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2052%2052%22%3E%3Cpath%20d%3D%22M26.00000%203.00000%20A23%2023%200%200%201%2047.61293%2018.13354%20M26.00000%2049.00000%20A23%2023%200%200%201%204.38707%2033.86646%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%226%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E')}
+.ss-flare{--ss-bar-width:calc(var(--ss-size)*0.08);--ss-radius:9px}
+.ss-flip{--ss-radius:calc(var(--ss-size)*0.1216)}
+.ss-bloom{--ss-petal-width:calc(var(--ss-size)*0.25);--ss-petal-length:calc(var(--ss-size)*0.45)}
+.ss-chase{--ss-dot-size:calc(var(--ss-size)*0.17);--ss-radius:calc(var(--ss-size)*0.085)}
+.ss-bounce{--ss-dot-size:calc(var(--ss-size)*0.21);--ss-radius:calc(var(--ss-size)*0.105);--ss-gap:calc(var(--ss-size)*0.15);--ss-bounce-height:calc(var(--ss-size)*0.21)}
+.ss-pendulum{--ss-dot-size:calc(var(--ss-size)*0.21);--ss-gap:calc(var(--ss-size)*0.15);--ss-swing:30deg}
+.ss-square{--ss-outer-stroke-width:calc(var(--ss-size)*0.05);--ss-inner-stroke-width:calc(var(--ss-size)*0.05);--ss-radius:calc(var(--ss-size)*0)}
+.ss-stack{--ss-radius:2px;--ss-gap:calc(var(--ss-size)*0.11)}
+.ss-zigzag{--ss-bar-width:calc(var(--ss-size)*0.12);--ss-radius:1px}
+.ss-hourglass{--ss-waist-width:calc(var(--ss-size)*0.125);--ss-radius:calc(var(--ss-size)*0.16666666666666666);--ss-hourglass-mask:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2088%2088%22%3E%3Cpath%20d%3D%22M10.8524%2012.6492%20L10.8524%2012.6492%20Q0%200%2016.6667%200%20L71.3333%200%20Q88%200%2077.1476%2012.6492%20L61.1024%2031.3508%20Q50.25%2044%2061.1024%2056.6492%20L77.1476%2075.3508%20Q88%2088%2071.3333%2088%20L16.6667%2088%20Q0%2088%2010.8524%2075.3508%20L26.8976%2056.6492%20Q37.75%2044%2026.8976%2031.3508Z%22%2F%3E%3C%2Fsvg%3E')}
+.ss-radar{--ss-outer-stroke-width:calc(var(--ss-size)*0.035);--ss-sweep-width:calc(var(--ss-size)*0.5);--ss-sweep-angle:126deg}
+.ss-spark{--ss-dot-size:calc(var(--ss-size)*0.25);--ss-radius:calc(var(--ss-size)*0.0625)}
+.ss-star{--ss-inner-radius:0.45}
+.ss-twinkle{--ss-inner-radius:0.25;--ss-pulse-scale:0.65}
+.ss-satellite{--ss-outer-stroke-width:calc(var(--ss-size)*0.025);--ss-dot-size:calc(var(--ss-size)*0.18)}
+.ss-eclipse{--ss-stroke-width:calc(var(--ss-size)*0.18)}
+.ss-helix{--ss-dot-size:calc(var(--ss-size)*0.12);--ss-travel-distance:calc(var(--ss-size)*0.25)}
+.ss-pinwheel{--ss-petal-width:calc(var(--ss-size)*0.28);--ss-petal-length:calc(var(--ss-size)*0.42)}
+.ss-asterisk{--ss-bar-width:calc(var(--ss-size)*0.07);--ss-petal-length:calc(var(--ss-size)*0.35);--ss-radius:calc(var(--ss-size)*0.035)}
+.ss-binary{--ss-dot-size:calc(var(--ss-size)*0.2);--ss-gap:calc(var(--ss-size)*0.32)}
+.ss-beads{--ss-dot-size:calc(var(--ss-size)*0.1);--ss-pulse-scale:0.4}
+.ss-constellation{--ss-dot-size:calc(var(--ss-size)*0.22);--ss-pulse-scale:0.3}
+.ss-vortex{--ss-first-stroke-width:calc(var(--ss-size)*0.045);--ss-second-stroke-width:calc(var(--ss-size)*0.035);--ss-third-stroke-width:calc(var(--ss-size)*0.025);--ss-radius:calc(var(--ss-size)*0.0425);--ss-arc-length:240deg;--ss-arc-mask-0:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Cpath%20d%3D%22M50.00000%202.25000%20A47.75%2047.75%200%201%201%208.64729%2073.87500%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%224.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E');--ss-arc-mask-1:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2068%2068%22%3E%3Cpath%20d%3D%22M34.00000%201.75000%20A32.25%2032.25%200%201%201%206.07068%2050.12500%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%223.5000000000000004%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E');--ss-arc-mask-2:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2036%2036%22%3E%3Cpath%20d%3D%22M18.00000%201.25000%20A16.75%2016.75%200%201%201%203.49407%2026.37500%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.5%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E')}
+.ss-gyro{--ss-outer-stroke-width:calc(var(--ss-size)*0.035);--ss-inner-stroke-width:calc(var(--ss-size)*0.035);--ss-tilt:60deg}
+.ss-infinity{--ss-dot-size:calc(var(--ss-size)*0.14);--ss-travel-distance:calc(var(--ss-size)*0.38);--ss-path:path('M 16 16 C 3.84 0.64, 3.84 0.64, 3.84 16 C 3.84 31.36, 3.84 31.36, 16 16 C 28.16 0.64, 28.16 0.64, 28.16 16 C 28.16 31.36, 28.16 31.36, 16 16 Z')}
+.ss-newton{--ss-dot-size:calc(var(--ss-size)*0.21);--ss-swing:40deg}
+.ss-shuttle{--ss-dot-size:calc(var(--ss-size)*0.18);--ss-stroke-width:calc(var(--ss-size)*0.025);--ss-travel-distance:calc(var(--ss-size)*0.36)}
+.ss-typing{--ss-dot-size:calc(var(--ss-size)*0.22);--ss-gap:calc(var(--ss-size)*0.15);--ss-pulse-scale:0.3}
+.ss-domino{--ss-bar-width:calc(var(--ss-size)*0.1);--ss-radius:calc(var(--ss-size)*0.025);--ss-tilt:35deg}
+.ss-steps{--ss-dot-size:calc(var(--ss-size)*0.15);--ss-radius:calc(var(--ss-size)*0.02)}
+.ss-tetris{--ss-dot-size:calc(var(--ss-size)*0.28);--ss-radius:calc(var(--ss-size)*0.04)}
+.ss-checker{--ss-gap:calc(var(--ss-size)*0.1);--ss-radius:calc(var(--ss-size)*0.06)}
+.ss-diamond{--ss-stroke-width:calc(var(--ss-size)*0.045);--ss-radius:calc(var(--ss-size)*0.06);--ss-pulse-scale:0.65}
+.ss-prism{--ss-petal-width:calc(var(--ss-size)*0.8);--ss-tilt:30deg}
+.ss-fan{--ss-petal-width:calc(var(--ss-size)*0.28);--ss-petal-length:calc(var(--ss-size)*0.42);--ss-radius:calc(var(--ss-size)*0.12)}
+.ss-flower{--ss-petal-width:calc(var(--ss-size)*0.17);--ss-petal-length:calc(var(--ss-size)*0.32);--ss-radius:calc(var(--ss-size)*0.085)}
+.ss-crosshair{--ss-stroke-width:calc(var(--ss-size)*0.05);--ss-petal-length:calc(var(--ss-size)*0.26);--ss-radius:calc(var(--ss-size)*0.03)}
+/* A miniature dial: twelve fixed indices, two independent hands, one shared pivot. */
+.ss-clock::before{content:"";position:absolute;inset:1%;box-sizing:border-box;border:var(--ss-track-stroke-width) solid currentColor;opacity:.5;border-radius:50%}
+.ss-clock::after{z-index:2;content:"";position:absolute;width:12%;height:12%;border-radius:50%;background:currentColor}
+.ss-clock>span{background:currentColor;border-radius:var(--ss-radius);animation-timing-function:var(--ss-easing,linear)}
+.ss-clock>span:nth-child(-n+2){transform:rotate(var(--ss-hand-angle));transform-origin:50% 100%;animation-name:ss-clock-hand;z-index:1}
+.ss-clock>span:first-child{width:var(--ss-outer-stroke-width);height:var(--ss-petal-length);top:calc(50% - var(--ss-petal-length));left:calc(50% - var(--ss-outer-stroke-width)/2);animation-duration:calc(var(--ss-speed)*12);--ss-hand-angle:-55deg}
+.ss-clock>span:nth-child(2){width:var(--ss-inner-stroke-width);height:var(--ss-travel-distance);top:calc(50% - var(--ss-travel-distance));left:calc(50% - var(--ss-inner-stroke-width)/2);--ss-hand-angle:35deg}
+.ss-clock>span:nth-child(n+3){width:3%;height:5%;top:10%;left:48.5%;transform-origin:50% calc(var(--ss-size)*.4);transform:rotate(calc((var(--ss-i) - 2)*30deg));opacity:.35}
+.ss-clock>span:nth-child(3n+3){height:8%;opacity:.8}
+@keyframes ss-clock-hand{from{transform:rotate(var(--ss-hand-angle))}to{transform:rotate(calc(var(--ss-hand-angle) + 360deg))}}
+
+/* New shapes use the same pause, easing and reduced-motion contract as the collection. */
+.ss-compass::before{content:"";position:absolute;inset:4%;border:var(--ss-stroke-width) solid currentColor;border-radius:50%;opacity:.3}
+.ss-compass::after{content:"";position:absolute;width:8%;height:8%;border-radius:50%;background:currentColor}
+.ss-compass>span{width:var(--ss-petal-width);height:72%;background:linear-gradient(currentColor 50%,color-mix(in srgb,currentColor 30%,transparent) 50%);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);animation-name:ss-compass}
+@keyframes ss-compass{0%,100%{transform:rotate(calc(0deg - var(--ss-swing)))}50%{transform:rotate(var(--ss-swing))}}
+.ss-meteor>span{width:var(--ss-petal-length);height:var(--ss-stroke-width);left:calc(15% + var(--ss-i)*12%);top:calc(20% + var(--ss-i)*24%);background:linear-gradient(90deg,transparent,currentColor);border-radius:var(--ss-radius);animation-name:ss-meteor;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+@keyframes ss-meteor{0%{transform:translate(-25%,-100%) rotate(35deg) scaleX(.3);opacity:0}30%{opacity:1}75%,100%{transform:translate(35%,200%) rotate(35deg) scaleX(1);opacity:0}}
+.ss-pacman>span:first-child{width:54%;height:54%;left:4%}
+.ss-pacman>span:first-child::before,.ss-pacman>span:first-child::after{content:"";position:absolute;inset:0;background:currentColor;border-radius:50%;clip-path:polygon(0 0,100% 0,100% 50%,0 50%);animation:ss-chomp var(--ss-speed) var(--ss-easing,ease-in-out) infinite;--ss-jaw:-1}
+.ss-pacman>span:first-child::after{clip-path:polygon(0 50%,100% 50%,100% 100%,0 100%);--ss-jaw:1}
+.ss-pacman>span:nth-child(n+2){width:var(--ss-dot-size);height:var(--ss-dot-size);left:80%;border-radius:50%;background:currentColor;animation-name:ss-snack;animation-delay:calc(var(--ss-speed)*(var(--ss-i) - 1)/-3)}
+@keyframes ss-chomp{0%,100%{transform:rotate(calc(var(--ss-jaw)*var(--ss-sweep-angle)))}50%{transform:rotate(0)}}
+@keyframes ss-snack{0%{transform:translateX(0);opacity:0}15%,70%{opacity:1}100%{transform:translateX(calc(var(--ss-size)*-.47));opacity:0}}
+.ss-conveyor>span{width:var(--ss-dot-size);height:var(--ss-dot-size);left:8%;top:8%;background:currentColor;border-radius:var(--ss-radius);animation-name:ss-conveyor;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+@keyframes ss-conveyor{0%,100%{transform:translate(0,0)}25%{transform:translate(calc(var(--ss-size)*.6),0)}50%{transform:translate(calc(var(--ss-size)*.6),calc(var(--ss-size)*.6))}75%{transform:translate(0,calc(var(--ss-size)*.6))}}
+.ss-fountain>span{width:var(--ss-dot-size);height:var(--ss-dot-size);left:calc(50% - var(--ss-dot-size)/2);bottom:10%;background:currentColor;border-radius:50%;animation-name:ss-fountain;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-5)}
+@keyframes ss-fountain{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:1}50%{transform:translate(calc((var(--ss-i) - 2)*var(--ss-size)*.08),calc(0px - var(--ss-bounce-height))) scale(1);opacity:1}100%{transform:translate(calc((var(--ss-i) - 2)*var(--ss-size)*.17),0) scale(.4);opacity:0}}
+.ss-gauge::before{content:"";position:absolute;width:88%;height:44%;top:16%;border:var(--ss-stroke-width) solid currentColor;border-bottom:0;border-radius:999px 999px 0 0;box-sizing:border-box;opacity:.5}
+.ss-gauge::after{content:"";position:absolute;width:12%;height:12%;top:54%;border-radius:50%;background:currentColor}
+.ss-gauge>span{width:var(--ss-stroke-width);height:var(--ss-petal-length);left:calc(50% - var(--ss-stroke-width)/2);top:calc(60% - var(--ss-petal-length));background:currentColor;border-radius:999px;transform-origin:50% 100%;animation-name:ss-compass}
+.ss-slinky>span{width:74%;height:30%;left:13%;top:calc(28% + (var(--ss-i) - 2)*var(--ss-gap));border:var(--ss-stroke-width) solid currentColor;border-radius:50%;animation-name:ss-slinky;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-10);opacity:calc(.4 + var(--ss-i)*.15)}
+@keyframes ss-slinky{0%,100%{transform:translateY(calc(0px - var(--ss-gap))) rotate(-15deg)}50%{transform:translateY(var(--ss-gap)) rotate(15deg)}}
+.ss-firework>span{inset:0;transform:rotate(calc(var(--ss-i)*45deg))}
+.ss-firework>span::before{content:"";position:absolute;width:var(--ss-bar-width);height:var(--ss-petal-length);left:calc(50% - var(--ss-bar-width)/2);top:calc(50% - var(--ss-petal-length));background:currentColor;border-radius:var(--ss-radius);animation:ss-firework var(--ss-speed) var(--ss-easing,ease-in-out) infinite}
+@keyframes ss-firework{0%{transform:translateY(0) scaleY(.1);opacity:0}25%{opacity:1}70%{transform:translateY(calc(var(--ss-size)*-.22)) scaleY(1);opacity:.7}100%{transform:translateY(calc(var(--ss-size)*-.25)) scaleY(.2);opacity:0}}
+.ss-book::before,.ss-book::after{content:"";position:absolute;top:20%;width:40%;height:62%;box-sizing:border-box;border:var(--ss-stroke-width) solid currentColor;border-radius:var(--ss-radius);opacity:.35}
+.ss-book::before{left:10%;transform:skewY(8deg)}
+.ss-book::after{right:10%;transform:skewY(-8deg)}
+.ss-book>span{width:40%;height:58%;top:20%;left:50%;border:var(--ss-stroke-width) solid currentColor;border-radius:var(--ss-radius);transform-origin:0 50%;animation-name:ss-page;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+@keyframes ss-page{0%{transform:perspective(120px) rotateY(0) skewY(-8deg);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:perspective(120px) rotateY(-180deg) skewY(-8deg);opacity:0}}
+.ss-clock{--ss-outer-stroke-width:calc(var(--ss-size)*0.065);--ss-inner-stroke-width:calc(var(--ss-size)*0.04);--ss-track-stroke-width:calc(var(--ss-size)*0.035);--ss-petal-length:calc(var(--ss-size)*0.23);--ss-travel-distance:calc(var(--ss-size)*0.34);--ss-radius:calc(var(--ss-size)*0.04)}
+.ss-compass{--ss-stroke-width:calc(var(--ss-size)*0.025);--ss-petal-width:calc(var(--ss-size)*0.22);--ss-swing:60deg}
+.ss-meteor{--ss-stroke-width:calc(var(--ss-size)*0.06);--ss-petal-length:calc(var(--ss-size)*0.45);--ss-radius:calc(var(--ss-size)*0.04)}
+.ss-pacman{--ss-dot-size:calc(var(--ss-size)*0.09);--ss-sweep-angle:40deg}
+.ss-conveyor{--ss-dot-size:calc(var(--ss-size)*0.22);--ss-radius:calc(var(--ss-size)*0.04)}
+.ss-fountain{--ss-dot-size:calc(var(--ss-size)*0.12);--ss-bounce-height:calc(var(--ss-size)*0.65)}
+.ss-gauge{--ss-stroke-width:calc(var(--ss-size)*0.045);--ss-petal-length:calc(var(--ss-size)*0.32);--ss-swing:65deg}
+.ss-slinky{--ss-stroke-width:calc(var(--ss-size)*0.035);--ss-gap:calc(var(--ss-size)*0.1)}
+.ss-firework{--ss-bar-width:calc(var(--ss-size)*0.045);--ss-petal-length:calc(var(--ss-size)*0.2);--ss-radius:calc(var(--ss-size)*0.03)}
+.ss-book{--ss-stroke-width:calc(var(--ss-size)*0.035);--ss-radius:calc(var(--ss-size)*0.04)}
+/* Keep pause authoritative even for animations declared on more specific pseudo-elements. */
+.ss-spinner.ss-paused>span,.ss-spinner.ss-paused>span::before,.ss-spinner.ss-paused>span::after{animation-play-state:paused!important}
+
+.ss-rain{--ss-dot-size:calc(var(--ss-size)*.12);--ss-stroke-width:calc(var(--ss-size)*.025)}
+.ss-rain>span{inset:0}
+.ss-rain>span::before{content:"";position:absolute;left:calc(24% + var(--ss-i)*26% - var(--ss-dot-size)/2);top:18%;width:var(--ss-dot-size);height:var(--ss-dot-size);background:currentColor;border-radius:70% 0 70% 70%;animation:ss-raindrop var(--ss-speed) var(--ss-easing,ease-in-out) infinite;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+.ss-rain>span::after{content:"";position:absolute;left:calc(24% + var(--ss-i)*26% - var(--ss-dot-size));top:72%;width:calc(var(--ss-dot-size)*2);height:calc(var(--ss-dot-size)*.65);border:var(--ss-stroke-width) solid currentColor;border-radius:50%;box-sizing:border-box;animation:ss-rain-splash var(--ss-speed) var(--ss-easing,ease-in-out) infinite;animation-delay:calc(var(--ss-speed)*var(--ss-i)/-3)}
+@keyframes ss-raindrop{0%{transform:translateY(0) rotate(-45deg) scale(.5);opacity:0}15%{opacity:1}60%{transform:translateY(calc(var(--ss-size)*.5)) rotate(-45deg) scale(1);opacity:1}68%,100%{transform:translateY(calc(var(--ss-size)*.5)) rotate(-45deg) scale(.2);opacity:0}}
+@keyframes ss-rain-splash{0%,55%{transform:scale(.2);opacity:0}65%{opacity:.65}100%{transform:scale(1.4);opacity:0}}

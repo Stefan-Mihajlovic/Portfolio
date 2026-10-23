@@ -6,7 +6,7 @@
 - Catalog → body role → pairing retained 16px body sizing. Saving and reopening Instrument + Inter worked.
 - 14 automated tests passed, including complete catalog, filtering, supported font-weight URL construction, CSS/JSON exports, import validation and concurrent storage operations.
 - Package includes catalog.js and fonts.json; every ZIP member matched the source. Every local page asset reference exists.
-- Actual Edge screenshots: catalog.png, font-detail.png, pairing.png and inspector.png. No recreated UI.
+- Actual Edge screenshots: catalog.webp, font-detail.webp, pairing.webp and inspector.webp. No recreated UI.
 - Website visually checked on desktop and at 440×956 emulated mobile size. Gallery click and arrow-key navigation worked. Download ZIP copied to the page.
 - Live /type-pilot/ and /font-pirate/ both returned HTTP 404. No pushes or deployments made. Portfolio index and sitemap do not advertise the draft.
 - Local preview: http://127.0.0.1:8766/font-pirate/

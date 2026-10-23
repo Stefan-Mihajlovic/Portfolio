@@ -64,6 +64,7 @@ const routes = new Set([
   "/optiflowz/",
   "/crimson-music/",
   "/eaes-video-corner/",
+  "/case-studies/stefans-spinners/",
   "/case-studies/palette-pilot/",
   "/case-studies/tab-volume-manager/",
 ]);
