@@ -1,29 +1,16 @@
+/* Cabinet Grotesk by Indian Type Foundry, distributed through Fontshare; hosted locally. */
 @font-face {
-  font-family: Switzer;
-  src: url("https://cdn.fontshare.com/wf/BLNB4FAQFNK56DWWNF7PMGTCOTZHOEII/ST3WKSSDMBK2MIQQO3MAVYWLF4FTOLFV/6IN5WOLRCYP4G4MOCOHOMXNON6Q7MDAR.woff2")
-    format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: Switzer;
-  src: url("https://cdn.fontshare.com/wf/OYB4CXKJQXKTNSLJMTDQOIVUL2V5EL7S/WYO2P7DQVV5RNXGMCUO2HL4RJP4VFUAS/6XPIMU23OJVRY676OG5YVJMWEHWICATX.woff2")
-    format("woff2");
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: Switzer;
-  src: url("https://cdn.fontshare.com/wf/5SZVFDB7V52TI6ULVC6J3WQZQCIZVDV5/ODYPSTCUDMKSTYIPTV4CLQ7URIK7XYBJ/YS3VPNVO4B3TOJMEXDGFZQ4TLZGGSRZC.woff2")
-    format("woff2");
-  font-weight: 600 800;
-  font-display: swap;
+  font-family: "Cabinet Grotesk";
+  src: url("/fonts/cabinet-grotesk-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
 }
 @font-face {
   font-family: Medula;
   src: url("/fonts/medula-one-latin.woff2") format("woff2");
   font-weight: 400;
-  font-display: swap;
+  font-display: block;
 }
 :root {
   color-scheme: dark;
@@ -48,7 +35,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Switzer, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Cabinet Grotesk", "Helvetica Neue", Arial, sans-serif;
   font-size: 18px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -103,7 +90,7 @@ p {
 h1,
 h2,
 h3 {
-  font-weight: 400;
+  font-weight: 500;
 }
 button:active,
 .pill-link:active {
@@ -292,7 +279,7 @@ main.is-arriving {
 .home-intro h1 {
   font-size: clamp(70px, 10.4vw, 156px);
   line-height: 1.1;
-  letter-spacing: -0.066em;
+  letter-spacing: -0.045em;
   white-space: nowrap;
 }
 .name-line {
@@ -479,7 +466,7 @@ main.is-arriving {
 .page-intro h1 {
   font-size: clamp(62px, 8vw, 128px);
   line-height: 1.05;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.045em;
 }
 .page-intro > p {
   color: var(--muted);
@@ -953,7 +940,7 @@ html.lenis body {
   .home-intro h1 {
     font-size: 17vw;
     line-height: 1;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.045em;
     white-space: normal;
   }
   .name-line {
@@ -1014,7 +1001,7 @@ html.lenis body {
   }
   .page-intro h1 {
     font-size: clamp(54px, 13.5vw, 80px);
-    letter-spacing: -0.065em;
+    letter-spacing: -0.045em;
     overflow-wrap: normal;
   }
   .page-intro > p {
