@@ -331,13 +331,16 @@ main.is-arriving {
   margin: 0 0 90px;
 }
 .project-visual {
+  --project-radius: 26px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1.85;
-  border-radius: 26px;
+  border-radius: var(--project-radius);
   overflow: hidden;
+  /* Explicitly clip composited video layers to the card shape in Safari. */
+  clip-path: inset(0 round var(--project-radius));
   isolation: isolate;
   background: #141218 var(--project-poster) center/cover;
 }
@@ -962,7 +965,7 @@ html.lenis body {
   }
   .project-visual {
     aspect-ratio: 1.35;
-    border-radius: 20px;
+    --project-radius: 20px;
   }
   .project-image {
     width: 84%;
