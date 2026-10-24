@@ -94,7 +94,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   }
   await page.goto(origin);
   assert.equal(await page.locator(".work-card").count(), 3);
-  await page.locator('nav a[href="/projects/"]').click();
+  await page.locator('.site-header nav a[href="/projects/"]').click();
   await page.waitForURL("**/projects/");
   await page.waitForTimeout(1000);
   assert.deepEqual(await page.evaluate(() => window.transitionOverflow), [], 'Desktop transitions do not create horizontal scrolling');
@@ -106,7 +106,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.evaluate(() => window.scrollTo({ top: 600, behavior: "instant" }));
   await page.waitForTimeout(300);
   const scrollBefore = await page.evaluate(() => scrollY);
-  await page.locator('nav a[href="/about/"]').click();
+  await page.locator('.site-header nav a[href="/about/"]').click();
   await page.waitForURL("**/about/");
   await page.waitForTimeout(1000);
   assert.equal(
@@ -180,7 +180,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
     await page.locator(".menu-toggle").getAttribute("aria-expanded"),
     "true",
   );
-  await page.locator('nav a[href="/projects/"]').click();
+  await page.locator('.site-header nav a[href="/projects/"]').click();
   await page.waitForURL("**/projects/");
   await page.waitForTimeout(1100);
   assert.deepEqual(await page.evaluate(() => window.transitionOverflow), [], 'Mobile transitions do not create horizontal scrolling');

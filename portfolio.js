@@ -42,6 +42,7 @@ try {
 } catch {}
 let lenis,
   disposeName = () => {},
+  disposeFooter = () => {},
   disposeReveals = () => {},
   disposeScrollCopy = () => {},
   disposeSkills = () => {},
@@ -151,6 +152,7 @@ function updateMotion() {
   if (!motionEnabled()) {
     clearTimeout(logoTimer);
     monogram.classList.remove('logo-playing');
+    document.querySelector('.footer-brand')?.classList.remove('logo-playing');
     planets.getAnimations({ subtree: true }).filter(animation => !animation.animationName).forEach(animation => animation.cancel());
   }
   refreshScrollCopy();
@@ -228,8 +230,7 @@ function initProjectNameStars() {
   });
 }
 
-function initName() {
-  const title = document.querySelector('main h1');
+function initName(title = document.querySelector('main h1'), entrance = true) {
   if (title && !title.querySelector('.name-char')) {
     // Preserve explicit line breaks and natural word wrapping, with one accessible label.
     title.setAttribute('aria-label', title.innerText.trim().replace(/\s+/g, ' '));
@@ -265,7 +266,7 @@ function initName() {
     letter.replaceWith(anchor); anchor.append(letter);
   });
   // Start only after the pre-split home letters have their final DOM structure.
-  title.classList.add('animated-title');
+  title.classList.add(entrance ? 'animated-title' : 'name-ready');
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
   let centers = [], bounds;
@@ -309,6 +310,8 @@ function initName() {
   }
   function move(e) {
     if (!motionEnabled() || e.pointerType !== 'mouse') return;
+    // Only measure letters inside the footer's moving hit area, never on every page move.
+    if (!entrance) { bounds = title.getBoundingClientRect(); centers = []; }
     if (!bounds) bounds = title.getBoundingClientRect();
     const inside = e.clientX >= bounds.left && e.clientX <= bounds.right &&
       e.clientY >= bounds.top && e.clientY <= bounds.bottom;
@@ -339,6 +342,33 @@ function initName() {
     window.removeEventListener('scroll', refreshPointer);
     window.removeEventListener('resize', refreshPointer);
   };
+}
+
+function initFooter() {
+  const brand = document.querySelector('.footer-brand');
+  if (!brand) return () => {};
+  const footer = brand.closest('.site-footer');
+  const disposeHover = initName(brand.querySelector('.footer-wordmark'), false);
+  let played = false;
+  const reset = () => {
+    played = false;
+    brand.classList.remove('logo-playing');
+  };
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      // Let the signature finish naturally; re-arm only after the entire footer leaves.
+      if (entry.target === footer) {
+        if (!entry.isIntersecting) reset();
+        continue;
+      }
+      if (!entry.isIntersecting || entry.intersectionRatio < .75 || played || !motionEnabled()) continue;
+      played = true;
+      brand.classList.add('logo-playing');
+    }
+  }, { threshold: [0, .75] });
+  observer.observe(footer);
+  observer.observe(brand);
+  return () => { observer.disconnect(); reset(); disposeHover(); };
 }
 
 function initScrollCopy() {
@@ -596,6 +626,8 @@ function initPage() {
   updateBackToTop();
   disposeName();
   disposeName = initName();
+  disposeFooter();
+  disposeFooter = initFooter();
   initProjectNameStars();
   disposeReveals();
   revealObserver?.disconnect();
@@ -679,7 +711,7 @@ function initPage() {
     }, { rootMargin: '80px' });
     main.querySelectorAll('.name-spark, .about-title-spark, .portrait-strip figure').forEach(el => ambientObserver.observe(el));
   }
-  header.querySelectorAll("nav a").forEach((link) => {
+  document.querySelectorAll(".site-header nav a, .footer-links a").forEach((link) => {
     link.removeAttribute("aria-current");
     if (normalize(link.pathname) === normalize(location.pathname))
       link.setAttribute("aria-current", "page");
