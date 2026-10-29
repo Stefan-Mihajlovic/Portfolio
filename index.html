@@ -14,7 +14,7 @@
     <meta content="#08090b" name="theme-color" />
     <link href="https://stefanmihajlovic.com/" rel="canonical" />
     <link href="/site.webmanifest" rel="manifest" />
-    <link href="/images/favicon.png?v=3" rel="apple-touch-icon" />
+    <link href="/images/apple-touch-icon.png?v=1" rel="apple-touch-icon" />
     <meta content="website" property="og:type" />
     <meta content="Stefan Mihajlovic" property="og:site_name" />
     <meta
@@ -56,9 +56,9 @@
       name="twitter:image:alt"
     />
     <link
-      href="/images/favicon.png?v=3"
+      href="/images/favicon-32.png?v=1"
       rel="icon"
-      sizes="512x512"
+      sizes="32x32"
       type="image/png"
     />
     <script type="application/ld+json">
@@ -123,12 +123,13 @@
         if (!document.documentElement.dataset.motionReady) document.documentElement.classList.remove('js-motion');
       }, 4500);
     </script>
-    <link href="/portfolio.css?v=20261024-6" rel="stylesheet" />
+    <link href="/assets/build/portfolio.min.css?v=20261029-1" rel="stylesheet" />
     <script defer="" src="/vendor/lenis/lenis.min.js"></script>
-    <script src="/portfolio.js?v=20261024-3" type="module"></script>
+    <script src="/assets/build/portfolio.min.js?v=20261029-1" type="module"></script>
     <noscript
       ><style>
         .project-film { display: none; }
+        .project-visual { background-image: var(--project-poster); }
         .name-char, .hero-details { animation: none; }
         @media (max-width: 600px) {
           .site-header nav {
@@ -221,19 +222,18 @@
                   muted=""
                   playsinline=""
                   poster="/assets/motion/violet.webp"
-                  preload="none"
+                  preload="metadata"
                   tabindex="-1"
-                ></video>
+                ><source src="/assets/motion/violet-mobile.mp4" type="video/mp4" media="(prefers-reduced-motion: no-preference) and (max-width: 600px)"><source src="/assets/motion/violet.mp4" type="video/mp4" media="(prefers-reduced-motion: no-preference) and (min-width: 601px)"></video>
                 <div aria-hidden="true" class="film-grain"></div>
                 <div class="project-image">
                   <img
                     alt="Crimson Music project preview"
-                    height="844"
+                    height="1294"
                     loading="eager"
                     fetchpriority="high"
                     src="/images/crimsonMusicScreenshot1.webp"
-                    width="1500"
-                  />
+                    width="2300" srcset="/images/responsive/crimsonMusicScreenshot1-400.webp 400w, /images/responsive/crimsonMusicScreenshot1-800.webp 800w, /images/responsive/crimsonMusicScreenshot1-1200.webp 1200w, /images/crimsonMusicScreenshot1.webp 2300w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
                 </div>
               <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>React Native</span><span>Expo</span><span>TypeScript</span><span>Audius API</span></span><span class="project-tags-group"><span>React Native</span><span>Expo</span><span>TypeScript</span><span>Audius API</span></span></div></div>
               </a>
@@ -260,7 +260,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/blue.webp"
+                data-poster="/assets/motion/blue.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -271,8 +271,7 @@
                   height="844"
                   loading="lazy"
                   src="/images/optiflowzScreenshot1.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/optiflowzScreenshot1-400.webp 400w, /images/responsive/optiflowzScreenshot1-800.webp 800w, /images/responsive/optiflowzScreenshot1-1200.webp 1200w, /images/optiflowzScreenshot1.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Next.js</span><span>React</span><span>UI/UX</span><span>Design</span></span><span class="project-tags-group"><span>Next.js</span><span>React</span><span>UI/UX</span><span>Design</span></span></div></div>
               </a>
@@ -298,7 +297,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/silver.webp"
+                data-poster="/assets/motion/silver.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -309,8 +308,7 @@
                   height="1000"
                   loading="lazy"
                   src="/images/stefans-spinners-gallery.webp?v=3"
-                  width="1600"
-                />
+                  width="1600" srcset="/images/responsive/stefans-spinners-gallery-400.webp 400w, /images/responsive/stefans-spinners-gallery-800.webp 800w, /images/responsive/stefans-spinners-gallery-1200.webp 1200w, /images/stefans-spinners-gallery.webp 1600w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>React</span><span>CSS animation</span><span>TypeScript</span><span>Developer tools</span></span><span class="project-tags-group"><span>React</span><span>CSS animation</span><span>TypeScript</span><span>Developer tools</span></span></div></div>
               </a>

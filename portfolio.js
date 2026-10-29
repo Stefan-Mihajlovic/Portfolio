@@ -152,7 +152,7 @@ function updateMotion() {
   if (!motionEnabled()) {
     clearTimeout(logoTimer);
     monogram.classList.remove('logo-playing');
-    document.querySelector('.footer-brand')?.classList.remove('logo-playing');
+    document.querySelector('.footer-brand')?.classList.remove('color-sweep');
     planets.getAnimations({ subtree: true }).filter(animation => !animation.animationName).forEach(animation => animation.cancel());
   }
   refreshScrollCopy();
@@ -176,8 +176,13 @@ function updateMotion() {
     button.setAttribute("aria-pressed", String(paused));
   });
   document.querySelectorAll(".project-film").forEach(updateVideo);
+  document.dispatchEvent(new Event("portfolio-motion-change"));
 }
 function updateVideo(video) {
+  if (video.dataset.inView === 'true' && video.dataset.poster && !video.poster) {
+    video.poster = video.dataset.poster;
+    video.closest('.project-visual').style.backgroundImage = `url("${video.dataset.poster}")`;
+  }
   if (
     !motionEnabled() ||
     document.hidden ||
@@ -187,7 +192,13 @@ function updateVideo(video) {
     video.pause();
     return;
   }
-  if (!video.src) video.src = video.dataset.src;
+  if (!video.src && !video.querySelector('source')) {
+    // These decorative loops contain no text; smaller frames avoid downloading
+    // desktop-resolution media on phones while preserving the motion and timing.
+    const source = video.dataset.src;
+    video.src = matchMedia('(max-width: 600px)').matches
+      ? source.replace('.mp4', '-mobile.mp4') : source;
+  }
   video.play().catch(() => {
     /* The poster remains visible when autoplay is unavailable. */
   });
@@ -270,11 +281,13 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
   let centers = [], bounds;
+  let visible = false, ambientTimer = 0, ambientStarted = 0;
   const finishEntrance = () => {
     if (title.classList.contains('name-ready')) return;
     title.classList.add('name-ready');
     title.dispatchEvent(new Event('title-ready'));
     refreshPointer();
+    scheduleAmbient();
   };
   const onEntranceEnd = event => {
     if (event.animationName === 'name-form' &&
@@ -287,11 +300,18 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
     frame = 0;
     const dt = Math.max(0, Math.min((time - previous) / 1000, .05));
     previous = time;
-    let moving = false;
+    if (ambientStarted && (active || !motionEnabled() || document.hidden || time - ambientStarted > 1950)) {
+      ambientStarted = 0;
+      scheduleAmbient();
+    }
+    let moving = Boolean(ambientStarted);
     values.forEach((value, index) => {
-      const target = motionEnabled() ? value.target : 0;
-      // Follow immediately, with only a short time-based smoothing of the motion.
-      value.y += (target - value.y) * (1 - Math.exp(-40 * dt));
+      const phase = ambientStarted ? (time - ambientStarted - index / Math.max(1, values.length - 1) * 650) / 1300 : 0;
+      const drift = phase > 0 && phase < 1 ? -3.5 * Math.sin(Math.PI * phase) ** 2 : 0;
+      const target = motionEnabled() ? value.target + (active ? 0 : drift) : 0;
+      // Keep the initial mouse response quick, then let letters ease home gently.
+      const rate = active && target < value.y ? 40 : 9.5;
+      value.y += (target - value.y) * (1 - Math.exp(-rate * dt));
       if (Math.abs(value.y - target) > .025) moving = true;
       else value.y = target;
       // Independent transforms let hover respond even during the entrance animation.
@@ -299,6 +319,32 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
     });
     if (moving) frame = requestAnimationFrame(settle);
   }
+  function scheduleAmbient() {
+    clearTimeout(ambientTimer);
+    if (!visible || document.hidden || !motionEnabled()) return;
+    ambientTimer = setTimeout(() => {
+      if (!active && title.classList.contains('name-ready') && visible && !document.hidden && motionEnabled()) {
+        ambientStarted = performance.now();
+        start();
+      } else scheduleAmbient();
+    }, 7000 + Math.random() * 4000);
+  }
+  function syncAmbient() {
+    ambientStarted = 0;
+    scheduleAmbient();
+    if (!motionEnabled() || document.hidden || !visible) {
+      cancelAnimationFrame(frame); frame = 0;
+      active = false;
+      values.forEach((value, i) => { value.y = value.target = 0; letters[i].style.translate = '0 0px'; });
+    }
+  }
+  const visibilityObserver = new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+    syncAmbient();
+  });
+  visibilityObserver.observe(title);
+  document.addEventListener('visibilitychange', syncAmbient);
+  document.addEventListener('portfolio-motion-change', syncAmbient);
   function start() { if (!frame) { previous = performance.now(); frame = requestAnimationFrame(settle); } }
   function measure() {
     bounds = title.getBoundingClientRect();
@@ -310,18 +356,17 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
   }
   function move(e) {
     if (!motionEnabled() || e.pointerType !== 'mouse') return;
-    // Only measure letters inside the footer's moving hit area, never on every page move.
-    if (!entrance) { bounds = title.getBoundingClientRect(); centers = []; }
     if (!bounds) bounds = title.getBoundingClientRect();
     const inside = e.clientX >= bounds.left && e.clientX <= bounds.right &&
       e.clientY >= bounds.top && e.clientY <= bounds.bottom;
     if (!inside) { if (active) leave(); return; }
     if (!centers.length) measure();
+    if (!active) { ambientStarted = 0; clearTimeout(ambientTimer); }
     active = true;
     values.forEach((value, i) => {value.target = -19 * Math.exp(-(((e.clientX - centers[i].x) / 100) ** 2 + ((e.clientY - centers[i].y) / 95) ** 2));});
     start();
   }
-  function leave() { active = false; values.forEach(v => v.target = 0); start(); }
+  function leave() { active = false; values.forEach(v => v.target = 0); start(); scheduleAmbient(); }
   function refreshPointer() { bounds = undefined; centers = []; if (mousePosition) move(mousePosition); }
   let disposed = false;
   document.addEventListener('pointermove', move, { capture: true, passive: true });
@@ -333,6 +378,10 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
   refreshPointer();
   return () => {
     disposed = true;
+    clearTimeout(ambientTimer);
+    visibilityObserver.disconnect();
+    document.removeEventListener('visibilitychange', syncAmbient);
+    document.removeEventListener('portfolio-motion-change', syncAmbient);
     cancelAnimationFrame(frame);
     title.removeEventListener('animationend', onEntranceEnd);
     title.removeEventListener('animationcancel', onEntranceEnd);
@@ -344,31 +393,37 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
   };
 }
 
+// A footer gets one color pass per route for the lifetime of this visit.
+const coloredFooters = new Set();
 function initFooter() {
   const brand = document.querySelector('.footer-brand');
   if (!brand) return () => {};
-  const footer = brand.closest('.site-footer');
   const disposeHover = initName(brand.querySelector('.footer-wordmark'), false);
-  let played = false;
-  const reset = () => {
-    played = false;
-    brand.classList.remove('logo-playing');
+  const route = normalize(location.pathname);
+  brand.classList.remove('logo-playing', 'color-sweep');
+  brand.querySelectorAll('.monogram-s, .monogram-m, .name-char').forEach((letter, index) => {
+    letter.style.setProperty('--sweep-delay', `${index * 38}ms`);
+  });
+  let visible = false;
+  const play = () => {
+    if (!visible || document.hidden || !motionEnabled() || coloredFooters.has(route)) return;
+    coloredFooters.add(route);
+    brand.classList.add('color-sweep');
   };
   const observer = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      // Let the signature finish naturally; re-arm only after the entire footer leaves.
-      if (entry.target === footer) {
-        if (!entry.isIntersecting) reset();
-        continue;
-      }
-      if (!entry.isIntersecting || entry.intersectionRatio < .75 || played || !motionEnabled()) continue;
-      played = true;
-      brand.classList.add('logo-playing');
-    }
+    visible = entries[0].isIntersecting && entries[0].intersectionRatio >= .75;
+    play();
   }, { threshold: [0, .75] });
-  observer.observe(footer);
   observer.observe(brand);
-  return () => { observer.disconnect(); reset(); disposeHover(); };
+  document.addEventListener('portfolio-motion-change', play);
+  document.addEventListener('visibilitychange', play);
+  return () => {
+    observer.disconnect();
+    document.removeEventListener('portfolio-motion-change', play);
+    document.removeEventListener('visibilitychange', play);
+    brand.classList.remove('color-sweep');
+    disposeHover();
+  };
 }
 
 function initScrollCopy() {
@@ -697,10 +752,14 @@ function initPage() {
     videoObserver = new IntersectionObserver(
       (entries) =>
         entries.forEach((entry) => {
-          entry.target.dataset.visible = String(entry.isIntersecting);
+          entry.target.dataset.inView = String(entry.isIntersecting);
+          // Show the poster as soon as a card enters. Start a new download only
+          // once enough of it is visible; already loaded films keep playing.
+          entry.target.dataset.visible = String(entry.isIntersecting &&
+            (Boolean(entry.target.currentSrc) || entry.intersectionRatio >= .35));
           updateVideo(entry.target);
         }),
-      { rootMargin: "80px", threshold: 0 },
+      { threshold: [0, .35] },
     );
     document
       .querySelectorAll(".project-film")
@@ -729,6 +788,21 @@ function initPage() {
   document.querySelectorAll(".gallery-image").forEach((button) =>
     button.addEventListener("click", () => openViewer(button)),
   );
+  document.querySelectorAll('.video-preview[data-video-id]').forEach(preview => {
+    preview.addEventListener('click', event => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      const iframe = document.createElement('iframe');
+      iframe.title = preview.getAttribute('aria-label');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(preview.dataset.videoId)}?rel=0&autoplay=1`;
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.width = '1280'; iframe.height = '720';
+      preview.replaceWith(iframe);
+      iframe.focus();
+    });
+  });
   document
     .querySelector("#contactForm")
     ?.addEventListener("submit", submitContact);
@@ -822,6 +896,14 @@ async function openViewer(button) {
       { transform: viewerTransform(sourceRect), borderRadius: '16px' },
       { transform: 'none', borderRadius: '4px' },
     ], { duration: wasOpen ? 280 : 650, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'both' });
+  }
+  // Open immediately from the cached preview, then sharpen it with the original.
+  if (image.currentSrc && image.currentSrc !== image.src) {
+    const fullImage = new Image();
+    fullImage.src = image.src;
+    fullImage.decode().then(() => {
+      if (token === viewerToken && dialog.open) viewerImage.src = fullImage.src;
+    }).catch(() => {});
   }
 }
 async function closeViewer(immediate = false) {
@@ -935,17 +1017,10 @@ async function navigate(url, { pop = false, key, point } = {}) {
     }
     currentKey = key || crypto.randomUUID();
     document.title = next.title;
-    for (const selector of [
-      'meta[name="description"]',
-      'link[rel="canonical"]',
-      'meta[property="og:title"]',
-      'meta[property="og:url"]',
-      'meta[property="og:description"]',
-    ]) {
-      const replacement = next.querySelector(selector),
-        existing = document.querySelector(selector);
-      if (replacement && existing) existing.replaceWith(replacement);
-    }
+    // Keep sharing metadata and structured data in sync with client-side routes.
+    const metadata = 'meta[name="description"], meta[name="robots"], link[rel="canonical"], meta[property^="og:"], meta[name^="twitter:"], script[type="application/ld+json"]';
+    document.head.querySelectorAll(metadata).forEach(node => node.remove());
+    next.head.querySelectorAll(metadata).forEach(node => document.head.append(node));
     // Prepare the new DOM invisibly; no uninitialized content can flash on screen.
     nextMain.classList.add('route-preparing');
     oldMain.replaceWith(nextMain);

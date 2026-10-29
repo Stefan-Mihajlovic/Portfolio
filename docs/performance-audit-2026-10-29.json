@@ -1,0 +1,1262 @@
+{
+  "production": [
+    {
+      "route": "/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:45:44.499Z",
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 936.4012,
+        "largest-contentful-paint": 3677.1018000000004,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1092.0399926513085,
+        "total-byte-weight": 543424
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:45:55.201Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 248.8182,
+        "largest-contentful-paint": 741.2272999999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 426.8629255620001,
+        "total-byte-weight": 1140412
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/projects/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:00.841Z",
+      "scores": {
+        "performance": 84,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1087.3075,
+        "largest-contentful-paint": 4576.96125,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1105.4290937966905,
+        "total-byte-weight": 1144170
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/projects/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:06.557Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 288.7954,
+        "largest-contentful-paint": 560.7954,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 400.1274717325307,
+        "total-byte-weight": 1187403
+      },
+      "warnings": [],
+      "failures": []
+    },
+    {
+      "route": "/about/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:12.386Z",
+      "scores": {
+        "performance": 89,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1103.2915,
+        "largest-contentful-paint": 3752.5830000000005,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1211.170824491203,
+        "total-byte-weight": 495685
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/about/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:18.061Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 289.9571,
+        "largest-contentful-paint": 741.4356499999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 453.4747613365091,
+        "total-byte-weight": 495685
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/skills/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:23.742Z",
+      "scores": {
+        "performance": 94,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 926.0912000000001,
+        "largest-contentful-paint": 3151.0912,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1030.0709780056447,
+        "total-byte-weight": 383479
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/skills/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:29.215Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 246.88049999999998,
+        "largest-contentful-paint": 660.8805,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 420.008420917947,
+        "total-byte-weight": 383479
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:34.721Z",
+      "scores": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 925.847,
+        "largest-contentful-paint": 3000.8469999999998,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1042.9844640015108,
+        "total-byte-weight": 368510
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:40.121Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 246.8003,
+        "largest-contentful-paint": 600.8003,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 447.8937830811918,
+        "total-byte-weight": 368510
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/crimson-music/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:45.602Z",
+      "scores": {
+        "performance": 93,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 940.9105999999999,
+        "largest-contentful-paint": 3226.3659000000002,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1216.7788565374312,
+        "total-byte-weight": 426463
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/crimson-music/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:51.148Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 249.8218,
+        "largest-contentful-paint": 661.2327,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 468.92839387822494,
+        "total-byte-weight": 465231
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/optiflowz/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:46:56.768Z",
+      "scores": {
+        "performance": 94,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 942.0844,
+        "largest-contentful-paint": 3152.1688000000004,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1117.4805054004746,
+        "total-byte-weight": 405519
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/optiflowz/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:02.330Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 250.8809,
+        "largest-contentful-paint": 621.3213499999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 412.39084407159567,
+        "total-byte-weight": 405519
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/eaes-video-corner/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:07.977Z",
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 928.2080000000001,
+        "largest-contentful-paint": 3377.416,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1223.674523211927,
+        "total-byte-weight": 454646
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/eaes-video-corner/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:13.493Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 245.6909,
+        "largest-contentful-paint": 661.03635,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 497.5462464183056,
+        "total-byte-weight": 468004
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/stefans-spinners/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:19.071Z",
+      "scores": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 945.2333000000001,
+        "largest-contentful-paint": 3001.84995,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1285.747114011709,
+        "total-byte-weight": 389793
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/stefans-spinners/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:24.664Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 251.79579999999999,
+        "largest-contentful-paint": 621.1937,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 442.337357425262,
+        "total-byte-weight": 393762
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/palette-pilot/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:30.301Z",
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 946.0145,
+        "largest-contentful-paint": 3377.0290000000005,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1139.0408829965443,
+        "total-byte-weight": 452866
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/palette-pilot/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:35.905Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 252.8089,
+        "largest-contentful-paint": 641.21335,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 433.93049433212764,
+        "total-byte-weight": 467634
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/tab-volume-manager/",
+      "mode": "mobile",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:41.580Z",
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 945.0262,
+        "largest-contentful-paint": 3602.0524000000005,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1387.0720420202686,
+        "total-byte-weight": 506552
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/tab-volume-manager/",
+      "mode": "desktop",
+      "version": "13.6.0",
+      "timestamp": "2026-10-29T09:47:47.174Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "agentic-browsing": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 251.8422,
+        "largest-contentful-paint": 701.2633000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 509.10917150972773,
+        "total-byte-weight": 542272
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    }
+  ],
+  "controlledBefore": [
+    {
+      "route": "/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:23:33.925Z",
+      "scores": {
+        "performance": 76,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 979.3146250000001,
+        "largest-contentful-paint": 8103.4517,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1047.2464379042076,
+        "total-byte-weight": 1970427
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/projects/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:23:44.741Z",
+      "scores": {
+        "performance": 75,
+        "accessibility": 98,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 977.157625,
+        "largest-contentful-paint": 10651.7261,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1022.0468510880528,
+        "total-byte-weight": 3415418
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint",
+        "heading-order"
+      ]
+    },
+    {
+      "route": "/about/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:23:50.679Z",
+      "scores": {
+        "performance": 75,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1126.6905000000002,
+        "largest-contentful-paint": 8476.3524,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1221.971703681313,
+        "total-byte-weight": 1505820
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/skills/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:23:56.392Z",
+      "scores": {
+        "performance": 84,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1080.2954499999998,
+        "largest-contentful-paint": 4576.530299999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1095.8089168119943,
+        "total-byte-weight": 650047
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:24:01.870Z",
+      "scores": {
+        "performance": 82,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1081.8978,
+        "largest-contentful-paint": 4876.2652,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1139.9221224731073,
+        "total-byte-weight": 1377993
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/crimson-music/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:24:07.351Z",
+      "scores": {
+        "performance": 76,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1090.986,
+        "largest-contentful-paint": 7201.3240000000005,
+        "total-blocking-time": 82,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1403.0623451066242,
+        "total-byte-weight": 1230433
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint",
+        "total-blocking-time"
+      ]
+    },
+    {
+      "route": "/case-studies/stefans-spinners/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:24:13.099Z",
+      "scores": {
+        "performance": 83,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 976.72775,
+        "largest-contentful-paint": 4727.7644,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1261.8701532464977,
+        "total-byte-weight": 715650
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    }
+  ],
+  "controlledAfter": [
+    {
+      "route": "/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:10.023Z",
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 937.9936,
+        "largest-contentful-paint": 3676.4903999999997,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1084.826199871423,
+        "total-byte-weight": 543417
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:20.797Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 248.8431,
+        "largest-contentful-paint": 741.2646500000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 428.80342306509135,
+        "total-byte-weight": 1140405
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/projects/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:26.467Z",
+      "scores": {
+        "performance": 84,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1085.9975,
+        "largest-contentful-paint": 4576.496249999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1112.6391449780153,
+        "total-byte-weight": 1144161
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/projects/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:32.341Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 288.8081,
+        "largest-contentful-paint": 780.8081000000001,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 407.87081206795943,
+        "total-byte-weight": 1187394
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/about/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:38.434Z",
+      "scores": {
+        "performance": 89,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 1100.2246,
+        "largest-contentful-paint": 3752.4492000000005,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1197.720848491543,
+        "total-byte-weight": 495692
+      },
+      "warnings": [],
+      "failures": [
+        "first-contentful-paint",
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/about/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:44.125Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 292.9045,
+        "largest-contentful-paint": 761.809,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 469.3710430809041,
+        "total-byte-weight": 495692
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/skills/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:49.850Z",
+      "scores": {
+        "performance": 94,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 923.2931000000001,
+        "largest-contentful-paint": 3151.2931,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1029.7850419955457,
+        "total-byte-weight": 383469
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/skills/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:36:55.387Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 248.01229999999998,
+        "largest-contentful-paint": 661.0122999999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 426.66470299368746,
+        "total-byte-weight": 383469
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:00.967Z",
+      "scores": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 928.9315999999999,
+        "largest-contentful-paint": 3000.9316,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1053.39214482264,
+        "total-byte-weight": 368504
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/contact/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:06.500Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 246.7654,
+        "largest-contentful-paint": 600.7654,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 448.8727815004413,
+        "total-byte-weight": 368504
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/crimson-music/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:12.049Z",
+      "scores": {
+        "performance": 93,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 933.2233000000001,
+        "largest-contentful-paint": 3226.8349500000004,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1231.1150239993108,
+        "total-byte-weight": 426457
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/crimson-music/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:17.691Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 249.81029999999998,
+        "largest-contentful-paint": 661.2154499999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 469.6384862880109,
+        "total-byte-weight": 465225
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/optiflowz/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:23.383Z",
+      "scores": {
+        "performance": 94,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 941.2329,
+        "largest-contentful-paint": 3152.4658,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1125.7171099874413,
+        "total-byte-weight": 405513
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/optiflowz/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:29.016Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 250.7364,
+        "largest-contentful-paint": 641.4728,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 427.7778530881185,
+        "total-byte-weight": 405513
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/eaes-video-corner/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:34.700Z",
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 931.0606,
+        "largest-contentful-paint": 3301.5909,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1211.1704273264268,
+        "total-byte-weight": 454639
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/eaes-video-corner/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:40.266Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 248.7518,
+        "largest-contentful-paint": 661.1277,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 495.0951221283316,
+        "total-byte-weight": 467997
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/stefans-spinners/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:45.892Z",
+      "scores": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 944.8966,
+        "largest-contentful-paint": 3001.3449,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1272.9901584277886,
+        "total-byte-weight": 389787
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/stefans-spinners/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:51.564Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 251.7844,
+        "largest-contentful-paint": 621.1766,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 438.21701567524633,
+        "total-byte-weight": 393756
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/palette-pilot/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:37:57.291Z",
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 948.3234,
+        "largest-contentful-paint": 3377.6468000000004,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1139.910386509198,
+        "total-byte-weight": 452859
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/palette-pilot/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:38:02.994Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 251.86520000000002,
+        "largest-contentful-paint": 641.2977999999999,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 429.6156994267062,
+        "total-byte-weight": 467627
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/tab-volume-manager/",
+      "mode": "mobile",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:38:08.741Z",
+      "scores": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 937.1964,
+        "largest-contentful-paint": 3602.3927999999996,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 1405.3383759966173,
+        "total-byte-weight": 506542
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    },
+    {
+      "route": "/case-studies/tab-volume-manager/",
+      "mode": "desktop",
+      "version": "12.8.2",
+      "timestamp": "2026-10-29T09:38:14.465Z",
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "metrics": {
+        "first-contentful-paint": 251.7871,
+        "largest-contentful-paint": 701.18065,
+        "total-blocking-time": 0,
+        "cumulative-layout-shift": 0,
+        "speed-index": 513.1480468396079,
+        "total-byte-weight": 532334
+      },
+      "warnings": [],
+      "failures": [
+        "largest-contentful-paint"
+      ]
+    }
+  ]
+}

@@ -32,7 +32,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
     });
   });
   const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("pageerror", (error) => errors.push(error.stack || error.message));
   page.on("response", (response) => {
     if (response.status() >= 400 && !response.url().includes("/.netlify/"))
       errors.push(`${response.status()} ${response.url()}`);

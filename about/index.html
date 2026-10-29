@@ -14,7 +14,7 @@
     <meta content="#08090b" name="theme-color" />
     <link href="https://stefanmihajlovic.com/about/" rel="canonical" />
     <link href="/site.webmanifest" rel="manifest" />
-    <link href="/images/favicon.png?v=3" rel="apple-touch-icon" />
+    <link href="/images/apple-touch-icon.png?v=1" rel="apple-touch-icon" />
     <meta content="profile" property="og:type" />
     <meta content="Stefan Mihajlovic" property="og:site_name" />
     <meta
@@ -58,9 +58,9 @@
       name="twitter:image:alt"
     />
     <link
-      href="/images/favicon.png?v=3"
+      href="/images/favicon-32.png?v=1"
       rel="icon"
-      sizes="512x512"
+      sizes="32x32"
       type="image/png"
     />
     <script type="application/ld+json">
@@ -99,9 +99,9 @@
         if (!document.documentElement.dataset.motionReady) document.documentElement.classList.remove('js-motion');
       }, 4500);
     </script>
-    <link href="/portfolio.css?v=20261024-6" rel="stylesheet" />
+    <link href="/assets/build/portfolio.min.css?v=20261029-1" rel="stylesheet" />
     <script defer="" src="/vendor/lenis/lenis.min.js"></script>
-    <script src="/portfolio.js?v=20261024-3" type="module"></script>
+    <script src="/assets/build/portfolio.min.js?v=20261029-1" type="module"></script>
     <noscript
       ><style>
         .project-film { display: none; }
@@ -175,15 +175,15 @@
         </section>
         <section class="portrait-strip" aria-label="A few sides of me">
           <figure class="portrait-note portrait-offline reveal">
-            <img src="/images/meSleeping.webp" alt="Stefan asleep in a chair by the window" width="900" height="900" loading="lazy">
+            <img src="/images/meSleeping.webp" alt="Stefan asleep in a chair by the window" width="900" height="900" loading="lazy" srcset="/images/responsive/meSleeping-400.webp 400w, /images/responsive/meSleeping-800.webp 800w, /images/meSleeping.webp 900w" sizes="(max-width: 600px) calc((100vw - 54px) / 2), 300px" decoding="async" />
             <figcaption>Me, in low-power mode.</figcaption>
           </figure>
           <figure class="portrait-main reveal">
-            <img src="/images/mePhoto.webp" alt="Stefan Mihajlovic, looking unusually formal" width="1920" height="1833" fetchpriority="high">
+            <picture data-responsive-portrait><source type="image/avif" srcset="/images/responsive/mePhoto-400.avif 400w, /images/responsive/mePhoto-800.avif 800w, /images/responsive/mePhoto-1200.avif 1200w" sizes="(max-width: 600px) calc(100vw - 36px), 420px"><img src="/images/mePhoto.webp" alt="Stefan Mihajlovic, looking unusually formal" width="1920" height="1833" fetchpriority="high" srcset="/images/responsive/mePhoto-160.webp 160w, /images/responsive/mePhoto-400.webp 400w, /images/responsive/mePhoto-800.webp 800w, /images/responsive/mePhoto-1200.webp 1200w, /images/mePhoto.webp 1920w" sizes="(max-width: 600px) calc(100vw - 36px), 420px" decoding="async" /></picture>
             <figcaption>Yes, I do occasionally wear a tie.</figcaption>
           </figure>
           <figure class="portrait-note portrait-director reveal">
-            <img src="/images/catPortrait.webp" alt="Stefan’s orange cat by the window" width="900" height="1200" loading="lazy">
+            <img src="/images/catPortrait.webp" alt="Stefan’s orange cat by the window" width="900" height="900" loading="lazy" srcset="/images/responsive/catPortrait-400.webp 400w, /images/responsive/catPortrait-800.webp 800w, /images/catPortrait.webp 900w" sizes="(max-width: 600px) calc((100vw - 54px) / 2), 300px" decoding="async" />
             <figcaption>My creative director.<br>Feedback is mostly meowing.</figcaption>
           </figure>
         </section>

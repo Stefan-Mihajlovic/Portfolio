@@ -14,7 +14,7 @@
     <meta content="#08090b" name="theme-color" />
     <link href="https://stefanmihajlovic.com/projects/" rel="canonical" />
     <link href="/site.webmanifest" rel="manifest" />
-    <link href="/images/favicon.png?v=3" rel="apple-touch-icon" />
+    <link href="/images/apple-touch-icon.png?v=1" rel="apple-touch-icon" />
     <meta content="website" property="og:type" />
     <meta content="Stefan Mihajlovic" property="og:site_name" />
     <meta
@@ -56,9 +56,9 @@
       name="twitter:image:alt"
     />
     <link
-      href="/images/favicon.png?v=3"
+      href="/images/favicon-32.png?v=1"
       rel="icon"
-      sizes="512x512"
+      sizes="32x32"
       type="image/png"
     />
     <script type="application/ld+json">
@@ -162,12 +162,13 @@
         if (!document.documentElement.dataset.motionReady) document.documentElement.classList.remove('js-motion');
       }, 4500);
     </script>
-    <link href="/portfolio.css?v=20261024-6" rel="stylesheet" />
+    <link href="/assets/build/portfolio.min.css?v=20261029-1" rel="stylesheet" />
     <script defer="" src="/vendor/lenis/lenis.min.js"></script>
-    <script src="/portfolio.js?v=20261024-3" type="module"></script>
+    <script src="/assets/build/portfolio.min.js?v=20261029-1" type="module"></script>
     <noscript
       ><style>
         .project-film { display: none; }
+        .project-visual { background-image: var(--project-poster); }
         .name-char, .hero-details { animation: none; }
         @media (max-width: 600px) {
           .site-header nav {
@@ -234,6 +235,7 @@
       <div class="page-content">
         <section class="page-intro reveal"><h1 aria-label="Projects"><span class="title-word" aria-hidden="true"><span class="name-char" style="--char:0">P</span><span class="name-char" style="--char:1">r</span><span class="name-char" style="--char:2">o</span><span class="name-char name-star-j" style="--char:3"><span class="j-stem">j</span><svg class="name-spark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 0C18 11 21 14 32 16C21 18 18 21 16 32C14 21 11 18 0 16C11 14 14 11 16 0Z" fill="currentColor"/></svg></span><span class="name-char" style="--char:4">e</span><span class="name-char" style="--char:5">c</span><span class="name-char" style="--char:6">t</span><span class="name-char" style="--char:7">s</span></span></h1></section>
         <section aria-label="All projects" class="work-section all-projects">
+          <h2 class="sr-only">All projects</h2>
           <article class="work-card reveal">
             <a
               aria-label="Explore Crimson Music"
@@ -251,18 +253,17 @@
                 muted=""
                 playsinline=""
                 poster="/assets/motion/violet.webp"
-                preload="none"
+                preload="metadata"
                 tabindex="-1"
-              ></video>
+              ><source src="/assets/motion/violet-mobile.mp4" type="video/mp4" media="(prefers-reduced-motion: no-preference) and (max-width: 600px)"><source src="/assets/motion/violet.mp4" type="video/mp4" media="(prefers-reduced-motion: no-preference) and (min-width: 601px)"></video>
               <div aria-hidden="true" class="film-grain"></div>
               <div class="project-image">
                 <img
                   alt="Crimson Music project preview"
-                  height="844"
+                  height="1294"
                   loading="lazy"
                   src="/images/crimsonMusicScreenshot1.webp"
-                  width="1500"
-                />
+                  width="2300" srcset="/images/responsive/crimsonMusicScreenshot1-400.webp 400w, /images/responsive/crimsonMusicScreenshot1-800.webp 800w, /images/responsive/crimsonMusicScreenshot1-1200.webp 1200w, /images/crimsonMusicScreenshot1.webp 2300w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>React Native</span><span>Expo</span><span>TypeScript</span><span>Audius API</span></span><span class="project-tags-group"><span>React Native</span><span>Expo</span><span>TypeScript</span><span>Audius API</span></span></div></div>
               </a>
@@ -288,7 +289,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/blue.webp"
+                data-poster="/assets/motion/blue.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -299,8 +300,7 @@
                   height="844"
                   loading="lazy"
                   src="/images/optiflowzScreenshot1.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/optiflowzScreenshot1-400.webp 400w, /images/responsive/optiflowzScreenshot1-800.webp 800w, /images/responsive/optiflowzScreenshot1-1200.webp 1200w, /images/optiflowzScreenshot1.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Next.js</span><span>React</span><span>UI/UX</span><span>Design</span></span><span class="project-tags-group"><span>Next.js</span><span>React</span><span>UI/UX</span><span>Design</span></span></div></div>
               </a>
@@ -326,7 +326,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/magenta.webp"
+                data-poster="/assets/motion/magenta.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -337,8 +337,7 @@
                   height="941"
                   loading="lazy"
                   src="/assets/covers/palette-pilot-ui.webp?v=2"
-                  width="1672"
-                />
+                  width="1672" srcset="/images/responsive/palette-pilot-ui-400.webp 400w, /images/responsive/palette-pilot-ui-800.webp 800w, /images/responsive/palette-pilot-ui-1200.webp 1200w, /assets/covers/palette-pilot-ui.webp 1672w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Browser Extension</span><span>JavaScript</span><span>Color Tools</span><span>Accessibility</span></span><span class="project-tags-group"><span>Browser Extension</span><span>JavaScript</span><span>Color Tools</span><span>Accessibility</span></span></div></div>
               </a>
@@ -364,7 +363,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/silver.webp"
+                data-poster="/assets/motion/silver.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -372,11 +371,10 @@
               <div class="project-image">
                 <img
                   alt="EAES Video Corner project preview"
-                  height="844"
+                  height="845"
                   loading="lazy"
                   src="/images/eaesBanner.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/eaesBanner-400.webp 400w, /images/responsive/eaesBanner-800.webp 800w, /images/responsive/eaesBanner-1200.webp 1200w, /images/eaesBanner.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>React</span><span>Tailwind CSS</span><span>MUX Video API</span><span>UI/UX</span></span><span class="project-tags-group"><span>React</span><span>Tailwind CSS</span><span>MUX Video API</span><span>UI/UX</span></span></div></div>
               </a>
@@ -402,7 +400,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/silver.webp"
+                data-poster="/assets/motion/silver.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -413,8 +411,7 @@
                   height="1000"
                   loading="lazy"
                   src="/images/stefans-spinners-gallery.webp?v=3"
-                  width="1600"
-                />
+                  width="1600" srcset="/images/responsive/stefans-spinners-gallery-400.webp 400w, /images/responsive/stefans-spinners-gallery-800.webp 800w, /images/responsive/stefans-spinners-gallery-1200.webp 1200w, /images/stefans-spinners-gallery.webp 1600w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>React</span><span>CSS animation</span><span>TypeScript</span><span>Developer tools</span></span><span class="project-tags-group"><span>React</span><span>CSS animation</span><span>TypeScript</span><span>Developer tools</span></span></div></div>
               </a>
@@ -442,7 +439,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/health.webp"
+                data-poster="/assets/motion/health.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -453,8 +450,7 @@
                   height="844"
                   loading="lazy"
                   src="/images/HealthPlusBanner.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/HealthPlusBanner-400.webp 400w, /images/responsive/HealthPlusBanner-800.webp 800w, /images/responsive/HealthPlusBanner-1200.webp 1200w, /images/HealthPlusBanner.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Healthcare</span><span>Education Platform</span><span>UI/UX</span><span>Web Development</span></span><span class="project-tags-group"><span>Healthcare</span><span>Education Platform</span><span>UI/UX</span><span>Web Development</span></span></div></div>
               </a>
@@ -482,7 +478,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/cobalt.webp"
+                data-poster="/assets/motion/cobalt.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -493,8 +489,7 @@
                   height="941"
                   loading="lazy"
                   src="/assets/covers/tab-volume-manager-ui.webp?v=2"
-                  width="1672"
-                />
+                  width="1672" srcset="/images/responsive/tab-volume-manager-ui-400.webp 400w, /images/responsive/tab-volume-manager-ui-800.webp 800w, /images/responsive/tab-volume-manager-ui-1200.webp 1200w, /assets/covers/tab-volume-manager-ui.webp 1672w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Browser Extension</span><span>JavaScript</span><span>Web Audio API</span><span>Audio Tools</span></span><span class="project-tags-group"><span>Browser Extension</span><span>JavaScript</span><span>Web Audio API</span><span>Audio Tools</span></span></div></div>
               </a>
@@ -524,7 +519,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/violet.webp"
+                data-poster="/assets/motion/violet.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -535,8 +530,7 @@
                   height="941"
                   loading="lazy"
                   src="/assets/covers/font-pirate-ui.webp?v=2"
-                  width="1672"
-                />
+                  width="1672" srcset="/images/responsive/font-pirate-ui-400.webp 400w, /images/responsive/font-pirate-ui-800.webp 800w, /images/responsive/font-pirate-ui-1200.webp 1200w, /assets/covers/font-pirate-ui.webp 1672w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Browser Extension</span><span>Typography</span><span>JavaScript</span></span><span class="project-tags-group"><span>Browser Extension</span><span>Typography</span><span>JavaScript</span></span></div></div>
               </a>
@@ -564,7 +558,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/lime.webp"
+                data-poster="/assets/motion/lime.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -575,8 +569,7 @@
                   height="844"
                   loading="lazy"
                   src="/images/KrunaBojeBanner.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/KrunaBojeBanner-400.webp 400w, /images/responsive/KrunaBojeBanner-800.webp 800w, /images/responsive/KrunaBojeBanner-1200.webp 1200w, /images/KrunaBojeBanner.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>WordPress</span><span>PHP</span><span>SEO</span><span>Content Architecture</span></span><span class="project-tags-group"><span>WordPress</span><span>PHP</span><span>SEO</span><span>Content Architecture</span></span></div></div>
               </a>
@@ -604,7 +597,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/orange.webp"
+                data-poster="/assets/motion/orange.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -612,11 +605,10 @@
               <div class="project-image">
                 <img
                   alt="Room Rule project preview"
-                  height="844"
+                  height="714"
                   loading="lazy"
                   src="/images/roomRuleBanner.webp"
-                  width="1500"
-                />
+                  width="1242" srcset="/images/responsive/roomRuleBanner-400.webp 400w, /images/responsive/roomRuleBanner-800.webp 800w, /images/responsive/roomRuleBanner-1200.webp 1200w, /images/roomRuleBanner.webp 1242w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>Mobile App</span><span>Capacitor JS</span><span>PWA</span><span>Firebase</span></span><span class="project-tags-group"><span>Mobile App</span><span>Capacitor JS</span><span>PWA</span><span>Firebase</span></span></div></div>
               </a>
@@ -644,7 +636,7 @@
                 loop=""
                 muted=""
                 playsinline=""
-                poster="/assets/motion/teal.webp"
+                data-poster="/assets/motion/teal.webp"
                 preload="none"
                 tabindex="-1"
               ></video>
@@ -655,8 +647,7 @@
                   height="844"
                   loading="lazy"
                   src="/images/uehsBanner.webp"
-                  width="1500"
-                />
+                  width="1500" srcset="/images/responsive/uehsBanner-400.webp 400w, /images/responsive/uehsBanner-800.webp 800w, /images/responsive/uehsBanner-1200.webp 1200w, /images/uehsBanner.webp 1500w" sizes="(max-width: 600px) calc((100vw - 36px) * .84), (max-width: 1152px) calc((100vw - 112px) * .74), 770px" decoding="async" />
               </div>
             <div class="project-tags" aria-hidden="true"><div class="project-tags-track"><span class="project-tags-group"><span>WordPress</span><span>PHP</span><span>Fintech</span><span>Payment systems and security</span></span><span class="project-tags-group"><span>WordPress</span><span>PHP</span><span>Fintech</span><span>Payment systems and security</span></span></div></div>
               </a>

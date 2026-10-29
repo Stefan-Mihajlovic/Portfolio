@@ -84,7 +84,7 @@ const origin = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
       const Original = window.Lenis;
       window.Lenis = class extends Original { constructor(...args) { super(...args); window.lenisRestarts++; } };
     });
-    await page.locator('nav a[href="/projects/"]').click();
+    await page.locator('.site-header nav a[href="/projects/"]').click();
     await page.waitForURL('**/projects/');
     await page.waitForFunction(() => !document.body.classList.contains('in-transit'));
     assert.equal(await page.evaluate(() => lenisRestarts), 0, 'Navigation preserves scroll engine');

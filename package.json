@@ -1,0 +1,22 @@
+{
+  "devDependencies": {
+    "chrome-launcher": "1.2.2",
+    "esbuild": "0.25.12",
+    "lighthouse": "13.6.0",
+    "playwright": "1.56.1",
+    "sharp": "0.35.5"
+  },
+  "name": "stefan-portfolio",
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-assets.mjs",
+    "images": "node tools/build-images.cjs",
+    "test": "node tools/check-portfolio.cjs && node tools/check-seo.cjs",
+    "audit": "node tools/audit-lighthouse.mjs",
+    "preview": "node tools/preview.cjs",
+    "test:motion": "node tools/check-motion.cjs"
+  },
+  "engines": {
+    "node": ">=22.19"
+  }
+}
