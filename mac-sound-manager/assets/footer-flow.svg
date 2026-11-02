@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" preserveAspectRatio="none" fill="none">
+  <defs>
+    <linearGradient id="base" x1="800" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse"><stop stop-color="#f0f5f9"/><stop offset="1" stop-color="#dce8f3"/></linearGradient>
+    <linearGradient id="cyan" x1="30" y1="310" x2="1120" y2="560" gradientUnits="userSpaceOnUse"><stop stop-color="#53c6d6" stop-opacity=".7"/><stop offset=".48" stop-color="#91d9e5" stop-opacity=".34"/><stop offset="1" stop-color="#eef5fa" stop-opacity="0"/></linearGradient>
+    <linearGradient id="blue" x1="300" y1="570" x2="1320" y2="280" gradientUnits="userSpaceOnUse"><stop stop-color="#8caeeb" stop-opacity=".15"/><stop offset=".64" stop-color="#4864db" stop-opacity=".46"/><stop offset="1" stop-color="#adc6ec" stop-opacity=".18"/></linearGradient>
+    <linearGradient id="amber" x1="1170" y1="520" x2="1560" y2="160" gradientUnits="userSpaceOnUse"><stop stop-color="#efb64c" stop-opacity=".1"/><stop offset=".64" stop-color="#efbc64" stop-opacity=".65"/><stop offset="1" stop-color="#f7dda7" stop-opacity=".2"/></linearGradient>
+    <linearGradient id="silver" x1="620" y1="350" x2="700" y2="540" gradientUnits="userSpaceOnUse"><stop stop-color="#fff" stop-opacity=".8"/><stop offset="1" stop-color="#dce8f3" stop-opacity=".1"/></linearGradient>
+  </defs>
+  <path fill="url(#base)" d="M0 0h1600v520H0z"/>
+  <path d="M-100 125C170 130 280 383 620 417S1190 323 1700 420V620H-100Z" fill="url(#cyan)"/>
+  <path d="M-100 125C170 130 280 383 620 417S1190 323 1700 420" stroke="#fff" stroke-opacity=".45"/>
+  <path d="M-100 490C330 270 550 620 1010 387S1410 212 1700 285V620H-100Z" fill="url(#blue)"/>
+  <path d="M-100 490C330 270 550 620 1010 387S1410 212 1700 285" stroke="#fff" stroke-opacity=".5"/>
+  <path d="M800 560C1055 450 1235 460 1375 265S1550 132 1700 156V620H800Z" fill="url(#amber)"/>
+  <path d="M800 560C1055 450 1235 460 1375 265S1550 132 1700 156" stroke="#fff" stroke-opacity=".65"/>
+  <path d="M-100 365C270 575 490 360 850 469S1360 590 1700 388V620H-100Z" fill="url(#silver)"/>
+</svg>

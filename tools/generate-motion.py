@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import imageio_ffmpeg
 import subprocess
+import sys
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'assets/motion'; OUT.mkdir(parents=True,exist_ok=True)
 palettes={
@@ -18,17 +19,22 @@ palettes={
  'lime': ['050a01','234501','619e05','b4df67'],
  'orange': ['110500','672000','ed5600','ffb26a'],
  'teal': ['020b0c','063b40','16878c','83ced0'],
+ 'sound': ['071420','254cb1','55c6d6','efbd6b'],
 }
+selected=set(sys.argv[1:] or palettes)
+if selected - palettes.keys(): raise SystemExit('Unknown palette')
 w,h=960,540; fps=24; frames=fps*10
 x,y=np.meshgrid(np.linspace(-1.6,1.6,w,dtype=np.float32),np.linspace(-1,1,h,dtype=np.float32))
 # A fixed fine-grain plate keeps the loop seamless and compression efficient.
 rng=np.random.default_rng(8); grain=rng.normal(0,3.8,(h,w,1)).astype(np.float32)
 processes={}
 for name in palettes:
+ if name not in selected: continue
  processes[name]=subprocess.Popen([imageio_ffmpeg.get_ffmpeg_exe(),'-y','-loglevel','error','-f','rawvideo','-vcodec','rawvideo','-s',f'{w}x{h}','-pix_fmt','rgb24','-r',str(fps),'-i','-','-an','-c:v','libx264','-preset','fast','-crf','25','-pix_fmt','yuv420p','-movflags','+faststart',str(OUT/f'{name}.mp4')],stdin=subprocess.PIPE)
 for f in range(frames):
  t=f/frames*np.pi*2
  for seed,(name,colors) in enumerate(palettes.items()):
+  if name not in selected: continue
   phase=t+seed*.71
   angle=seed*.31
   xx=x*np.cos(angle)-y*np.sin(angle)

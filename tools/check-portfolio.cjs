@@ -98,7 +98,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.waitForURL("**/projects/");
   await page.waitForTimeout(1000);
   assert.deepEqual(await page.evaluate(() => window.transitionOverflow), [], 'Desktop transitions do not create horizontal scrolling');
-  assert.equal(await page.locator(".work-card").count(), 11);
+  assert.equal(await page.locator(".work-card").count(), 12);
   // Keep the persistent sky through page changes.
   await page
     .locator(".starfield")
@@ -190,7 +190,7 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   );
   assert.deepEqual(errors, []);
   console.log(
-    "PASS: 12 routes, local assets and links, 360px layouts, 3/11 projects, persistent sky, history restoration, gallery, mobile menu, reduced motion, and mocked form success/failure.",
+    "PASS: 12 routes, local assets and links, 360px layouts, 3/12 projects, persistent sky, history restoration, gallery, mobile menu, reduced motion, and mocked form success/failure.",
   );
   await browser.close();
 })().catch((error) => {

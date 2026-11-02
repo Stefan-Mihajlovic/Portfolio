@@ -1949,3 +1949,4 @@ body { position: relative; }
 @media (prefers-reduced-motion: reduce) {
   .footer-brand * { animation: none !important; }
 }
+

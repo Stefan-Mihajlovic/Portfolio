@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="100" viewBox="0 0 360 100" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="cyan" x1="0" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a4e4eb" stop-opacity=".85"/>
+      <stop offset=".45" stop-color="#53c6d6" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#4864db" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="30" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a7bdf0" stop-opacity=".75"/>
+      <stop offset=".5" stop-color="#6d8ce5" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#4864db" stop-opacity=".2"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0" y1="25" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f7dda7" stop-opacity=".8"/>
+      <stop offset=".5" stop-color="#efbc64" stop-opacity=".65"/>
+      <stop offset="1" stop-color="#efb64c" stop-opacity=".12"/>
+    </linearGradient>
+  </defs>
+  <path d="M0 45C60-15 120-15 180 45S300 105 360 45V100H0Z" fill="url(#cyan)"/>
+  <path d="M0 70C60 110 120 110 180 70S300 30 360 70V100H0Z" fill="url(#blue)"/>
+  <path d="M0 90C60 10 120 10 180 90S300 170 360 90V100H0Z" fill="url(#amber)"/>
+</svg>

@@ -29,7 +29,7 @@ console.log('Built portfolio CSS and JS (including the sky module).');
 const destination = path.join(root, 'dist');
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination);
-const directories = ['about', 'assets', 'case-studies', 'contact', 'crimson-music', 'eaes-video-corner', 'font-pirate', 'fonts', 'images', 'optiflowz', 'palette-pilot', 'privacypolicies', 'projects', 'resumes', 'skills', 'tab-volume-manager', 'vendor'];
+const directories = ['about', 'assets', 'case-studies', 'contact', 'crimson-music', 'eaes-video-corner', 'font-pirate', 'mac-sound-manager', 'fonts', 'images', 'optiflowz', 'palette-pilot', 'privacypolicies', 'projects', 'resumes', 'skills', 'tab-volume-manager', 'vendor'];
 for (const name of directories) await cp(path.join(root, name), path.join(destination, name), { recursive: true });
 for (const entry of await readdir(root, { withFileTypes: true })) {
   if (entry.isFile() && (/\.(html|css|js|xml|txt|webmanifest)$/.test(entry.name) || ['_headers', '_redirects'].includes(entry.name))) {
