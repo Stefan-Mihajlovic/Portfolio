@@ -113,11 +113,17 @@ function animateVisibleWaves(svg, draw) {
   const sections = [...document.querySelectorAll('.feature-section, .remember-section')];
   if (!sections.length) return;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const mobile = matchMedia('(max-width: 650px)');
   let frame = 0;
   const update = () => {
     frame = 0;
-    const mobile = innerWidth <= 650;
-    const limit = mobile ? 12 : 28;
+    if (mobile.matches || reducedMotion.matches) {
+      for (const section of sections) {
+        for (const element of section.children) element.style.removeProperty('--section-offset');
+      }
+      return;
+    }
+    const limit = 28;
     const positions = sections.map(section => {
       const rect = section.getBoundingClientRect();
       return { section, distance: innerHeight / 2 - (rect.top + rect.height / 2) };
@@ -125,8 +131,8 @@ function animateVisibleWaves(svg, draw) {
     for (const { section, distance } of positions) {
       for (const element of section.children) {
         const isImage = element.tagName === 'FIGURE';
-        const speed = isImage ? .065 : (mobile ? 0 : -.025);
-        const offset = reducedMotion.matches ? 0 : Math.max(-limit, Math.min(limit, distance * speed));
+        const speed = isImage ? .065 : -.025;
+        const offset = Math.max(-limit, Math.min(limit, distance * speed));
         element.style.setProperty('--section-offset', `${offset.toFixed(2)}px`);
       }
     }
@@ -134,10 +140,17 @@ function animateVisibleWaves(svg, draw) {
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(update);
   };
-  window.addEventListener('scroll', schedule, { passive: true });
+  const sync = () => {
+    window.removeEventListener('scroll', schedule);
+    if (!mobile.matches && !reducedMotion.matches) {
+      window.addEventListener('scroll', schedule, { passive: true });
+    }
+    schedule();
+  };
   window.addEventListener('resize', schedule);
-  window.addEventListener('pageshow', schedule);
-  reducedMotion.addEventListener('change', schedule);
+  window.addEventListener('pageshow', sync);
+  mobile.addEventListener('change', sync);
+  reducedMotion.addEventListener('change', sync);
   document.fonts.ready.then(schedule);
-  update();
+  sync();
 })();

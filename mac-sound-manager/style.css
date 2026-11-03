@@ -66,3 +66,8 @@ body:before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
   100%{transform:translateY(0);opacity:1}
 }
 @media(prefers-reduced-motion:reduce){.button:is(:hover,:focus-visible) .download-arrow{animation:none}}
+
+@media(max-width:650px){
+  .footer-waves{inset:auto 0 0;height:min(100%,300px);mask-image:linear-gradient(transparent,#000 25%)}
+  .feature-section>.feature-copy,.feature-section>figure,.remember-section>.feature-copy,.remember-section>figure{transform:none}
+}
