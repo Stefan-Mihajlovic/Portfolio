@@ -47,3 +47,11 @@ body:before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
 @media(prefers-reduced-motion:reduce){body:before{animation:none;transform:none}}
 
 .github-link{display:inline-flex;align-items:center;gap:8px}.github-icon{width:18px;height:18px;fill:currentColor;stroke:none}
+
+/* 0.4.0: new device features use the existing screenshot-and-copy rhythm. */
+.routing-section{padding-top:20px}.routing-scene{background:linear-gradient(145deg,#e1eaf3,#dce7ed 55%,#eaeef2)}
+.devices-scene{background:linear-gradient(150deg,#e3edf1,#d7e8ee 55%,#e9eef2)}
+.feature-copy .feature-note{font-size:16px;line-height:1.65;margin-top:18px}
+.release-disclosure{font-size:14px;line-height:1.6;color:#4b5e70;margin:10px auto 0;max-width:440px}
+.release-disclosure a{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:650px){.routing-section{padding-top:15px}.release-disclosure{max-width:320px}}

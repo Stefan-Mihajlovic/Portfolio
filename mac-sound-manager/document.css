@@ -18,3 +18,5 @@
 .document-page .site-header nav .button:hover{color:white}
 @media(max-width:650px){.document-main{width:calc(100% - 40px);padding:38px 0 64px;font-size:17px}.document-intro{margin-bottom:36px}.document-intro>p{font-size:18px}.document-page .site-header nav .button{font-size:15px;padding:10px 12px;gap:7px}.document-page .site-header{gap:8px}.document-page .site-header .brand{gap:6px}.release-heading h2{font-size:32px}.document-main h2{font-size:26px}.document-footer{padding-top:64px}.document-footer .footer-inner{padding-block:27px}}
 @media(max-width:380px){.document-page .site-header .brand span{max-width:100px;line-height:1.15}.document-page .site-header nav .button{padding-inline:10px}}
+
+.release-entry + .release-entry{margin-top:72px}
