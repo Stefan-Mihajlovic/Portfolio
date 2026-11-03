@@ -1,10 +1,11 @@
 (() => {
   const header = document.querySelector('.floating-header');
   const hero = document.querySelector('.hero-copy');
-  if (!header || !hero) return;
+  const trigger = hero || document.querySelector('.site-header');
+  if (!header || !trigger) return;
   let queued = false;
   const update = () => {
-    const visible = hero.getBoundingClientRect().bottom < 80;
+    const visible = trigger.getBoundingClientRect().bottom < (hero ? 80 : 0);
     header.classList.toggle('is-visible', visible);
     header.inert = !visible;
     queued = false;

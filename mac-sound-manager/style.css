@@ -55,3 +55,14 @@ body:before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
 .release-disclosure{font-size:14px;line-height:1.6;color:#4b5e70;margin:10px auto 0;max-width:440px}
 .release-disclosure a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:650px){.routing-section{padding-top:15px}.release-disclosure{max-width:320px}}
+
+/* The arrow travels through the icon; its tray stays in place. */
+.download-icon{overflow:hidden}
+.button:is(:hover,:focus-visible) .download-arrow{animation:download-arrow-cycle .6s cubic-bezier(.4,0,.2,1)}
+@keyframes download-arrow-cycle{
+  0%{transform:translateY(0);opacity:1}
+  42%{transform:translateY(15px);opacity:0}
+  43%{transform:translateY(-15px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+@media(prefers-reduced-motion:reduce){.button:is(:hover,:focus-visible) .download-arrow{animation:none}}
