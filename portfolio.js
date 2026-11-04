@@ -97,6 +97,55 @@ backToTop.addEventListener('click', () => {
   else window.scrollTo({ top: 0, behavior: motionEnabled() ? 'smooth' : 'instant' });
 });
 
+// One arrow → star → arrow cycle per hover, with no movement of the hit area.
+function initBackToTopMorph() {
+  const svg = backToTop.querySelector('svg');
+  const path = svg.querySelector('path');
+  const original = path.cloneNode();
+  const sample = d => {
+    const shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    shape.setAttribute('d', d);
+    const length = shape.getTotalLength();
+    return Array.from({ length: 64 }, (_, i) => shape.getPointAtLength(length * i / 64));
+  };
+  const arrow = sample('M12 5.2L18.6 11.8L17.4 13L12.8 8.4V19H11.2V8.4L6.6 13L5.4 11.8Z');
+  const star = sample('M12 3C13.125 9.1875 14.8125 10.875 21 12C14.8125 13.125 13.125 14.8125 12 21C10.875 14.8125 9.1875 13.125 3 12C9.1875 10.875 10.875 9.1875 12 3Z');
+  const ease = t => t * t * (3 - 2 * t);
+  let frame = 0;
+  function reset() {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    path.setAttribute('d', original.getAttribute('d'));
+    path.removeAttribute('fill');
+    path.setAttribute('stroke', 'currentColor');
+    svg.style.removeProperty('transform');
+  }
+  function play() {
+    if (frame || !motionEnabled() || document.hidden) return;
+    const started = performance.now();
+    path.setAttribute('fill', 'currentColor');
+    path.setAttribute('stroke', 'none');
+    function tick(now) {
+      const progress = Math.min(1, (now - started) / 1500);
+      if (progress === 1 || !motionEnabled() || document.hidden) { reset(); return; }
+      const morph = progress < .3 ? ease(progress / .3) : progress > .65 ? 1 - ease((progress - .65) / .35) : 1;
+      path.setAttribute('d', arrow.map((point, i) => {
+        const x = point.x + (star[i].x - point.x) * morph;
+        const y = point.y + (star[i].y - point.y) * morph;
+        return `${i ? 'L' : 'M'}${x.toFixed(3)} ${y.toFixed(3)}`;
+      }).join('') + 'Z');
+      svg.style.transform = `rotate(${ease(progress) * 360}deg)`;
+      frame = requestAnimationFrame(tick);
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  backToTop.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') play(); });
+  backToTop.addEventListener('focus', () => { if (backToTop.matches(':focus-visible')) play(); });
+  reduced.addEventListener('change', reset);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) reset(); });
+}
+initBackToTopMorph();
+
 function closeMenu() {
   const returnToToggle = document.body.classList.contains("menu-open") && header.querySelector("nav").contains(document.activeElement);
   document.body.classList.remove("menu-open");
@@ -292,7 +341,7 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
         ambientStarted = performance.now();
         start();
       } else scheduleAmbient();
-    }, 7000 + Math.random() * 4000);
+    }, 3000 + Math.random() * 2000);
   }
   function syncAmbient() {
     ambientStarted = 0;
@@ -729,7 +778,7 @@ function initPage() {
     const started = performance.now();
     // Content starts alongside the title, independent of its animation length.
     const introStart = 160;
-    const supportingStart = intro?.classList.contains('home-intro') ? 900 : introStart;
+    const supportingStart = intro?.classList.contains('home-intro') ? 320 : introStart;
     const atTop = scrollY < 120;
     const contentStart = atTop ? started + introStart + (supporting.length ? (supporting.length - 1) * 80 + 120 : 100) : started;
     const pending = new Map();

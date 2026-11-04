@@ -8,7 +8,7 @@ export function createScrollStars(host) {
   let targetScrollOffset = 0, maxScroll = 0, pixelRatio = 0;
   let panX = 0, panY = 0, targetX = 0, targetY = 0;
   let travelStart = -10000, ignoreUntil = 0, elapsed = 0;
-  let meteor = null, nextMeteor = 3 + Math.random() * 2;
+  let meteor = null, nextMeteor = 1.5 + Math.random();
   let canvas, ctx, stars = [];
   const DURATION = 1350;
   const wrap = (n, max) => ((n % max) + max) % max;
@@ -81,7 +81,7 @@ export function createScrollStars(host) {
         vx: Math.max(240, width * .32), vy: Math.max(150, height * .28),
         age: 0, life: 1.2 + Math.random() * .35,
       };
-      nextMeteor = elapsed + 6 + Math.random() * 5;
+      nextMeteor = elapsed + 3 + Math.random() * 2;
     }
     if (meteor && moving) {
       meteor.age += dt;
