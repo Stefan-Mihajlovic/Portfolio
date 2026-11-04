@@ -36,19 +36,15 @@ const header = document.querySelector(".site-header");
 const menu = document.querySelector(".menu-toggle");
 const backToTop = document.querySelector(".back-to-top");
 const dialog = document.querySelector(".image-dialog");
-let paused = false;
-try {
-  paused = localStorage.getItem("portfolio-motion") === "paused";
-} catch {}
 let lenis,
   disposeName = () => {},
   disposeFooter = () => {},
   disposeReveals = () => {},
   disposeScrollCopy = () => {},
   disposeSkills = () => {},
+  disposeProjectParallax = () => {},
   refreshScrollCopy = () => {},
   revealObserver,
-  videoObserver,
   ambientObserver,
   navigating = false,
   returnFocus;
@@ -71,7 +67,7 @@ const routes = new Set([
 ]);
 const normalize = (path) =>
   path.replace(/index\.html$/, "").replace(/\/?$/, "/");
-const motionEnabled = () => !paused && !reduced.matches;
+const motionEnabled = () => !reduced.matches;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const identity = header.querySelector('.identity');
@@ -171,43 +167,12 @@ function updateMotion() {
       syncTouch: false,
     });
   }
-  document.querySelectorAll(".motion-toggle").forEach((button) => {
-    button.textContent = paused ? "Resume motion" : "Pause motion";
-    button.setAttribute("aria-pressed", String(paused));
-  });
-  document.querySelectorAll(".project-film").forEach(updateVideo);
   document.dispatchEvent(new Event("portfolio-motion-change"));
-}
-function updateVideo(video) {
-  if (video.dataset.inView === 'true' && video.dataset.poster && !video.poster) {
-    video.poster = video.dataset.poster;
-    video.closest('.project-visual').style.backgroundImage = `url("${video.dataset.poster}")`;
-  }
-  if (
-    !motionEnabled() ||
-    document.hidden ||
-    video.dataset.visible !== "true" ||
-    navigator.connection?.saveData
-  ) {
-    video.pause();
-    return;
-  }
-  if (!video.src && !video.querySelector('source')) {
-    // These decorative loops contain no text; smaller frames avoid downloading
-    // desktop-resolution media on phones while preserving the motion and timing.
-    const source = video.dataset.src;
-    video.src = matchMedia('(max-width: 600px)').matches
-      ? source.replace('.mp4', '-mobile.mp4') : source;
-  }
-  video.play().catch(() => {
-    /* The poster remains visible when autoplay is unavailable. */
-  });
 }
 reduced.addEventListener("change", updateMotion);
 touchScroll.addEventListener('change', updateMotion);
 document.addEventListener("visibilitychange", () => {
   document.body.classList.toggle('document-hidden', document.hidden);
-  document.querySelectorAll(".project-film").forEach(updateVideo);
 });
 
 function initProjectNameStars() {
@@ -545,6 +510,66 @@ function initScrollCopy() {
   };
 }
 
+function initProjectParallax() {
+  const images = [...document.querySelectorAll('.project-background')];
+  if (!images.length || !('IntersectionObserver' in window)) return () => {};
+  const desktop = matchMedia('(min-width: 801px) and (hover: hover) and (pointer: fine)');
+  const visible = new Set();
+  let frame = 0, enabled = false;
+  const render = () => {
+    frame = 0;
+    // Read all card bounds before writing transforms. Overscan keeps edges covered.
+    const positions = [...visible].map(image => {
+      const rect = image.parentElement.getBoundingClientRect();
+      const progress = Math.max(-1, Math.min(1, (innerHeight / 2 - rect.top - rect.height / 2) / 400));
+      return [image.parentElement, progress];
+    });
+    positions.forEach(([card, progress]) => card.style.setProperty('--project-parallax', progress.toFixed(4)));
+  };
+  const schedule = () => {
+    if (enabled && !document.hidden && !frame && visible.size) frame = requestAnimationFrame(render);
+  };
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(({ target, isIntersecting }) => {
+      if (isIntersecting) visible.add(target);
+      else visible.delete(target);
+    });
+    schedule();
+  });
+  const sync = () => {
+    enabled = desktop.matches && motionEnabled();
+    cancelAnimationFrame(frame);
+    frame = 0;
+    observer.disconnect();
+    visible.clear();
+    window.removeEventListener('scroll', schedule);
+    images.forEach(image => {
+      image.parentElement.classList.toggle('project-parallax', enabled);
+      image.parentElement.style.removeProperty('--project-parallax');
+      if (enabled) observer.observe(image);
+    });
+    if (enabled) window.addEventListener('scroll', schedule, { passive: true });
+  };
+  desktop.addEventListener('change', sync);
+  document.addEventListener('portfolio-motion-change', sync);
+  document.addEventListener('visibilitychange', schedule);
+  window.addEventListener('resize', schedule);
+  sync();
+  return () => {
+    cancelAnimationFrame(frame);
+    observer.disconnect();
+    window.removeEventListener('scroll', schedule);
+    window.removeEventListener('resize', schedule);
+    desktop.removeEventListener('change', sync);
+    document.removeEventListener('portfolio-motion-change', sync);
+    document.removeEventListener('visibilitychange', schedule);
+    images.forEach(image => {
+      image.parentElement.classList.remove('project-parallax');
+      image.parentElement.style.removeProperty('--project-parallax');
+    });
+  };
+}
+
 function initCaseMotion() {
   const main = document.querySelector('main');
   if (!main.classList.contains('case-page')) return;
@@ -675,6 +700,8 @@ function initPage() {
   }
   disposeSkills();
   disposeSkills = initSkills();
+  disposeProjectParallax();
+  disposeProjectParallax = initProjectParallax();
   initCaseMotion();
   disposeScrollCopy();
   disposeScrollCopy = initScrollCopy();
@@ -686,7 +713,6 @@ function initPage() {
   initProjectNameStars();
   disposeReveals();
   revealObserver?.disconnect();
-  videoObserver?.disconnect();
   ambientObserver?.disconnect();
   if ("IntersectionObserver" in window) {
     document.documentElement.classList.add("js-motion");
@@ -749,21 +775,6 @@ function initPage() {
       pending.clear();
       main.removeEventListener('focusin', revealFocused);
     };
-    videoObserver = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((entry) => {
-          entry.target.dataset.inView = String(entry.isIntersecting);
-          // Show the poster as soon as a card enters. Start a new download only
-          // once enough of it is visible; already loaded films keep playing.
-          entry.target.dataset.visible = String(entry.isIntersecting &&
-            (Boolean(entry.target.currentSrc) || entry.intersectionRatio >= .35));
-          updateVideo(entry.target);
-        }),
-      { threshold: [0, .35] },
-    );
-    document
-      .querySelectorAll(".project-film")
-      .forEach((el) => videoObserver.observe(el));
     // Keep all visible motion, but suspend decorative loops outside the viewport.
     ambientObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => entry.target.classList.toggle('motion-offscreen', !entry.isIntersecting));
@@ -778,13 +789,6 @@ function initPage() {
   document
     .querySelectorAll("[data-year]")
     .forEach((el) => (el.textContent = new Date().getFullYear()));
-  document.querySelector(".motion-toggle")?.addEventListener("click", () => {
-    paused = !paused;
-    try {
-      localStorage.setItem("portfolio-motion", paused ? "paused" : "playing");
-    } catch {}
-    updateMotion();
-  });
   document.querySelectorAll(".gallery-image").forEach((button) =>
     button.addEventListener("click", () => openViewer(button)),
   );

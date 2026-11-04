@@ -149,13 +149,10 @@ const origin = process.env.PORTFOLIO_URL || "http://127.0.0.1:4173";
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(origin);
   await page.waitForTimeout(400);
-  assert.ok(
-    await page
-      .locator(".project-film")
-      .evaluateAll((videos) =>
-        videos.every((video) => video.paused && !video.currentSrc),
-      ),
-    "Reduced motion does not load background videos",
+  assert.equal(
+    await page.locator(".project-visual video").count(),
+    0,
+    "Project backgrounds use images instead of video",
   );
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.setViewportSize({ width: 390, height: 844 });

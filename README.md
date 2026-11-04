@@ -19,7 +19,7 @@ The preview supports compression, video byte ranges, and the site's Netlify head
 
 Edit `portfolio.css` and `portfolio.js`, then run `npm run build`. The HTML uses the generated files in `assets/build/`; the build bundles the sky module too. Netlify builds automatically into `dist/`, with content-based CSS/JS version tokens. The published folder excludes tools, reports, dependencies, and scratch files. Existing contact function environment variables stay in Netlify.
 
-When changing source images, run `npm run images` to regenerate responsive previews and HTML `srcset` attributes. Full-size originals are retained for the image viewer. Phone-sized background films are generated with `python3 tools/build-mobile-motion.py` (requires ffmpeg).
+When changing source images, run `npm run images` to regenerate responsive previews and HTML `srcset` attributes. Full-size originals are retained for the image viewer. Project backgrounds use static WebP images in `assets/motion/`, loaded on demand.
 
 ## Verification
 
@@ -37,4 +37,4 @@ Browser checks default to installed Microsoft Edge; set `PORTFOLIO_BROWSER` to a
 
 SEO checks cover all sitemap pages with JavaScript disabled, unique titles/descriptions, canonical URLs, JSON-LD syntax, internal resources, the 404 noindex directive, and metadata after client-side navigation. These checks do not guarantee search rankings or replace real-user Core Web Vitals.
 
-The [design investigation](docs/design-research.md) records 41 reviewed references and the decisions behind the layout. Background films can be regenerated with `tools/generate-motion.py` (Python, NumPy, Pillow and imageio-ffmpeg). Browser checks are in `tools/check-portfolio.cjs` and require Playwright; use `PORTFOLIO_BROWSER` to choose an installed Chromium browser. The contact endpoint runs on Netlify; the local static server cannot send messages.
+The [design investigation](docs/design-research.md) records 41 reviewed references and the decisions behind the layout. Browser checks are in `tools/check-portfolio.cjs` and require Playwright; use `PORTFOLIO_BROWSER` to choose an installed Chromium browser. The contact endpoint runs on Netlify; the local static server cannot send messages.
