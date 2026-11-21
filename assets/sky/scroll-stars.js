@@ -1,22 +1,41 @@
+import { createNebula, nebulaRegion } from './nebula.js';
+
 // Original Spinners star sizes and opacity, projected through a persistent 3D camera.
 // Route changes advance the camera; stars never snap back to their starting positions.
 export function createScrollStars(host) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const touch = matchMedia('(hover: none) and (pointer: coarse)');
+  let touchInput = touch.matches, prefersReduced = reduced.matches;
+  let sampledY = window.scrollY;
+  touch.addEventListener('change', event => { touchInput = event.matches; });
+  const sampleScroll = () => { sampledY = window.scrollY; };
+  addEventListener('scroll', sampleScroll, { passive: true });
   let paused = false, ready = false, initializing = false, frame = 0, previous = 0;
   let width = 0, height = 0, scroll = window.scrollY, scrollOffset = 0, velocity = 0;
   let targetScrollOffset = 0, maxScroll = 0, pixelRatio = 0;
   let panX = 0, panY = 0, targetX = 0, targetY = 0;
   let travelStart = -10000, ignoreUntil = 0, elapsed = 0;
   let meteor = null, nextMeteor = 1.5 + Math.random();
-  let canvas, ctx, stars = [];
+  let canvas, ctx, drawNebula, distantStars, stars = [];
+  let distantTravel = 0;
   const DURATION = 1350;
+  let destination = nebulaRegion(location.pathname, scroll), flightId = 0;
+  // Integrate the stars' speed envelope: the clouds start and stop at rest
+  // and cover the most distance when the star trails are longest.
+  function flightProgress(time) {
+    const t = (time - travelStart) / DURATION;
+    if (t >= 1) return 1;
+    if (t <= 0) return 0;
+    const u = t < .22 ? t / .22 : (t - .22) / .78;
+    const distance = u ** 3 * (2 - u);
+    return t < .22 ? .22 * distance : .22 + .78 * (2 * u - distance);
+  }
   const wrap = (n, max) => ((n % max) + max) % max;
   const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const smooth = t => t * t * (3 - 2 * t);
-  const enabled = () => !paused && !reduced.matches && !document.hidden;
+  const enabled = () => !paused && !prefersReduced && !document.hidden;
   const updateScrollBounds = () => { maxScroll = Math.max(0, document.documentElement.scrollHeight - innerHeight); };
-  const readScroll = () => touch.matches ? Math.max(0, Math.min(window.scrollY, maxScroll)) : window.scrollY;
+  const readScroll = () => touchInput ? Math.max(0, Math.min(sampledY, maxScroll)) : sampledY;
   updateScrollBounds();
   new ResizeObserver(updateScrollBounds).observe(document.body);
   addEventListener('resize', updateScrollBounds, { passive: true });
@@ -25,6 +44,32 @@ export function createScrollStars(host) {
     if (t < 0 || t >= 1) return 0;
     return t < .22 ? smooth(t / .22) : (1 - smooth((t - .22) / .78));
   }
+  function createDistantStars() {
+    const tile = document.createElement('canvas');
+    const size = 1536;
+    tile.width = tile.height = size;
+    const surface = tile.getContext('2d');
+    if (!surface) return null;
+    const colors = ['#b9ccdc', '#f0e5cb', '#99b7cc'];
+    for (let i = 0; i < 3480; i++) {
+      let x = hash(i + 524) * size, y = hash(i + 3701) * size;
+      if (i >= 2040) {
+        // Irregular knots of distant stars occupy only a fraction of the sky.
+        const group = i % 23;
+        const angle = x / size * Math.PI * 2;
+        const radius = (y / size) ** 1.8 * (22 + hash(group + 16) * 94);
+        x = wrap(hash(group + 21) * size + Math.cos(angle) * radius, size);
+        y = wrap(hash(group + 54) * size + Math.sin(angle) * radius * .64, size);
+      }
+      const brightness = hash(i + 94) ** 4;
+      surface.globalAlpha = .15 + .72 * brightness;
+      surface.fillStyle = colors[i % colors.length];
+      surface.beginPath();
+      surface.arc(x, y, .36 + brightness * .65, 0, 2 * Math.PI);
+      surface.fill();
+    }
+    return ctx.createPattern(tile, 'repeat');
+  }
   function render(dt, time) {
     ctx.clearRect(0, 0, width, height);
     const moving = enabled();
@@ -32,13 +77,31 @@ export function createScrollStars(host) {
     const speed = moving ? .014 + warp * 3.8 : 0;
     const focal = Math.max(width, height) * .72;
     const cx = width * .5 + panX, cy = height * .46 + panY;
+    if (drawNebula && width && height) {
+      drawNebula(width, height, dt, scrollOffset, destination, flightId, flightProgress(time), cx / width, cy / height);
+    }
+    if (distantStars) {
+      distantTravel += dt * (.14 + warp * 4);
+      const parallax = Math.max(width, height) * .000013;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(1 + warp * .045, 1 + warp * .045);
+      ctx.translate(-width * .5 + distantTravel, -height * .46 + scrollOffset * parallax);
+      ctx.fillStyle = distantStars;
+      // Paint the visible viewport in pattern coordinates, even after long scrolls.
+      ctx.fillRect(-distantTravel - 32, -scrollOffset * parallax - 32, width + 64, height + 64);
+      ctx.restore();
+    }
     ctx.lineCap = 'round';
     // Constant colors plus globalAlpha avoid allocating/parsing a color per star.
     ctx.fillStyle = 'rgb(248,249,255)';
+    const scrollPhase = wrap(scrollOffset * .00024, 3.6);
+    const advance = speed * dt;
     for (const star of stars) {
-      star.z -= speed * dt;
+      star.z -= advance;
       if (star.z < .14) star.z += 3.8;
-      const sy = wrap(star.y + scrollOffset * .00024, 3.6) - 1.8;
+      const shiftedY = star.y + scrollPhase;
+      const sy = shiftedY < 3.6 ? shiftedY - 1.8 : shiftedY - 5.4;
       const x = cx + star.x / star.z * focal;
       const y = cy + sy / star.z * focal;
       if (x < -100 || x > width + 100 || y < -100 || y > height + 100) continue;
@@ -117,7 +180,7 @@ export function createScrollStars(host) {
       const oldOffset = scrollOffset;
       // Interpolate the camera, never the page: sparse native scroll samples
       // and iOS overscroll must not teleport stars or spike their trails.
-      scrollOffset = touch.matches
+      scrollOffset = touchInput
         ? scrollOffset + (targetScrollOffset - scrollOffset) * (1 - Math.exp(-dt * 18))
         : targetScrollOffset;
       const cameraDelta = oldOffset - scrollOffset;
@@ -131,12 +194,12 @@ export function createScrollStars(host) {
     if (moving) frame = requestAnimationFrame(tick);
   }
   function resume() {
-    cancelAnimationFrame(frame); frame = 0; previous = 0; scroll = readScroll();
+    cancelAnimationFrame(frame); frame = 0; previous = 0; sampleScroll(); scroll = readScroll();
     targetScrollOffset = scrollOffset;
     if (ready) frame = requestAnimationFrame(tick);
   }
   async function initialize() {
-    if (ready || initializing || reduced.matches) return;
+    if (ready || initializing) return;
     initializing = true;
     try {
       const patterns = await Promise.all(['far', 'near'].map(async name => {
@@ -147,7 +210,10 @@ export function createScrollStars(host) {
       }));
       canvas = document.createElement('canvas'); canvas.className = 'scroll-star-canvas';
       ctx = canvas.getContext('2d'); if (!ctx) return;
+      distantStars = createDistantStars();
       host.prepend(canvas);
+      const atmosphere = document.querySelector('.space-atmosphere');
+      if (atmosphere) drawNebula = createNebula(atmosphere);
       const dots = patterns.flat();
       const count = innerWidth < 768 ? 600 : 1180;
       stars = Array.from({length: count}, (_, i) => {
@@ -172,14 +238,22 @@ export function createScrollStars(host) {
     targetX = (e.clientX / innerWidth - .5) * -16;
     targetY = (e.clientY / innerHeight - .5) * -12;
   }, {passive: true});
-  reduced.addEventListener('change', () => { initialize(); resume(); });
+  reduced.addEventListener('change', event => { prefersReduced = event.matches; initialize(); resume(); });
   document.addEventListener('visibilitychange', () => { travelStart = -10000; meteor = null; resume(); });
   initialize();
   return {
-    travel() { if (!enabled()) return; meteor = null; nextMeteor = elapsed + 3 + Math.random() * 3; travelStart = performance.now(); if (!frame) resume(); },
+    travel(pathname = location.pathname, arrivalScroll = 0) {
+      const now = performance.now();
+      flightId++;
+      destination = nebulaRegion(pathname, scrollOffset + arrivalScroll);
+      travelStart = enabled() ? now : -10000;
+      meteor = null;
+      nextMeteor = elapsed + 3 + Math.random() * 3;
+      if (!frame) resume();
+    },
     setPaused(value) { if (paused === value) return; paused = value; if (value) { travelStart = -10000; meteor = null; } resume(); },
     resetScroll() {
-      updateScrollBounds(); scroll = readScroll(); targetScrollOffset = scrollOffset;
+      updateScrollBounds(); sampleScroll(); scroll = readScroll(); targetScrollOffset = scrollOffset;
       velocity = 0; ignoreUntil = performance.now() + 160;
     },
   };

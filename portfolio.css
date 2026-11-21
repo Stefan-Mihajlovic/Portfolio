@@ -115,7 +115,7 @@ main {
 }
 main.is-leaving {
   opacity: 0;
-
+  transition: opacity .5s ease-in;
 }
 main.route-preparing { visibility: hidden; }
 main.is-arriving {
@@ -1232,8 +1232,25 @@ html.lenis body {
 main[data-page="projects"] .page-intro { max-width: 1040px; margin-inline: auto; }
 .motion-paused .name-char { transform: none !important; translate: none !important; rotate: none !important; filter: none !important; }
 
-/* Independently moving, breathing color masses: no single fixed gradient plate. */
-.space-atmosphere { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+/* Ambient color remains visible before the procedural gas and stars initialize. */
+.space-atmosphere { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--bg); isolation: isolate; }
+/* Use the case study's own palette while retaining the light and shadow in the gas. */
+.space-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, var(--space-a), var(--space-b) 58%, var(--space-c));
+  mix-blend-mode: color;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+body[data-space-theme] .space-atmosphere::after { opacity: .96; }
+.nebula-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .52; transition: opacity 1.2s ease-in-out; }
+@media (hover: none) and (pointer: coarse) {
+  .space-atmosphere { bottom: auto; height: 100lvh; }
+}
+body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
+.space-atmosphere.dust-ready .nebula { display: none; }
 .nebula { position: absolute; width: 140vw; height: 140vh; will-change: transform, opacity; }
 .nebula-violet {
   left: -55%; top: -35%;
@@ -1456,6 +1473,7 @@ main[data-page="projects"] .page-intro { max-width: 1040px; margin-inline: auto;
   transition: none;
 }
 .scroll-word { display: inline-block; white-space: nowrap; }
+.scroll-letter { opacity: .24; }
 .motion-paused .scroll-letter { opacity: 1 !important; }
 .motion-paused .portrait-strip figure img { transform: none !important; }
 /* On phones the introduction and photographs read as one continuous story. */
@@ -1834,7 +1852,11 @@ main[data-page="projects"] .page-intro { max-width: 1040px; margin-inline: auto;
 @property --space-a { syntax: '<color>'; inherits: true; initial-value: #49317d; }
 @property --space-b { syntax: '<color>'; inherits: true; initial-value: #164f79; }
 @property --space-c { syntax: '<color>'; inherits: true; initial-value: #175852; }
-body { transition: --space-a 1.2s ease, --space-b 1.2s ease, --space-c 1.2s ease; }
+/* Only these subtrees paint the palette. Animating the inherited properties on
+   body would invalidate the style of every project card and character per frame. */
+.space-atmosphere, .case-planets, .footer-brand {
+  transition: --space-a 1.2s ease, --space-b 1.2s ease, --space-c 1.2s ease;
+}
 body[data-space-theme="blue"] { --space-a: #194e9d; --space-b: #146999; --space-c: #243d83; }
 body[data-space-theme="violet"] { --space-a: #60339b; --space-b: #3b2378; --space-c: #6b3d91; }
 body[data-space-theme="silver"] { --space-a: #394958; --space-b: #3b6069; --space-c: #495660; }

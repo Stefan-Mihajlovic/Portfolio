@@ -5,6 +5,17 @@ import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+const workerPath = 'assets/build/nebula-worker.min.js';
+await build({
+  absWorkingDir: root,
+  entryPoints: ['assets/sky/nebula-worker.js'],
+  bundle: true,
+  minify: true,
+  format: 'esm',
+  target: ['safari16', 'chrome110', 'firefox115'],
+  outfile: workerPath,
+});
+const workerVersion = createHash('sha256').update(await readFile(path.join(root, workerPath))).digest('hex').slice(0, 12);
 await build({
   absWorkingDir: root,
   entryPoints: ['portfolio.js'],
@@ -13,6 +24,7 @@ await build({
   format: 'esm',
   target: ['safari16', 'chrome110', 'firefox115'],
   outfile: 'assets/build/portfolio.min.js',
+  define: { __NEBULA_WORKER_URL__: JSON.stringify(`/${workerPath}?v=${workerVersion}`) },
   plugins: [{ name: 'local-sky', setup(builder) {
     builder.onResolve({ filter: /^\/assets\/sky\// }, args => ({ path: path.join(root, args.path.split('?')[0]) }));
   } }],

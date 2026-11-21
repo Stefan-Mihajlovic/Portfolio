@@ -47,6 +47,7 @@ let lenis,
   revealObserver,
   ambientObserver,
   navigating = false,
+  pendingHistory,
   returnFocus;
 let currentKey = history.state?.portfolioKey || crypto.randomUUID();
 history.replaceState({ ...history.state, portfolioKey: currentKey }, "");
@@ -68,7 +69,6 @@ const routes = new Set([
 const normalize = (path) =>
   path.replace(/index\.html$/, "").replace(/\/?$/, "/");
 const motionEnabled = () => !reduced.matches;
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const identity = header.querySelector('.identity');
 const monogram = identity.querySelector('.monogram');
@@ -478,8 +478,8 @@ function initScrollCopy() {
     offset += record.letters.length;
     return result;
   });
-  let lines = [], previousCount = -1;
-  let frame = 0, previousTime = 0, disposed = false;
+  let lines = [], previousCount = 0;
+  let frame = 0, previousTime = 0;
   const clamp = value => Math.max(0, Math.min(1, value));
   function render(time) {
     frame = 0;
@@ -492,15 +492,15 @@ function initScrollCopy() {
     // Layout refreshes and reduced motion settle immediately.
     const dt = previousTime && time ? Math.max(0, Math.min((time - previousTime) / 1000, .05)) : 1 / 60;
     previousTime = time || 0;
-    const easing = enabled && time && previousCount >= 0;
+    const easing = enabled && time;
     const count = easing && Math.abs(targetCount - previousCount) > .02
       ? previousCount + (targetCount - previousCount) * (1 - Math.exp(-dt * 12))
       : targetCount;
     if (Math.abs(count - targetCount) > .02) frame = requestAnimationFrame(render);
     if (count === previousCount) return;
     // Only the interval crossed by the reading frontier can have changed.
-    const from = previousCount < 0 ? 0 : Math.floor(Math.min(previousCount, count));
-    const to = previousCount < 0 ? letters.length : Math.min(letters.length, Math.ceil(Math.max(previousCount, count)));
+    const from = Math.floor(Math.min(previousCount, count));
+    const to = Math.min(letters.length, Math.ceil(Math.max(previousCount, count)));
     for (let i = from; i < to; i++) {
       const opacity = String(.24 + .76 * clamp(count - i));
       if (letters[i].style.opacity !== opacity) letters[i].style.opacity = opacity;
@@ -517,9 +517,10 @@ function initScrollCopy() {
     let start = 0;
     const lineHeights = new Map(records.map(({ paragraph }) =>
       [paragraph, parseFloat(getComputedStyle(paragraph).lineHeight)]));
+    const pageY = window.scrollY;
     words.forEach(word => {
       const rect = word.element.getBoundingClientRect();
-      const top = rect.top + scrollY;
+      const top = rect.top + pageY;
       let line = lines.at(-1);
       if (!line || Math.abs(line.top - top) > 2) {
         // Fill over the full line spacing, rather than just the glyph height.
@@ -543,14 +544,16 @@ function initScrollCopy() {
     refresh();
   };
   addEventListener('resize', onResize);
-  document.fonts.ready.then(() => { if (!disposed) refresh(); });
-  refresh();
+  // updateMotion measures the new page after all entrance markup is in place.
+  // Repeat only when a pending font can actually change line wrapping.
+  document.fonts.addEventListener('loadingdone', refresh);
   return () => {
-    disposed = true;
+    document.fonts.removeEventListener('loadingdone', refresh);
     cancelAnimationFrame(frame);
     removeEventListener('scroll', onScroll);
     removeEventListener('resize', onResize);
     records.forEach(({ paragraph, words }) => {
+      if (!paragraph.isConnected) return;
       words.forEach(({ element }) => element.replaceWith(element.textContent));
       paragraph.normalize();
       paragraph.classList.remove('scroll-copy');
@@ -1037,13 +1040,16 @@ async function submitContact(e) {
 }
 
 async function navigate(url, { pop = false, key, point } = {}) {
-  if (navigating) return;
-  if (dialog.open) await closeViewer(true);
+  if (navigating) {
+    if (pop) pendingHistory = { url, key };
+    return;
+  }
   navigating = true;
   closeMenu();
   const oldMain = document.querySelector("main");
   const animate = motionEnabled();
   try {
+    if (dialog.open) await closeViewer(true);
     // Fetch first, so slow connections never leave an empty page behind.
     const response = await fetch(url, {
       headers: { "X-Portfolio-Navigation": "1" },
@@ -1054,15 +1060,19 @@ async function navigate(url, { pop = false, key, point } = {}) {
       await response.text(),
       "text/html",
     );
+    if (pendingHistory) return;
     const nextMain = next.querySelector("body[data-portfolio] main");
     if (!nextMain) throw Error("External page");
+    const top = pop ? positions.get(key) || 0 : 0;
+    sky.travel(url.pathname, top);
     if (animate) {
       document.body.classList.add("in-transit");
       oldMain.classList.add("is-leaving");
-      sky.travel();
       travelPlanets(false);
-      await wait(560);
+      const exit = oldMain.getAnimations().find(animation => animation.transitionProperty === 'opacity');
+      if (exit) await exit.finished.catch(() => {});
     }
+    if (pendingHistory) return;
     oldMain.querySelectorAll("video").forEach((v) => v.pause());
     if (!pop) {
       key = crypto.randomUUID();
@@ -1077,7 +1087,6 @@ async function navigate(url, { pop = false, key, point } = {}) {
     // Prepare the new DOM invisibly; no uninitialized content can flash on screen.
     nextMain.classList.add('route-preparing');
     oldMain.replaceWith(nextMain);
-    const top = pop ? positions.get(currentKey) || 0 : 0;
     if (lenis) { lenis.resize(); lenis.scrollTo(top, { immediate: true, force: true }); }
     else window.scrollTo({ top, behavior: "instant" });
     sky.resetScroll();
@@ -1100,11 +1109,17 @@ async function navigate(url, { pop = false, key, point } = {}) {
     }
     nextMain.classList.remove("is-arriving");
   } catch {
-    location.assign(url.href);
+    if (!pendingHistory) location.assign(url.href);
   } finally {
     navigating = false;
-    document.body.classList.remove("in-transit");
-    oldMain.classList.remove("is-leaving");
+    if (pendingHistory) {
+      const pending = pendingHistory;
+      pendingHistory = undefined;
+      navigate(pending.url, { pop: true, key: pending.key });
+    } else {
+      document.body.classList.remove("in-transit");
+      oldMain.classList.remove("is-leaving");
+    }
   }
 }
 document.addEventListener("click", (e) => {
@@ -1155,10 +1170,6 @@ document.addEventListener("click", (e) => {
   });
 });
 window.addEventListener("popstate", (e) => {
-  if (navigating) {
-    location.reload();
-    return;
-  }
   navigate(new URL(location.href), { pop: true, key: e.state?.portfolioKey });
 });
 window.addEventListener(
