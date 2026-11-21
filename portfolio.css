@@ -16,6 +16,9 @@
   color-scheme: dark;
   --bg: #08090b;
   --surface: #151619;
+  --glass-panel: rgb(0 0 0 / 38%);
+  --glass-control: rgb(8 9 11 / 68%);
+  --glass-blur: blur(12px);
   --text: #f0efed;
   --muted: #b4b4ba;
   --line: #ffffff20;
@@ -147,6 +150,17 @@ main.is-arriving {
     padding 0.3s,
     background 0.3s;
 }
+.site-header::before,
+.site-footer,
+.contact-paper,
+.skill-preview,
+.project-tags,
+.back-to-top,
+.video-play {
+  background-color: var(--glass-panel);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
 /* Keep the blur on its own layer so fixed mobile navigation stays viewport-bound. */
 .site-header::before {
   content: "";
@@ -154,9 +168,7 @@ main.is-arriving {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: #08090bd9;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  background-color: var(--glass-control);
   opacity: 0;
   transition: opacity .3s ease;
 }
@@ -501,7 +513,7 @@ main.is-arriving {
 .site-footer {
   width: 100%; max-width: none; margin: 100px 0 0;
   padding: 0; border-radius: 0; overflow: hidden;
-  background: rgb(0 0 0 / 36%); border: 0;
+  border: 0;
 }
 .footer-shell { width: min(1180px, calc(100% - 112px)); margin: auto; }
 .footer-contact-row { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 40px 0 28px; }
@@ -648,7 +660,6 @@ main.is-arriving {
 .contact-paper {
   padding: 40px 38px 30px; border-radius: 0;
   border: 0;
-  background: rgb(0 0 0 / 32%);
   box-shadow: 0 24px 70px #0002;
 }
 .contact-paper h2 { font-size: 29px; letter-spacing: -.035em; margin-bottom: 40px; }
@@ -801,7 +812,7 @@ textarea:focus {
 }
 .video-preview { position: relative; display: block; aspect-ratio: 16/9; overflow: hidden; border-radius: 16px; background: #08090b; }
 .video-preview > img { width: 100%; height: 100%; object-fit: cover; }
-.video-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 68px; height: 48px; border-radius: 12px; background: #151619ed; color: white; transition: background .2s; }
+.video-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; place-items: center; width: 68px; height: 48px; border-radius: 12px; background-color: var(--glass-control); color: white; transition: background .2s; }
 .video-play svg { width: 32px; height: 32px; }
 .video-preview:hover .video-play, .video-preview:focus-visible .video-play { background: #d80000; }
 .image-dialog {
@@ -812,10 +823,6 @@ textarea:focus {
   max-width: 92vw;
   max-height: 90vh;
   overflow: visible;
-}
-.image-dialog::backdrop {
-  background: #000e;
-  backdrop-filter: blur(16px);
 }
 .image-dialog > img {
   max-width: 86vw;
@@ -959,7 +966,7 @@ html.lenis body {
     justify-content: center;
     flex-direction: column;
     gap: 0;
-    background: #080808f5;
+    background-color: var(--glass-control);
     border-left: 1px solid #ffffff0a;
     padding: 110px 28px 145px;
     transform: translateX(104%);
@@ -967,6 +974,10 @@ html.lenis body {
     transition: none;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+  .menu-animated .site-header nav, .menu-open .site-header nav {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
   }
   .menu-animated .site-header nav { transition: transform .7s var(--ease), border-radius .7s var(--ease), visibility .7s; }
   .menu-open .site-header::before {
@@ -1026,7 +1037,7 @@ html.lenis body {
   .menu-open .mobile-menu-top, .menu-open .mobile-menu-bottom { opacity: 1; transition-delay: .35s; }
   .menu-scrim {
     display: block; position: fixed; inset: 0; z-index: 25;
-    background: #0008;
+    background: rgb(0 0 0 / 20%);
     opacity: 0; visibility: hidden; transition: opacity .5s, visibility .5s;
   }
   .menu-open .menu-scrim { opacity: 1; visibility: visible; }
@@ -1359,7 +1370,7 @@ body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
   position: fixed; z-index: 25; bottom: 24px; right: 24px;
   width: 48px; height: 48px; display: grid; place-items: center;
   border: 1px solid #ffffff24; border-radius: 50%;
-  background: #08090b; color: var(--text); isolation: isolate;
+  background-color: var(--glass-control); color: var(--text); isolation: isolate;
   opacity: 0; visibility: hidden; transform: translate3d(0, 14px, 0);
   transition: opacity .3s, transform .3s, visibility .3s, color .2s;
 }
@@ -1633,7 +1644,6 @@ body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
   overflow: hidden;
   padding: 9px 0;
   border-radius: 8px;
-  background: rgb(0 0 0 / 42%);
   color: #f1f0ef;
   font-size: 14px;
   line-height: 1.4;
@@ -1711,9 +1721,6 @@ body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
   padding: 18px;
   border: 0;
   border-radius: 0;
-  background: rgb(0 0 0 / 35%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
   box-shadow: none;
   color: var(--text);
   opacity: 0;
@@ -1859,6 +1866,7 @@ body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
 }
 body[data-space-theme="blue"] { --space-a: #194e9d; --space-b: #146999; --space-c: #243d83; }
 body[data-space-theme="violet"] { --space-a: #60339b; --space-b: #3b2378; --space-c: #6b3d91; }
+body[data-space-theme="orange"] { --space-a: #9b4825; --space-b: #d77b38; --space-c: #af602d; }
 body[data-space-theme="silver"] { --space-a: #394958; --space-b: #3b6069; --space-c: #495660; }
 body[data-space-theme="pink"] { --space-a: #8d254f; --space-b: #65254c; --space-c: #922641; }
 body[data-space-theme="cobalt"] { --space-a: #244ba3; --space-b: #2167ad; --space-c: #273b88; }
@@ -1879,17 +1887,15 @@ html.viewer-open, html.viewer-open body { overflow: hidden; }
   background: transparent;
   overflow: hidden;
 }
-.image-dialog::backdrop { background: transparent; backdrop-filter: none; }
-.image-dialog::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgb(0 0 0 / 86%);
+.image-dialog::backdrop {
+  background-color: rgb(0 0 0 / 72%);
+  -webkit-backdrop-filter: var(--glass-blur, blur(12px));
+  backdrop-filter: var(--glass-blur, blur(12px));
   opacity: 0;
   transition: opacity .45s ease;
   pointer-events: none;
 }
-.image-dialog.is-viewing::before { opacity: 1; }
+.image-dialog.is-viewing::backdrop { opacity: 1; }
 .image-dialog > img {
   position: fixed;
   max-width: none;
