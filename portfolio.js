@@ -38,7 +38,6 @@ const backToTop = document.querySelector(".back-to-top");
 const dialog = document.querySelector(".image-dialog");
 let lenis,
   disposeName = () => {},
-  disposeFooter = () => {},
   disposeReveals = () => {},
   disposeScrollCopy = () => {},
   disposeSkills = () => {},
@@ -197,7 +196,6 @@ function updateMotion() {
   if (!motionEnabled()) {
     clearTimeout(logoTimer);
     monogram.classList.remove('logo-playing');
-    document.querySelector('.footer-brand')?.classList.remove('color-sweep');
     planets.getAnimations({ subtree: true }).filter(animation => !animation.animationName).forEach(animation => animation.cancel());
   }
   refreshScrollCopy();
@@ -255,7 +253,8 @@ function initProjectNameStars() {
   });
 }
 
-function initName(title = document.querySelector('main h1'), entrance = true) {
+function initName() {
+  const title = document.querySelector('main h1');
   if (title && !title.querySelector('.name-char')) {
     // Preserve explicit line breaks and natural word wrapping, with one accessible label.
     title.setAttribute('aria-label', title.innerText.trim().replace(/\s+/g, ' '));
@@ -291,7 +290,7 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
     letter.replaceWith(anchor); anchor.append(letter);
   });
   // Start only after the pre-split home letters have their final DOM structure.
-  title.classList.add(entrance ? 'animated-title' : 'name-ready');
+  title.classList.add('animated-title');
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
   let centers = [], bounds;
@@ -404,39 +403,6 @@ function initName(title = document.querySelector('main h1'), entrance = true) {
     window.removeEventListener('blur', leave);
     window.removeEventListener('scroll', refreshPointer);
     window.removeEventListener('resize', refreshPointer);
-  };
-}
-
-// A footer gets one color pass per route for the lifetime of this visit.
-const coloredFooters = new Set();
-function initFooter() {
-  const brand = document.querySelector('.footer-brand');
-  if (!brand) return () => {};
-  const disposeHover = initName(brand.querySelector('.footer-wordmark'), false);
-  const route = normalize(location.pathname);
-  brand.classList.remove('logo-playing', 'color-sweep');
-  brand.querySelectorAll('.monogram-s, .monogram-m, .name-char').forEach((letter, index) => {
-    letter.style.setProperty('--sweep-delay', `${index * 38}ms`);
-  });
-  let visible = false;
-  const play = () => {
-    if (!visible || document.hidden || !motionEnabled() || coloredFooters.has(route)) return;
-    coloredFooters.add(route);
-    brand.classList.add('color-sweep');
-  };
-  const observer = new IntersectionObserver(entries => {
-    visible = entries[0].isIntersecting && entries[0].intersectionRatio >= .75;
-    play();
-  }, { threshold: [0, .75] });
-  observer.observe(brand);
-  document.addEventListener('portfolio-motion-change', play);
-  document.addEventListener('visibilitychange', play);
-  return () => {
-    observer.disconnect();
-    document.removeEventListener('portfolio-motion-change', play);
-    document.removeEventListener('visibilitychange', play);
-    brand.classList.remove('color-sweep');
-    disposeHover();
   };
 }
 
@@ -760,8 +726,6 @@ function initPage() {
   updateBackToTop();
   disposeName();
   disposeName = initName();
-  disposeFooter();
-  disposeFooter = initFooter();
   initProjectNameStars();
   disposeReveals();
   revealObserver?.disconnect();
@@ -833,7 +797,7 @@ function initPage() {
     }, { rootMargin: '80px' });
     main.querySelectorAll('.name-spark, .about-title-spark, .portrait-strip figure').forEach(el => ambientObserver.observe(el));
   }
-  document.querySelectorAll(".site-header nav a, .footer-links a").forEach((link) => {
+  document.querySelectorAll(".site-header nav a").forEach((link) => {
     link.removeAttribute("aria-current");
     if (normalize(link.pathname) === normalize(location.pathname))
       link.setAttribute("aria-current", "page");
