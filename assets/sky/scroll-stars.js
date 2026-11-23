@@ -210,19 +210,22 @@ export function createScrollStars(host) {
     if (ready || initializing) return;
     initializing = true;
     try {
-      const patterns = await Promise.all(['far', 'near'].map(async name => {
+      // The shipped bundle has the same tiles as the static sky, ready on first entry.
+      const tiles = typeof __STAR_TILES__ !== 'undefined' ? __STAR_TILES__ : await Promise.all(['far', 'near'].map(async name => {
         const response = await fetch(`/assets/sky/stars-${name}.svg`);
         if (!response.ok) throw Error('Star tile unavailable');
-        const svg = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
-        return [...svg.querySelectorAll('circle')].map(dot => ['cx', 'cy', 'r', 'opacity'].map(key => Number(dot.getAttribute(key))));
+        return response.text();
       }));
+      const dots = tiles.flatMap(tile => {
+        const svg = new DOMParser().parseFromString(tile, 'image/svg+xml');
+        return [...svg.querySelectorAll('circle')].map(dot => ['cx', 'cy', 'r', 'opacity'].map(key => Number(dot.getAttribute(key))));
+      });
       canvas = document.createElement('canvas'); canvas.className = 'scroll-star-canvas';
       ctx = canvas.getContext('2d'); if (!ctx) return;
       distantStars = createDistantStars();
       host.prepend(canvas);
       const atmosphere = document.querySelector('.space-atmosphere');
       if (atmosphere) drawNebula = createNebula(atmosphere);
-      const dots = patterns.flat();
       const count = innerWidth < 768 ? 600 : 1180;
       stars = Array.from({length: count}, (_, i) => {
         const [x, y, radius, alpha] = dots[i % dots.length];

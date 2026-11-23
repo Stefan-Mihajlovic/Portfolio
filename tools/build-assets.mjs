@@ -16,6 +16,9 @@ await build({
   outfile: workerPath,
 });
 const workerVersion = createHash('sha256').update(await readFile(path.join(root, workerPath))).digest('hex').slice(0, 12);
+const starTiles = await Promise.all(['far', 'near'].map(name =>
+  readFile(path.join(root, 'assets/sky', `stars-${name}.svg`), 'utf8')
+));
 await build({
   absWorkingDir: root,
   entryPoints: ['portfolio.js'],
@@ -24,7 +27,10 @@ await build({
   format: 'esm',
   target: ['safari16', 'chrome110', 'firefox115'],
   outfile: 'assets/build/portfolio.min.js',
-  define: { __NEBULA_WORKER_URL__: JSON.stringify(`/${workerPath}?v=${workerVersion}`) },
+  define: {
+    __NEBULA_WORKER_URL__: JSON.stringify(`/${workerPath}?v=${workerVersion}`),
+    __STAR_TILES__: JSON.stringify(starTiles),
+  },
   plugins: [{ name: 'local-sky', setup(builder) {
     builder.onResolve({ filter: /^\/assets\/sky\// }, args => ({ path: path.join(root, args.path.split('?')[0]) }));
   } }],

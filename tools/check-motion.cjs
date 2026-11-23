@@ -69,6 +69,16 @@ const origin = process.env.PORTFOLIO_URL || 'http://127.0.0.1:4173';
       console.log(mobile ? 'Touch' : 'Desktop', 'every RAF rendered at 60/120/144Hz, idle/scroll/travel; pause stops rendering');
       await page.close();
     }
+    const firstVisit = await browser.newPage(devices['iPhone 13']);
+    await firstVisit.route('**/assets/sky/stars-*.svg', route =>
+      route.request().resourceType() === 'fetch' ? route.abort() : route.continue());
+    await firstVisit.goto(origin, { waitUntil: 'domcontentloaded' });
+    await firstVisit.waitForFunction(() =>
+      document.querySelector('.home-arrival h1:not(.name-ready)') &&
+      document.querySelector('.scroll-stars-ready canvas') &&
+      document.querySelector('.dust-ready canvas'));
+    await firstVisit.close();
+    console.log('First mobile visit renders stars and nebula during the title entrance without a tile fetch');
     const gasPage = await browser.newPage();
     await gasPage.goto(origin);
     const changes = await gasPage.evaluate(async () => {
