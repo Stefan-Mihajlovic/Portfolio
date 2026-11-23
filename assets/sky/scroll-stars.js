@@ -1,5 +1,18 @@
 import { createNebula, nebulaRegion } from './nebula.js';
 
+// Integrate the stars' speed envelope: the clouds start and stop at rest
+// and cover the most distance when the star trails are longest.
+export function flightDistance(t) {
+  if (t >= 1) return 1;
+  if (t <= 0) return 0;
+  const u = t < .22 ? t / .22 : (t - .22) / .78;
+  const distance = u ** 3 * (2 - u);
+  return t < .22 ? .22 * distance : .22 + .78 * (2 * u - distance);
+}
+
+// The welcome flight starts at the viewport midpoint and settles onto the idle horizon.
+export const homeFlightFocusY = remaining => .46 + .04 * remaining;
+
 // Original Spinners star sizes and opacity, projected through a persistent 3D camera.
 // Route changes advance the camera; stars never snap back to their starting positions.
 export function createScrollStars(host) {
@@ -18,18 +31,9 @@ export function createScrollStars(host) {
   let meteor = null, nextMeteor = 1.5 + Math.random();
   let canvas, ctx, drawNebula, distantStars, stars = [];
   let distantTravel = 0;
-  const DURATION = 1350;
+  let travelDuration = 1350;
+  let centeredFlight = false;
   let destination = nebulaRegion(location.pathname, scroll), flightId = 0;
-  // Integrate the stars' speed envelope: the clouds start and stop at rest
-  // and cover the most distance when the star trails are longest.
-  function flightProgress(time) {
-    const t = (time - travelStart) / DURATION;
-    if (t >= 1) return 1;
-    if (t <= 0) return 0;
-    const u = t < .22 ? t / .22 : (t - .22) / .78;
-    const distance = u ** 3 * (2 - u);
-    return t < .22 ? .22 * distance : .22 + .78 * (2 * u - distance);
-  }
   const wrap = (n, max) => ((n % max) + max) % max;
   const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
   const smooth = t => t * t * (3 - 2 * t);
@@ -40,7 +44,7 @@ export function createScrollStars(host) {
   new ResizeObserver(updateScrollBounds).observe(document.body);
   addEventListener('resize', updateScrollBounds, { passive: true });
   function envelope(time) {
-    const t = (time - travelStart) / DURATION;
+    const t = (time - travelStart) / travelDuration;
     if (t < 0 || t >= 1) return 0;
     return t < .22 ? smooth(t / .22) : (1 - smooth((t - .22) / .78));
   }
@@ -76,9 +80,11 @@ export function createScrollStars(host) {
     const warp = moving ? envelope(time) : 0;
     const speed = moving ? .014 + warp * 3.8 : 0;
     const focal = Math.max(width, height) * .72;
-    const cx = width * .5 + panX, cy = height * .46 + panY;
+    const distance = flightDistance((time - travelStart) / travelDuration);
+    const cx = width * .5 + panX;
+    const cy = height * (centeredFlight ? homeFlightFocusY(1 - distance) : .46) + panY;
     if (drawNebula && width && height) {
-      drawNebula(width, height, dt, scrollOffset, destination, flightId, flightProgress(time), cx / width, cy / height);
+      drawNebula(width, height, dt, scrollOffset, destination, flightId, distance, cx / width, cy / height);
     }
     if (distantStars) {
       distantTravel += dt * (.14 + warp * 4);
@@ -185,8 +191,10 @@ export function createScrollStars(host) {
         : targetScrollOffset;
       const cameraDelta = oldOffset - scrollOffset;
       velocity += ((dt ? cameraDelta / dt : 0) - velocity) * (1 - Math.exp(-dt * 10));
-      panX += (targetX - panX) * (1 - Math.exp(-dt * 3));
-      panY += (targetY - panY) * (1 - Math.exp(-dt * 3));
+      if (!centeredFlight || time >= travelStart + travelDuration) {
+        panX += (targetX - panX) * (1 - Math.exp(-dt * 3));
+        panY += (targetY - panY) * (1 - Math.exp(-dt * 3));
+      }
       elapsed += dt;
     } else velocity = 0;
     scroll = sampledScroll;
@@ -242,8 +250,11 @@ export function createScrollStars(host) {
   document.addEventListener('visibilitychange', () => { travelStart = -10000; meteor = null; resume(); });
   initialize();
   return {
-    travel(pathname = location.pathname, arrivalScroll = 0) {
+    travel(pathname = location.pathname, arrivalScroll = 0, duration = 1350, { centered = false } = {}) {
       const now = performance.now();
+      travelDuration = duration;
+      centeredFlight = centered;
+      if (centered) panX = panY = 0;
       flightId++;
       destination = nebulaRegion(pathname, scrollOffset + arrivalScroll);
       travelStart = enabled() ? now : -10000;

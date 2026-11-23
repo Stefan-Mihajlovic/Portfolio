@@ -1,4 +1,4 @@
-import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261023-1";
+import { createScrollStars, flightDistance, homeFlightFocusY } from "/assets/sky/scroll-stars.js?v=20261023-1";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const touchScroll = matchMedia('(hover: none) and (pointer: coarse)');
@@ -290,6 +290,8 @@ function initName() {
     letter.replaceWith(anchor); anchor.append(letter);
   });
   // Start only after the pre-split home letters have their final DOM structure.
+  const main = title.closest('main');
+  const arrival = shouldFlyHome(main, scrollY, location.hash) ? flyHomeLetters(main) : [];
   title.classList.add('animated-title');
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
@@ -303,11 +305,12 @@ function initName() {
     scheduleAmbient();
   };
   const onEntranceEnd = event => {
-    if (event.animationName === 'name-form' &&
+    if (!arrival.length && event.animationName === 'name-form' &&
         (event.target === letters.at(-1) || !motionEnabled())) finishEntrance();
   };
   title.addEventListener('animationend', onEntranceEnd);
   title.addEventListener('animationcancel', onEntranceEnd);
+  if (arrival.length) arrival.at(-1).finished.then(finishEntrance, () => {});
   if (!motionEnabled() || !letters.length) finishEntrance();
   function settle(time) {
     frame = 0;
@@ -343,6 +346,10 @@ function initName() {
     }, 3000 + Math.random() * 2000);
   }
   function syncAmbient() {
+    if (arrival.length && !motionEnabled()) {
+      arrival.splice(0).forEach(animation => animation.cancel());
+      finishEntrance();
+    }
     ambientStarted = 0;
     scheduleAmbient();
     if (!motionEnabled() || document.hidden || !visible) {
@@ -391,6 +398,7 @@ function initName() {
   refreshPointer();
   return () => {
     disposed = true;
+    arrival.forEach(animation => animation.cancel());
     clearTimeout(ambientTimer);
     visibilityObserver.disconnect();
     document.removeEventListener('visibilitychange', syncAmbient);
@@ -638,7 +646,6 @@ function initSkills() {
   card.innerHTML = '<div class="skill-preview-content"><div class="skill-preview-art"><img alt="" width="64" height="64"></div><strong></strong><p></p></div>';
   document.body.append(card);
   const content = card.querySelector('.skill-preview-content');
-  buttons.forEach(button => { const image = new Image(); image.src = button.dataset.skillIcon; });
   let active = null, hideTimer, contentAnimation;
   const on = (el, event, fn) => el.addEventListener(event, fn, { signal: events.signal });
   const position = () => {
@@ -667,7 +674,7 @@ function initSkills() {
       active?.removeAttribute('aria-describedby');
       active?.classList.remove('skill-active');
       active = button;
-      card.querySelector('img').src = button.dataset.skillIcon;
+      card.querySelector('img').src = button.querySelector('img').src;
       card.querySelector('strong').textContent = button.textContent;
       card.querySelector('p').textContent = button.dataset.skillDescription;
       card.style.setProperty('--skill-color', button.dataset.skillColor);
@@ -702,8 +709,58 @@ function initSkills() {
   return () => { hide(); events.abort(); card.remove(); };
 }
 
+const HOME_FLIGHT_MS = 2100;
+const homeFlightKey = 'portfolio-home-flight';
+let homeFlightSeen = false;
+try { homeFlightSeen = sessionStorage.getItem(homeFlightKey) === '1'; } catch { /* Storage is optional. */ }
+
+function shouldFlyHome(main, top, hash) {
+  return !homeFlightSeen && main.dataset.page === 'home' && motionEnabled() && top < 120 && !hash;
+}
+
+function flyHomeLetters(main) {
+  homeFlightSeen = true;
+  try { sessionStorage.setItem(homeFlightKey, '1'); } catch { /* Use the in-memory flag. */ }
+  main.classList.add('home-arrival');
+  const width = innerWidth, height = innerHeight;
+  const eyeX = width / 2;
+  const glyphs = [...main.querySelectorAll('h1 .name-char, .hero-role .type-char')];
+  const boxes = glyphs.map(el => el.getBoundingClientRect());
+  // Sample the sky camera once. The compositor interpolates each letter's
+  // perspective projection without measuring or moving DOM nodes per frame.
+  const frames = Array.from({ length: 33 }, (_, i) => {
+    const distance = flightDistance(i / 32);
+    const remaining = 1 - distance;
+    return {
+      distance, remaining,
+      eyeY: height * homeFlightFocusY(remaining),
+    };
+  });
+  sky.travel(location.pathname, scrollY, HOME_FLIGHT_MS, { centered: true });
+  return glyphs.map((el, i) => {
+    const box = boxes[i];
+    const centerX = box.left + box.width / 2, centerY = box.top + box.height / 2;
+    const isSubtitle = el.classList.contains('type-char');
+    const lineDepth = isSubtitle ? 2.15 : 1.65;
+    const phase = Math.sin(i * 1.7);
+    const keys = frames.map(({ distance, remaining, eyeY }, frame) => {
+      // Shared scale and vertical travel keep the baseline level throughout the flight.
+      const lineScale = 1 / (1 + lineDepth * remaining);
+      const scale = 1 / (1 + (lineDepth + 1.15) * remaining);
+      const x = (eyeX - centerX) * (1 - lineScale);
+      const y = (eyeY - centerY) * (1 - lineScale);
+      return {
+        transform: `translate(${x}px, ${y}px) scale(${scale})`,
+        opacity: Math.min(1, frame / 3) * Math.min(1, .36 + distance * (1.1 + .24 * phase)),
+      };
+    });
+    return el.animate(keys, { duration: HOME_FLIGHT_MS, fill: 'backwards' });
+  });
+}
+
 function initPage() {
-  const theme = document.querySelector('main').dataset.spaceTheme;
+  const main = document.querySelector('main');
+  const theme = main.dataset.spaceTheme;
   if (theme) document.body.dataset.spaceTheme = theme;
   else delete document.body.dataset.spaceTheme;
   const casePage = document.querySelector('main.case-page');
@@ -733,7 +790,6 @@ function initPage() {
   if ("IntersectionObserver" in window) {
     document.documentElement.classList.add("js-motion");
     document.documentElement.dataset.motionReady = 'true';
-    const main = document.querySelector('main');
     const title = main.querySelector('h1');
     const intro = title?.closest('.home-intro, .page-intro, .contact-details');
     const supporting = intro ? [...intro.children].filter(el => el !== title).flatMap(el =>
@@ -1003,6 +1059,10 @@ async function submitContact(e) {
   }
 }
 
+function routeFadeTarget(main) {
+  return main.querySelector('.contact-details') || main;
+}
+
 async function navigate(url, { pop = false, key, point } = {}) {
   if (navigating) {
     if (pop) pendingHistory = { url, key };
@@ -1028,12 +1088,12 @@ async function navigate(url, { pop = false, key, point } = {}) {
     const nextMain = next.querySelector("body[data-portfolio] main");
     if (!nextMain) throw Error("External page");
     const top = pop ? positions.get(key) || 0 : 0;
-    sky.travel(url.pathname, top);
+    if (!shouldFlyHome(nextMain, top, url.hash)) sky.travel(url.pathname, top);
     if (animate) {
       document.body.classList.add("in-transit");
       oldMain.classList.add("is-leaving");
       travelPlanets(false);
-      const exit = oldMain.getAnimations().find(animation => animation.transitionProperty === 'opacity');
+      const exit = routeFadeTarget(oldMain).getAnimations().find(animation => animation.transitionProperty === 'opacity');
       if (exit) await exit.finished.catch(() => {});
     }
     if (pendingHistory) return;
@@ -1068,7 +1128,7 @@ async function navigate(url, { pop = false, key, point } = {}) {
       }
     }
     if (animate) {
-      const arrival = nextMain.getAnimations().find(animation => animation.animationName === 'page-arrive');
+      const arrival = routeFadeTarget(nextMain).getAnimations().find(animation => animation.animationName === 'page-arrive');
       if (arrival) await arrival.finished.catch(() => {});
     }
     nextMain.classList.remove("is-arriving");
