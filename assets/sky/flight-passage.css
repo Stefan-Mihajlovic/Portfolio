@@ -1,0 +1,22 @@
+/* Match the portfolio's page-leave and page-arrive timings across the arcade boundary. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-old(root) {
+    animation: flight-depart 0.5s ease-in both;
+  }
+  ::view-transition-new(root) {
+    animation: flight-arrive 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes flight-depart {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes flight-arrive {
+    from {
+      opacity: 0;
+    }
+  }
+}

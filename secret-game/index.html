@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#090d18" />
+    <meta name="robots" content="noindex" />
+    <title>Low Orbit | Stefan Mihajlovic</title>
+    <link rel="icon" href="/secret-game/interceptor.png" />
+    <link rel="stylesheet" href="./game.css" />
+    <script type="module" src="./game.js"></script>
+  </head>
+  <body data-mode="intro">
+    <section id="arrival" aria-label="Entering Low Orbit">
+      <div class="arrival-route">
+        <div class="arrival-label"><span>Low Orbit</span><output aria-hidden="true">0%</output></div>
+        <div
+          class="arrival-track"
+          role="progressbar"
+          aria-label="Approaching orbit"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="arrival-course"><canvas width="112" height="80" aria-hidden="true"></canvas></div>
+        </div>
+      </div>
+    </section>
+    <noscript
+      ><style>
+        #arrival {
+          display: none;
+        }</style
+      >Enable JavaScript to launch the game.</noscript
+    >
+    <main id="arena" inert aria-label="Low Orbit arcade game">
+      <canvas aria-label="Spaceflight playfield" tabindex="-1"></canvas>
+      <header>
+        <a href="/" class="back"><span aria-hidden="true">←</span> Portfolio</a>
+        <div id="hud" hidden>
+          <span class="wave-metric"
+            >Wave <b id="wave">01</b><i class="wave-track" aria-hidden="true"></i
+          ></span>
+          <div id="boss-hud" hidden>
+            <label for="boss-armor"><b id="boss-name"></b><span id="boss-phase"></span></label>
+            <progress id="boss-armor" value="1" max="1"></progress>
+          </div>
+          <span class="metric">Score <b id="score">000000</b></span>
+          <span class="metric hull"
+            >Shields <span id="shield" class="shield" aria-label="3 shields"><i></i><i></i><i></i></span
+          ></span>
+        </div>
+        <div class="systems">
+          <div class="record">High score <b id="best">000000</b></div>
+          <details id="mixer">
+            <summary aria-label="Sound volume">
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M3 8h3l4-4v12l-4-4H3zM13 7q3 3 0 6m2-9q6 6 0 12" />
+              </svg>
+              <output id="level">10%</output>
+            </summary>
+            <label>Volume <input id="volume" type="range" min="0" max="100" value="10" /></label>
+          </details>
+          <button id="fullscreen" aria-label="Enter fullscreen" title="Enter fullscreen" hidden>
+            <svg
+              aria-hidden="true"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linejoin="round"
+            >
+              <path class="expand" d="M3 9V3h6m6 0h6v6m0 6v6h-6M9 21H3v-6" />
+              <path class="contract" d="M9 3v6H3m12-6v6h6m0 6h-6v6m-6 0v-6H3" />
+            </svg>
+          </button>
+          <button id="pause" aria-label="Pause game" title="Pause game" hidden>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="5" y="3" width="5" height="18" rx="1" />
+              <rect x="14" y="3" width="5" height="18" rx="1" />
+            </svg>
+          </button>
+        </div>
+      </header>
+      <section id="panel" aria-labelledby="title">
+        <div class="flight-brief">
+          <h1 id="title">Low Orbit</h1>
+          <p id="message">Dodge incoming fire. Clear each wave.</p>
+          <dl id="debrief" hidden>
+            <div>
+              <dt>Score</dt>
+              <dd id="run-score"></dd>
+            </div>
+            <div>
+              <dt>Wave reached</dt>
+              <dd id="run-wave"></dd>
+            </div>
+            <div>
+              <dt>Ships down</dt>
+              <dd id="run-kills"></dd>
+            </div>
+          </dl>
+          <button id="action">
+            <span aria-hidden="true">▶</span><span id="action-text">Launch ship</span>
+          </button>
+        </div>
+        <div class="flight-console">
+          <div class="flight-actions">
+            <button class="guide-open" id="guide-open">
+              <svg
+                aria-hidden="true"
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M3 4.5c3-.7 6-.2 9 1.5 3-1.7 6-2.2 9-1.5v14c-3-.7-6-.2-9 1.5-3-1.7-6-2.2-9-1.5zM12 6v14"
+                /></svg
+              >Flight manual
+            </button>
+          </div>
+          <footer aria-label="Flight controls">
+            <div class="keyboard">
+              <span class="binding"><span>Steer</span><kbd>WASD</kbd><small>or arrows</small></span>
+              <span class="binding"><span>Fire</span><kbd>Space</kbd></span>
+              <span class="binding"><span>Pause</span><kbd>P</kbd></span>
+            </div>
+            <span class="touch">Drag to steer <i aria-hidden="true"></i> Hold to fire</span>
+          </footer>
+        </div>
+      </section>
+      <dialog id="manual" aria-labelledby="manual-title">
+        <form method="dialog">
+          <h2 id="manual-title">Flight manual</h2>
+          <button aria-label="Close flight manual">×</button>
+        </form>
+        <p class="boss-tip">
+          The first flagship arrives at 500 points. The next arrives at 1,000, then one every 1,000
+          points. Break all three armor segments to bring it down. Each breach changes its fire pattern.
+          Watch the edge markers for incoming squadrons. Break a segment to clear enemy fire. Destroy two
+          ships in a Bastion convoy to expose its core for double damage. Hold Shift for fine steering,
+          or make short drags on touch. Skim a projectile for five points.
+        </p>
+        <dl>
+          <div>
+            <canvas data-craft="raider" aria-hidden="true" width="96" height="96"></canvas>
+            <dt>Raider</dt>
+            <dd>Tracks your position. Change course when its sight lights up.</dd>
+          </div>
+          <div>
+            <canvas data-craft="kite" aria-hidden="true" width="96" height="96"></canvas>
+            <dt>Kite</dt>
+            <dd>Sweeps in pairs and fires twin rounds. Leave room to slip between them.</dd>
+          </div>
+          <div>
+            <canvas data-craft="gunship" aria-hidden="true" width="96" height="96"></canvas>
+            <dt>Gunship</dt>
+            <dd>Holds position and fires a five-round fan. Four hits break its armor.</dd>
+          </div>
+          <div>
+            <canvas data-craft="lancer" aria-hidden="true" width="96" height="96"></canvas>
+            <dt>Lancer</dt>
+            <dd>Marks a line, then dives. Step aside once its heading locks.</dd>
+          </div>
+        </dl>
+      </dialog>
+    </main>
+  </body>
+</html>

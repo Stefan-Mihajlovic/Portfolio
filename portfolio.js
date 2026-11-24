@@ -1,5 +1,7 @@
 import { createScrollStars, flightDistance, homeFlightFocusY } from "/assets/sky/scroll-stars.js?v=20261023-1";
 
+import { scheduleShipVisit } from './assets/sky/visitor.js';
+
 const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 const touchScroll = matchMedia('(hover: none) and (pointer: coarse)');
 // Preserve the mouse position when a new page appears beneath a stationary cursor.
@@ -1213,3 +1215,4 @@ window.addEventListener("pageshow", (e) => {
   }
 });
 initPage();
+scheduleShipVisit();

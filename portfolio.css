@@ -1,3 +1,4 @@
+@import './assets/sky/flight-passage.css';
 /* Cabinet Grotesk by Indian Type Foundry, distributed through Fontshare; hosted locally. */
 @font-face {
   font-family: "Cabinet Grotesk";
@@ -1965,3 +1966,14 @@ body { position: relative; }
 .project-name-word { white-space: nowrap; }
 .work-caption :is(.name-star-i, .name-star-j) { display: inline-block; }
 .case-page .page-intro h1.project-title-single-line { font-size: min(112px, 8.5vw); white-space: nowrap; }
+
+.visiting-ship {
+  position: fixed;
+  z-index: 101;
+  width: 56px;
+  height: 60px;
+  border-radius: 50%;
+  background: url('/secret-game/interceptor.png') center / 40px auto no-repeat;
+  cursor: pointer;
+}
+.visiting-ship[hidden], .menu-open .visiting-ship { display: none; }
