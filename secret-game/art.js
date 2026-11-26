@@ -342,6 +342,30 @@ const foes = {
     ['#4f2030', 'M0 14 -3 5 0 -10 3 5Z'],
     ['#ffd8c2', 'M-12 -8 -8 -12 -8 -5Z M12 -8 8 -12 8 -5Z'],
   ]),
+  orbiter: plates([
+    [ink, 'M0 -21 15 -15 21 0 15 15 0 21 -15 15 -21 0 -15 -15Z'],
+    ['#54b5b8', 'M0 -17 12 -12 17 0 12 12 0 17 -12 12 -17 0 -12 -12Z'],
+    ['#214252', 'M0 -11 11 0 0 11 -11 0Z'],
+    [amber, 'M0 -16 3 -8 -3 -8Z M0 16 3 8 -3 8Z M-16 0 -8 -3 -8 3Z M16 0 8 -3 8 3Z'],
+  ]),
+  bomber: plates([
+    [ink, 'M-25 -14 -13 -19 -6 -10 0 -16 6 -10 13 -19 25 -14 23 15 13 19 8 11 0 18 -8 11 -13 19 -23 15Z'],
+    ['#c77a38', 'M-21 -11 -12 -15 -6 -6 0 -12 6 -6 12 -15 21 -11 19 12 12 15 7 7 0 14 -7 7 -12 15 -19 12Z'],
+    ['#5c3523', 'M-17 -7 -11 -10 -11 9 -17 7Z M17 -7 11 -10 11 9 17 7Z M-6 -4 6 -4 4 8 -4 8Z'],
+    ['#ffe09c', 'M-4 -9 4 -9 3 -5 -3 -5Z'],
+  ]),
+  phantom: plates([
+    [ink, 'M0 24 -8 6 -22 -14 -9 -6 0 -22 9 -6 22 -14 8 6Z'],
+    ['#7d63c9', 'M0 19 -6 4 -17 -10 -7 -3 0 -17 7 -3 17 -10 6 4Z'],
+    ['#2b204d', 'M0 13 -4 2 0 -11 4 2Z'],
+    ['#d8c2ff', 'M-14 -9 -9 -5 -11 -2Z M14 -9 9 -5 11 -2Z'],
+  ]),
+  healer: plates([
+    [ink, 'M0 -20 14 -12 20 0 14 14 0 20 -14 14 -20 0 -14 -12Z'],
+    ['#4ca87a', 'M0 -16 11 -9 16 0 11 11 0 16 -11 11 -16 0 -11 -9Z'],
+    ['#1d4a3b', 'M-10 -6 10 -6 10 6 -10 6Z'],
+    ['#c8ffdf', 'M-3 -9 3 -9 3 -3 9 -3 9 3 3 3 3 9 -3 9 -3 3 -9 3 -9 -3 -3 -3Z'],
+  ]),
 };
 
 const SECTOR_FOE_TINTS = [
@@ -349,6 +373,10 @@ const SECTOR_FOE_TINTS = [
   { '#d96854': '#e66442', '#cf899e': '#e08b63', '#bf6d4d': '#cc5a3b' },
   { '#d96854': '#c26db8', '#cf899e': '#b294e8', '#bf6d4d': '#9668b8' },
   { '#d96854': '#d98948', '#cf899e': '#e0a969', '#bf6d4d': '#b87638' },
+  { '#d96854': '#4ec2b4', '#cf899e': '#8c96ff', '#bf6d4d': '#3f9c98' },
+  { '#d96854': '#70a8d8', '#cf899e': '#a4d8f5', '#bf6d4d': '#5a8ab8' },
+  { '#d96854': '#c98842', '#cf899e': '#c2a374', '#bf6d4d': '#9e6935' },
+  { '#d96854': '#e04f64', '#cf899e': '#ff946b', '#bf6d4d': '#b33c52' },
 ];
 
 export function drawFoe(ctx, e, sectorIndex = 0) {
@@ -415,11 +443,35 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.restore();
   }
 
-  ctx.rotate(e.tilt || 0);
+  if (e.kind === 'phantom' && e.blinkTelegraph > 0 && e.blinkTargetX !== undefined) {
+    // Crisp phase-blink arrival ghost outline so player can read the teleport!
+    ctx.save();
+    const dx = e.blinkTargetX - e.x;
+    const dy = (e.blinkTargetY ?? e.y) - e.y;
+    const p = 1 - e.blinkTelegraph / 0.45;
+    ctx.strokeStyle = `rgba(196, 152, 255, ${0.35 + p * 0.6})`;
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(dx, dy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(dx, dy, 12 + (1 - p) * 14, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  ctx.rotate(e.kind === 'orbiter' ? (e.age || 0) * 3.4 : e.tilt || 0);
   const scale = e.r / 18;
   ctx.scale(scale, scale);
 
-  if (e.kind !== 'prism' && e.kind !== 'courier') {
+  if (e.kind === 'phantom' && e.blinkTelegraph > 0) {
+    ctx.globalAlpha = 0.42 + 0.35 * Math.sin((e.age || 0) * 36);
+  }
+
+  if (e.kind !== 'prism' && e.kind !== 'courier' && e.kind !== 'orbiter' && e.kind !== 'healer') {
     const flick = 0.75 + 0.25 * Math.sin((e.age || 0) * 28);
     ctx.fillStyle = e.kind === 'lancer' && e.fireIn <= 0 ? '#ffe7b3' : '#ff8c5990';
     ctx.beginPath();
@@ -427,6 +479,17 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.lineTo(0, -21 - flick * (e.kind === 'lancer' && e.fireIn <= 0 ? 18 : 6));
     ctx.lineTo(4, -14);
     ctx.fill();
+  }
+
+  if (e.kind === 'healer') {
+    const pulse = 0.65 + 0.35 * Math.sin((e.age || 0) * 7);
+    ctx.save();
+    ctx.strokeStyle = `rgba(130, 255, 192, ${0.32 + pulse * 0.35})`;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 23 + pulse * 3, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
   }
 
   if (e.kind === 'vanguard' && e.frontShield) {
@@ -471,7 +534,13 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.restore();
   }
 
-  print(ctx, foes[e.kind] || foes.raider, e.kind === 'courier' ? null : SECTOR_FOE_TINTS[sectorIndex % 4]);
+  print(
+    ctx,
+    foes[e.kind] || foes.raider,
+    e.kind === 'courier' || e.kind === 'healer' || e.kind === 'phantom'
+      ? null
+      : SECTOR_FOE_TINTS[sectorIndex % SECTOR_FOE_TINTS.length],
+  );
 
   if (e.flash > 0) {
     ctx.globalCompositeOperation = 'lighter';
@@ -563,17 +632,26 @@ export function drawRock(ctx, e, sectorIndex = 0) {
   ctx.translate(e.x, e.y);
   ctx.rotate(e.angle);
   ctx.scale(e.r, e.r);
-  const sec = sectorIndex % 4;
+  const sec = sectorIndex % SECTORS.length;
   const molten = e.molten || sec === 1;
+  const cryo = e.cryo || sec === 5;
   const shades = e.flash > 0
     ? Array(10).fill('#e6dccd')
     : molten
       ? ['#57312e', '#472526', '#331c21', '#26141a', '#4f2b28', '#733e34', '#944f3c', '#6e3b31', '#8a4c3b', '#63332d']
-      : sec === 2
-        ? ['#6e678f', '#57507a', '#443e66', '#312d4f', '#5b537d', '#887ea8', '#a89ac7', '#867ca8', '#9e92bd', '#7c739e']
-        : sec === 3
-          ? ['#61534a', '#4c403a', '#38302c', '#292321', '#4d413b', '#7a6859', '#99826c', '#776557', '#8f7965', '#6e5d50']
-          : ['#6f7182', '#55576c', '#41475d', '#30384d', '#535568', '#89858d', '#aba099', '#888592', '#a59f9f', '#848292'];
+      : cryo
+        ? ['#6ea8c9', '#5082a8', '#396285', '#284563', '#5f96bd', '#8ac4e3', '#bceaff', '#85bee0', '#a8ddf7', '#6da6c9']
+        : sec === 2
+          ? ['#6e678f', '#57507a', '#443e66', '#312d4f', '#5b537d', '#887ea8', '#a89ac7', '#867ca8', '#9e92bd', '#7c739e']
+          : sec === 4
+            ? ['#2d6b6d', '#224f57', '#1a3c45', '#122b33', '#2a5f63', '#3d8b8c', '#63c4bd', '#3a8485', '#4fa8a6', '#2d6c70']
+            : sec === 6
+              ? ['#6b5643', '#544336', '#3d3129', '#2b221e', '#594738', '#876b50', '#ab8964', '#80644a', '#997a5c', '#6e5844']
+              : sec === 7
+                ? ['#4a2a38', '#38202c', '#26151f', '#1a0d16', '#3f2431', '#693647', '#944a5c', '#5e3040', '#7a3d4e', '#472734']
+                : sec === 3
+                  ? ['#61534a', '#4c403a', '#38302c', '#292321', '#4d413b', '#7a6859', '#99826c', '#776557', '#8f7965', '#6e5d50']
+                  : ['#6f7182', '#55576c', '#41475d', '#30384d', '#535568', '#89858d', '#aba099', '#888592', '#a59f9f', '#848292'];
   e.shape.forEach(([x, y], i) => {
     const [nx, ny] = e.shape[(i + 1) % e.shape.length];
     ctx.fillStyle = shades[i];
@@ -804,6 +882,91 @@ export const SECTORS = [
     eclipse: true,
     seed: 109,
   },
+  {
+    name: 'ASTRAL RIFT',
+    skyTop: '#050c14',
+    skyBottom: '#0b1e28',
+    veilA: 'rgba(42, 206, 186, 0.22)',
+    veilB: 'rgba(118, 66, 224, 0.24)',
+    veilC: 'rgba(154, 255, 232, 0.12)',
+    starTint: '#c8fff5',
+    starAccent: '#d6a8ff',
+    arcColor: 'rgba(92, 244, 218, 0.13)',
+    warpColor: '#76ffe8',
+    lane: 0.78,
+    width: 0.42,
+    base: ['#0c1c2c', '#184b5c', '#3ea6ad', '#b8fff2'],
+    rim: '#6effe6',
+    bands: 5,
+    ring: true,
+    eclipse: false,
+    dimension: 'rift',
+    seed: 137,
+  },
+  {
+    name: 'CRYO NEBULA',
+    skyTop: '#07111e',
+    skyBottom: '#10243d',
+    veilA: 'rgba(96, 182, 245, 0.24)',
+    veilB: 'rgba(140, 218, 255, 0.16)',
+    veilC: 'rgba(220, 248, 255, 0.12)',
+    starTint: '#e6f8ff',
+    starAccent: '#99dcff',
+    arcColor: 'rgba(166, 228, 255, 0.11)',
+    warpColor: '#b8ecff',
+    lane: 0.24,
+    width: 0.48,
+    base: ['#10243a', '#28567d', '#6fb7de', '#e6faff'],
+    rim: '#b8f0ff',
+    bands: 7,
+    ring: true,
+    eclipse: false,
+    dimension: 'cryo',
+    seed: 173,
+  },
+  {
+    name: 'IRON GRAVEYARD',
+    skyTop: '#100c0b',
+    skyBottom: '#211914',
+    veilA: 'rgba(176, 118, 62, 0.2)',
+    veilB: 'rgba(98, 72, 58, 0.22)',
+    veilC: 'rgba(255, 198, 128, 0.1)',
+    starTint: '#f5e4cc',
+    starAccent: '#ffaa66',
+    arcColor: 'rgba(224, 168, 108, 0.1)',
+    warpColor: '#ffca85',
+    lane: 0.72,
+    width: 0.4,
+    base: ['#1c1512', '#47362b', '#87674d', '#d9b589'],
+    rim: '#ebb97f',
+    bands: 3,
+    ring: false,
+    eclipse: false,
+    fissures: true,
+    dimension: 'graveyard',
+    seed: 211,
+  },
+  {
+    name: 'EVENT HORIZON',
+    skyTop: '#050409',
+    skyBottom: '#160914',
+    veilA: 'rgba(224, 62, 92, 0.24)',
+    veilB: 'rgba(130, 36, 168, 0.22)',
+    veilC: 'rgba(255, 194, 112, 0.14)',
+    starTint: '#ffe8f0',
+    starAccent: '#ffb870',
+    arcColor: 'rgba(255, 126, 134, 0.12)',
+    warpColor: '#ff7a98',
+    lane: 0.5,
+    width: 0.52,
+    base: ['#040408', '#090712', '#1c1026', '#ff8b66'],
+    rim: '#ff9668',
+    bands: 0,
+    ring: true,
+    eclipse: true,
+    dimension: 'singularity',
+    seed: 257,
+  },
 ];
 
 function seededRandom(seed) {
@@ -991,6 +1154,10 @@ export function getSectorHazard(index) {
     'MOLTEN ASTEROIDS',
     'ION CURRENT DRIFT',
     'SOLAR SURGE',
+    'GRAVITY ANOMALY // +NOVA',
+    'SUB-ZERO // +35% COOLING',
+    'EMP PULSE STORMS',
+    'SINGULARITY // +25% SCORE',
   ];
   return hazards[Math.max(0, index) % hazards.length];
 }
@@ -1066,9 +1233,71 @@ export function drawSpaceBackdrop(ctx, w, h, travel, pan, sectorIndex, warpFacto
   }
   ctx.restore();
 
-  // Subtle editorial orbital telemetry arcs drifting slowly in deep space
+  // Subtle editorial orbital telemetry arcs + bespoke dimension architecture!
   const arcOffset = (travel * 0.09) % (h * 1.6);
   ctx.save();
+  ctx.strokeStyle = spec.arcColor;
+  ctx.lineWidth = 1;
+  if (spec.dimension === 'rift') {
+    // Astral Rift: hyper-dimensional perspective neon warp grid!
+    const gridSpacing = 54;
+    const gOff = (travel * 0.55) % gridSpacing;
+    ctx.strokeStyle = 'rgba(104, 245, 224, 0.08)';
+    for (let y = gOff; y < h; y += gridSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+      ctx.stroke();
+    }
+    const cols = 7;
+    for (let i = 0; i <= cols; i++) {
+      const gx = (i / cols) * w - pan * 36;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5 + (gx - w * 0.5) * 0.55, 0);
+      ctx.lineTo(gx, h);
+      ctx.stroke();
+    }
+  } else if (spec.dimension === 'cryo') {
+    // Cryo Nebula: drifting hexagonal frost crystal filaments
+    ctx.strokeStyle = 'rgba(196, 240, 255, 0.1)';
+    for (let i = 0; i < 6; i++) {
+      const hx = (((i * 0.21 + 0.1 - pan * 0.06) % 1) + 1) % 1 * w;
+      const hy = ((travel * (0.14 + (i % 3) * 0.05) + i * 165) % (h + 120)) - 60;
+      const hr = 18 + (i % 3) * 14;
+      ctx.beginPath();
+      for (let k = 0; k < 6; k++) {
+        const a = (k * TAU) / 6 + travel * 0.002 * (i % 2 ? 1 : -1);
+        if (k === 0) ctx.moveTo(hx + Math.cos(a) * hr, hy + Math.sin(a) * hr);
+        else ctx.lineTo(hx + Math.cos(a) * hr, hy + Math.sin(a) * hr);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  } else if (spec.dimension === 'graveyard') {
+    // Iron Graveyard: colossal broken orbital girder struts spanning deep space
+    ctx.strokeStyle = 'rgba(224, 170, 112, 0.12)';
+    ctx.lineWidth = 2;
+    const beamY = ((travel * 0.08) % (h + 360)) - 180;
+    ctx.beginPath();
+    ctx.moveTo(-20, beamY);
+    ctx.lineTo(w + 20, beamY + 130);
+    ctx.moveTo(-20, beamY + 18);
+    ctx.lineTo(w + 20, beamY + 148);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  } else if (spec.dimension === 'singularity') {
+    // Event Horizon: naturally scrolling relativistic stardust lensing arcs (no static center black hole!)
+    const lensSpan = h + 280;
+    ctx.strokeStyle = 'rgba(255, 146, 108, 0.14)';
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 3; i++) {
+      const ly = ((travel * (0.11 + i * 0.03) + i * (lensSpan / 3)) % lensSpan) - 140;
+      ctx.beginPath();
+      ctx.ellipse(w * 0.5 - pan * (14 + i * 5), ly, w * (0.48 + i * 0.1), 54 + i * 18, -0.14, 0, TAU);
+      ctx.stroke();
+    }
+    ctx.lineWidth = 1;
+  }
   ctx.strokeStyle = spec.arcColor;
   ctx.lineWidth = 1;
   ctx.beginPath();

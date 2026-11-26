@@ -13,6 +13,10 @@ const scores = {
   swarmpod: 200,
   swarmer: 30,
   sniper: 175,
+  orbiter: 165,
+  bomber: 245,
+  phantom: 190,
+  healer: 235,
   mine: 25,
 };
 
@@ -21,18 +25,24 @@ export const waveNames = [
   'VANGUARD SWEEP',
   'PRISM CORRIDOR',
   'CALDERA DRIFT',
+  'PHANTOM AMBUSH',
+  'CLUSTER SIEGE',
+  'ASTRAL RIFT GATE',
+  'CRYO SHATTER',
   'IRON PHALANX',
   'ECLIPSE INTERCEPT',
   'SOLAR OVERDRIVE',
-  'DEEP VOID GAUNTLET',
+  'EVENT HORIZON',
 ];
 
-// Clean, readable choreographed encounters (including Laser-Linked Gates, Shielded Vanguards, Swarm Pods & Rail Snipers!)
+// Clean, readable choreographed encounters across 6 escalating tactical banks!
 const phrases = [
-  ['echelon', 'laserLink', 'rocks', 'sniperRun', 'courier', 'anchorBattery'],
-  ['vanguardWall', 'laserLink', 'swarmDrop', 'railSniper', 'courier', 'anchorBattery'],
-  ['laserLink', 'vanguardWall', 'mineSweep', 'swarmDrop', 'courier', 'railSniper'],
-  ['pincerStrike', 'vanguardWall', 'laserLink', 'swarmDrop', 'courier', 'railSniper'],
+  ['echelon', 'laserLink', 'orbiterRing', 'sniperRun', 'courier', 'anchorBattery'],
+  ['vanguardWall', 'blinkAmbush', 'swarmDrop', 'railSniper', 'courier', 'clusterSiege'],
+  ['healerPhalanx', 'laserLink', 'orbiterRing', 'mineSweep', 'courier', 'phantomSniper'],
+  ['clusterSiege', 'crossLaserGate', 'blinkAmbush', 'vanguardWall', 'courier', 'swarmDrop'],
+  ['healerPhalanx', 'phantomSniper', 'crossLaserGate', 'clusterSiege', 'courier', 'pincerStrike'],
+  ['crossLaserGate', 'healerPhalanx', 'blinkAmbush', 'orbiterRing', 'courier', 'clusterSiege'],
 ];
 
 export const waveLength = 15.5;
@@ -40,9 +50,12 @@ export const waveLength = 15.5;
 export function createEnemy(kind, x, y, wave, overrides = {}) {
   const tier = Math.max(0, wave - 1);
   const overclock = Boolean(overrides.overclock);
-  const sec = (overrides.sectorIndex || 0) % 4;
-  // Asymptotic speed curve: climbs smoothly toward ~1.38x (+14% in Overclock, +7% in Eclipse Corona)
-  const speed = (1 + 0.38 * (1 - Math.exp(-tier * 0.16))) * (overclock ? 1.14 : 1) * (sec === 3 ? 1.07 : 1);
+  const sec = (overrides.sectorIndex || 0) % 8;
+  // Asymptotic speed curve: climbs smoothly toward ~1.38x (+14% in Overclock, +7% in Eclipse, +10% in Event Horizon)
+  const speed =
+    (1 + 0.38 * (1 - Math.exp(-tier * 0.16))) *
+    (overclock ? 1.14 : 1) *
+    (sec === 3 ? 1.07 : sec === 7 ? 1.1 : 1);
   // Smoothly escalating HP across ALL enemy tiers so higher waves stay engaging even at MK V–VII!
   const hpMult = (1 + tier * 0.24 + Math.log2(1 + tier * 0.65) * 0.35) * (overclock ? 1.2 : 1);
 
@@ -59,6 +72,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     swarmpod: 20,
     swarmer: 10,
     sniper: 17,
+    orbiter: 18,
+    bomber: 24,
+    phantom: 16,
+    healer: 19,
     mine: 10,
   };
   const cruiseMap = {
@@ -74,6 +91,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     swarmpod: 64,
     swarmer: 175,
     sniper: 82,
+    orbiter: 88,
+    bomber: 56,
+    phantom: 98,
+    healer: 68,
     mine: 36,
   };
   const baseHp = {
@@ -89,6 +110,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     swarmpod: 6.5,
     swarmer: 1,
     sniper: 4.5,
+    orbiter: 5.2,
+    bomber: 9.5,
+    phantom: 4.2,
+    healer: 6.5,
     mine: 2,
   };
   const shardMap = {
@@ -104,6 +129,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     swarmpod: 5,
     swarmer: 1,
     sniper: 4,
+    orbiter: 5,
+    bomber: 7,
+    phantom: 5,
+    healer: 6,
     mine: 1,
   };
   const r = overrides.r ?? rMap[kind] ?? 16;
@@ -128,7 +157,23 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     threat: speed,
     wave,
     age: 0,
-    fireIn: overrides.fireIn ?? (kind === 'kite' ? 1.15 : kind === 'prism' ? 1.35 : kind === 'minelayer' ? 0.7 : kind === 'sniper' ? 1.4 : 1.3),
+    fireIn:
+      overrides.fireIn ??
+      (kind === 'kite'
+        ? 1.15
+        : kind === 'prism'
+          ? 1.35
+          : kind === 'minelayer'
+            ? 0.7
+            : kind === 'sniper'
+              ? 1.4
+              : kind === 'orbiter'
+                ? 1.05
+                : kind === 'bomber'
+                  ? 1.45
+                  : kind === 'phantom'
+                    ? 1.25
+                    : 1.3),
     aim: 0,
     aimAngle: 0,
     aimLock: 0,
@@ -136,6 +181,13 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     frontShield: kind === 'vanguard',
     shieldFlash: 0,
     hatchIn: kind === 'swarmpod' ? 3.4 : 0,
+    blinkCd: kind === 'phantom' ? 1.55 : 0,
+    blinkTelegraph: 0,
+    blinkTargetX: undefined,
+    blinkTargetY: undefined,
+    healTarget: null,
+    healTargets: [],
+    healPulseIn: kind === 'healer' ? 1.35 : 0,
     flash: 0,
     hp,
     maxHp: hp,
@@ -168,7 +220,8 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
       dir,
       overclock,
       sectorIndex,
-      molten: type === 'rock' && sectorIndex % 4 === 1,
+      molten: type === 'rock' && sectorIndex % 8 === 1,
+      cryo: type === 'rock' && sectorIndex % 8 === 5,
       ...extra,
     });
     enemies.push(foe);
@@ -271,6 +324,41 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
     add('gunship', 0.3, 0, 1, { fireIn: 1.2 });
     add('gunship', 0.7, 0.35, -1, { fireIn: 2.15 });
     if (wave >= 4) add('lancer', 0.5, 0.95, side);
+  } else if (kind === 'orbiterRing') {
+    // Twin spinning Pulse Orbiters firing rotating cross-volleys + agile wingman
+    add('orbiter', 0.28, 0, 1, { holdY: 0.24, fireIn: 1.05 });
+    add('orbiter', 0.72, 0.28, -1, { holdY: 0.28, fireIn: 1.75 });
+    add('raider', 0.5, 0.7, side, { fireIn: 1.6 });
+  } else if (kind === 'clusterSiege') {
+    // Heavy Cluster Bomber lobbing mid-air shrapnel shells escorted by flanked raiders
+    add('bomber', center, 0, side, { fireIn: 1.35 });
+    add('kite', Math.max(0.14, center - 0.26), 0.35, 1, { fireIn: 1.55 });
+    add('kite', Math.min(0.86, center + 0.26), 0.35, -1, { fireIn: 2.0 });
+  } else if (kind === 'blinkAmbush') {
+    // Teleporting Phase Phantoms that blink across lanes before firing 3-bolt bursts
+    add('phantom', 0.24, 0, 1, { fireIn: 1.25 });
+    add('phantom', 0.76, 0.32, -1, { fireIn: 1.9 });
+    add('lancer', 0.5, 0.85, side);
+  } else if (kind === 'healerPhalanx') {
+    // Shielded Vanguard or Bomber backed by an emerald Repair Drone — prioritize the Healer!
+    add(wave >= 4 ? 'bomber' : 'vanguard', center, 0, side, { fireIn: 1.45 });
+    add('healer', Math.max(0.18, Math.min(0.82, center + side * 0.22)), 0.32, -side, { holdY: 0.2 });
+    add('raider', Math.max(0.14, Math.min(0.86, center - side * 0.24)), 0.55, side, { fireIn: 1.75 });
+  } else if (kind === 'crossLaserGate') {
+    // Dual staggered diagonal laser-tether gates!
+    const a1 = add('prism', 0.18, 0, 1, { tethered: true, tetherWarmup: 1.0, cruise: 68, fireIn: 99 });
+    const a2 = add('prism', 0.52, 0.25, 1, { tethered: true, tetherWarmup: 1.0, cruise: 68, fireIn: 99 });
+    a1.linkPartner = a2;
+    a2.linkedBy = a1;
+    const b1 = add('prism', 0.82, 0.75, -1, { tethered: true, tetherWarmup: 1.05, cruise: 68, fireIn: 99 });
+    const b2 = add('prism', 0.48, 1.0, -1, { tethered: true, tetherWarmup: 1.05, cruise: 68, fireIn: 99 });
+    b1.linkPartner = b2;
+    b2.linkedBy = b1;
+  } else if (kind === 'phantomSniper') {
+    // High-pressure precision combo: Rail Sniper + blinking Phantom flanker
+    add('sniper', side > 0 ? 0.2 : 0.8, 0, side, { holdY: 0.17, fireIn: 1.3 });
+    add('phantom', side > 0 ? 0.76 : 0.24, 0.2, -side, { fireIn: 1.65 });
+    add('orbiter', 0.5, 0.75, side, { holdY: 0.26, fireIn: 1.5 });
   }
 
   // Light ambient asteroid only if field isn't cluttered
@@ -284,6 +372,177 @@ export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0
   e.flash = Math.max(0, e.flash - dt);
   if (e.shieldFlash > 0) e.shieldFlash = Math.max(0, e.shieldFlash - dt);
   const wv = e.wave || 1;
+
+  if (e.kind === 'orbiter') {
+    // Drops to mid-field, spins rapidly, fires rotating 4-point cross volleys!
+    const holdY = h * (e.holdY || 0.25);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.4));
+    e.vy += ((e.age < 7.4 ? arrival : e.cruise * 1.45) - e.vy) * (1 - Math.exp(-dt * 4));
+    e.vx = e.dir * Math.sin(e.age * 1.5) * 46;
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    if (e.y > 20 && e.age < 6.8) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const baseA = e.age * 2.1;
+        const spd = Math.min(210, 152 * e.threat);
+        for (let i = 0; i < 4; i++) {
+          const a = baseA + (i * Math.PI) / 2;
+          shots.push({
+            x: e.x + Math.sin(a) * 10,
+            y: e.y + Math.cos(a) * 10,
+            r: 4.1,
+            vx: Math.sin(a) * spd,
+            vy: Math.cos(a) * spd,
+            hostile: true,
+            color: '#7ef2e6',
+          });
+        }
+        sound.effect('volley');
+        e.fireIn = Math.max(1.05, 1.5 / e.threat);
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'bomber') {
+    // Armored siege twin-boom bomber firing slow Cluster Shells that burst mid-flight into 6 sub-shots!
+    e.vx = e.dir * Math.sin(e.age * 0.9) * 38;
+    const holdY = h * 0.2;
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.1));
+    e.vy += ((e.age < 7.8 ? arrival : e.cruise * 1.35) - e.vy) * (1 - Math.exp(-dt * 3.8));
+    e.x = Math.max(e.r + 16, Math.min(w - e.r - 16, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, 220) * 0.35;
+    if (e.y > 20 && e.age < 7.0) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const aim = Math.atan2(player.x - e.x, Math.max(80, player.y - e.y)) * 0.55;
+        const spd = Math.min(185, 138 * e.threat);
+        shots.push({
+          x: e.x,
+          y: e.y + 16,
+          r: 7.2,
+          vx: Math.sin(aim) * spd,
+          vy: Math.cos(aim) * spd,
+          hostile: true,
+          cluster: true,
+          clusterFuse: 1.05,
+          clusterCount: wv >= 6 ? 7 : 6,
+          color: '#ffb45c',
+        });
+        sound.effect('cluster');
+        e.fireIn = Math.max(1.75, 2.35 / e.threat);
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'phantom') {
+    // Phase-blinking stealth striker: telegraphs destination for 0.45s, teleports, then fires 3-bolt fan!
+    if (e.blinkTelegraph > 0) {
+      e.blinkTelegraph -= dt;
+      e.vx *= Math.exp(-dt * 10);
+      e.vy *= Math.exp(-dt * 10);
+      if (e.blinkTelegraph <= 0) {
+        e.x = e.blinkTargetX ?? e.x;
+        e.y = e.blinkTargetY ?? e.y;
+        e.blinkTargetX = undefined;
+        e.blinkTargetY = undefined;
+        sound.effect('blink');
+        // Snap-fire 3-bolt fan immediately on materializing!
+        const aim = Math.atan2(player.x - e.x, Math.max(60, player.y - e.y));
+        const spd = Math.min(235, 182 * e.threat);
+        for (const off of [-0.18, 0, 0.18]) {
+          shots.push({
+            x: e.x,
+            y: e.y + 10,
+            r: 4.1,
+            vx: Math.sin(aim + off) * spd,
+            vy: Math.cos(aim + off) * spd,
+            hostile: true,
+            color: '#cfa6ff',
+          });
+        }
+        e.blinkCd = Math.max(1.9, 2.6 / e.threat);
+      }
+      return;
+    }
+
+    e.vx = e.dir * Math.sin(e.age * 1.9) * 58;
+    e.vy = e.cruise * (e.y < h * 0.26 ? 0.95 : 0.48);
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, 200) * 0.45;
+    if (e.y > 28 && e.y < player.y - 110 && e.age < 7.2) {
+      e.blinkCd -= dt;
+      if (e.blinkCd <= 0) {
+        // Pick a fresh horizontal lane across the upper arena
+        const shift = (e.x < w * 0.5 ? 1 : -1) * (w * (0.24 + Math.random() * 0.24));
+        e.blinkTargetX = Math.max(28, Math.min(w - 28, e.x + shift));
+        e.blinkTargetY = Math.max(42, Math.min(h * 0.44, e.y + 24));
+        e.blinkTelegraph = 0.45;
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'healer') {
+    // Support Repair Drone: orbits upper-mid field and channels strong emerald repair beams into up to 2 nearby allies!
+    const holdY = h * (e.holdY || 0.22);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.2));
+    e.vy += ((e.age < 10.5 ? arrival : e.cruise * 1.4) - e.vy) * (1 - Math.exp(-dt * 4));
+    e.vx = e.dir * Math.sin(e.age * 1.2) * 54;
+    e.x = Math.max(e.r + 16, Math.min(w - e.r - 16, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = Math.sin(e.age * 2.2) * 0.14;
+
+    // Find up to 2 closest live wounded allies within 380px (or nearest live combat ally to stay tethered!)
+    const candidates = [];
+    for (const ally of enemies) {
+      if (ally === e || ally.dead || ally.kind === 'rock' || ally.kind === 'mine' || ally.kind === 'healer' || ally.kind === 'boss') continue;
+      const d = Math.hypot(ally.x - e.x, ally.y - e.y);
+      if (d < 380) {
+        candidates.push({ ally, d, missing: ally.maxHp - ally.hp });
+      }
+    }
+    candidates.sort((a, b) => (b.missing > 0) - (a.missing > 0) || a.d - b.d);
+    const linked = candidates.slice(0, 2).map((c) => c.ally);
+    e.healTargets = linked;
+    e.healTarget = linked[0] || null;
+
+    // Strong percentage-based continuous heal (~24% maxHp/sec) + periodic +14% burst mend pulse!
+    e.healPulseIn = (e.healPulseIn ?? 1.4) - dt;
+    const doBurst = e.healPulseIn <= 0;
+    if (doBurst) e.healPulseIn = 1.65;
+    for (const ally of linked) {
+      if (ally.hp < ally.maxHp) {
+        const steadyHeal = Math.max(4.5, ally.maxHp * 0.24) * dt;
+        const burstHeal = doBurst ? Math.max(3, ally.maxHp * 0.14) : 0;
+        ally.hp = Math.min(ally.maxHp, ally.hp + steadyHeal + burstHeal);
+        if (doBurst) ally.healFlash = 0.28;
+      }
+    }
+    if (e.y > 20 && e.age < 9.5) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const aim = Math.atan2(player.x - e.x, Math.max(80, player.y - e.y));
+        const spd = Math.min(190, 148 * e.threat);
+        shots.push({
+          x: e.x,
+          y: e.y + 12,
+          r: 4,
+          vx: Math.sin(aim) * spd,
+          vy: Math.cos(aim) * spd,
+          hostile: true,
+          color: '#7ef2a8',
+        });
+        sound.effect('raider');
+        e.fireIn = Math.max(1.8, 2.35 / e.threat);
+      }
+    }
+    return;
+  }
 
   if (e.kind === 'vanguard') {
     // Advances slowly behind its frontal energy barrier, firing twin side plasma bolts

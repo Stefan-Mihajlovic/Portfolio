@@ -39,7 +39,222 @@ const mainBars = [
   { root: 45, chord: [0, 3, 7, 12, 15], bass: [0, 12, 7, 12, 3, 7, 10, 12], lead: [[0, 36, 6], [8, 31, 4], [12, 27, 4]] },
 ];
 
-// --- 3 BESPOKE BOSS SOUNDTRACKS ---
+// --- 8 DISTINCT SECTOR SOUNDTRACKS (Unique BPM, scale, groove, bass & synth texture per dimension!) ---
+const SECTOR_SCORES = [
+  // Sector 0: Pelagic Rim — uses full 16-bar heroic mainBars anthem (132 BPM A minor)
+  { id: 'pelagic', useMainAnthem: true, bpm: 132 },
+  // Sector 1: Caldera Belt — Gritty 138 BPM D Phrygian industrial magma stomp
+  {
+    id: 'caldera',
+    bpm: 138,
+    root: 38,
+    leadWave: 'square',
+    bassWave: 'sawtooth',
+    padLevel: 0.03,
+    kicks: [0, 3, 6, 8, 11, 14],
+    snares: [4, 12],
+    bass: [0, 0, 12, 0, 1, 0, 7, 10],
+    bars: [
+      { shift: 0, chord: [0, 7, 12, 13], lead: [[0, 24, 3], [4, 25, 2], [6, 24, 2], [8, 22, 3], [12, 19, 4]] },
+      { shift: 1, chord: [0, 7, 12, 16], lead: [[0, 24, 2], [2, 27, 2], [4, 28, 3], [8, 27, 2], [10, 24, 2], [12, 22, 4]] },
+      { shift: 3, chord: [0, 7, 12, 15], lead: [[0, 27, 3], [4, 25, 2], [6, 24, 2], [8, 22, 4], [12, 24, 4]] },
+      { shift: 7, chord: [0, 5, 10, 12], lead: [[0, 24, 2], [3, 22, 2], [6, 19, 2], [8, 22, 3], [12, 25, 4]] },
+    ],
+    arpScale: [0, 1, 5, 7, 8, 10, 12],
+  },
+  // Sector 2: Opal Expanse — Shimmering 124 BPM F# minor crystal trance cascade
+  {
+    id: 'opal',
+    bpm: 124,
+    root: 42,
+    leadWave: 'triangle',
+    bassWave: 'sawtooth',
+    padLevel: 0.036,
+    kicks: [0, 4, 8, 12],
+    snares: [4, 12],
+    bass: [0, 12, 7, 12, 3, 12, 7, 10],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 10, 14], lead: [[0, 24, 4], [6, 27, 2], [8, 31, 4], [12, 29, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11, 14], lead: [[0, 28, 4], [6, 31, 2], [8, 35, 4], [12, 31, 4]] },
+      { shift: 5, chord: [0, 3, 7, 10, 14], lead: [[0, 27, 3], [4, 29, 3], [8, 31, 4], [12, 27, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10, 14], lead: [[0, 28, 3], [4, 31, 3], [8, 34, 4], [12, 31, 4]] },
+    ],
+    arpScale: [0, 3, 7, 10, 12, 15, 19],
+  },
+  // Sector 3: Eclipse Corona — High-velocity 144 BPM E minor arcade bullet-hell rush
+  {
+    id: 'eclipse',
+    bpm: 144,
+    root: 40,
+    leadWave: 'sawtooth',
+    bassWave: 'sawtooth',
+    padLevel: 0.028,
+    kicks: [0, 4, 8, 12, 14],
+    snares: [4, 12],
+    bass: [0, 12, 0, 12, 7, 12, 10, 12],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12], lead: [[0, 24, 2], [2, 27, 2], [4, 31, 2], [6, 34, 2], [8, 36, 4], [12, 31, 4]] },
+      { shift: 8, chord: [0, 4, 7, 12], lead: [[0, 28, 2], [2, 31, 2], [4, 36, 4], [8, 35, 2], [10, 31, 2], [12, 28, 4]] },
+      { shift: 10, chord: [0, 4, 7, 12], lead: [[0, 26, 2], [2, 28, 2], [4, 31, 3], [8, 34, 4], [12, 31, 4]] },
+      { shift: 7, chord: [0, 4, 7, 11], lead: [[0, 28, 2], [2, 31, 2], [4, 35, 4], [8, 36, 4], [12, 35, 4]] },
+    ],
+    arpScale: [0, 3, 7, 10, 12, 14, 15],
+  },
+  // Sector 4: Astral Rift — Cybernetic 136 BPM C minor electro breakbeat
+  {
+    id: 'rift',
+    bpm: 136,
+    root: 36,
+    leadWave: 'square',
+    bassWave: 'sawtooth',
+    padLevel: 0.032,
+    kicks: [0, 6, 10],
+    snares: [4, 12],
+    bass: [0, 0, 12, 3, 0, 10, 7, 12],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 10], lead: [[0, 24, 2], [3, 27, 3], [6, 31, 2], [10, 29, 2], [12, 27, 4]] },
+      { shift: 5, chord: [0, 3, 7, 10], lead: [[0, 27, 2], [3, 31, 3], [6, 34, 2], [10, 31, 2], [12, 29, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11], lead: [[0, 28, 3], [4, 31, 2], [6, 35, 4], [10, 31, 2], [12, 28, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10], lead: [[0, 28, 2], [2, 31, 2], [6, 34, 4], [10, 31, 2], [12, 26, 4]] },
+    ],
+    arpScale: [0, 3, 5, 7, 10, 12, 15],
+  },
+  // Sector 5: Cryo Nebula — Atmospheric 120 BPM B minor crystalline sub-zero chime
+  {
+    id: 'cryo',
+    bpm: 120,
+    root: 47,
+    leadWave: 'triangle',
+    bassWave: 'triangle',
+    padLevel: 0.038,
+    kicks: [0, 6, 8],
+    snares: [4, 12],
+    bass: [0, 12, 7, 12, 0, 12, 3, 7],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 14], lead: [[0, 24, 4], [4, 26, 4], [8, 27, 4], [12, 31, 4]] },
+      { shift: 7, chord: [0, 4, 7, 14], lead: [[0, 28, 4], [6, 31, 2], [8, 26, 4], [12, 24, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11], lead: [[0, 28, 3], [4, 31, 3], [8, 35, 4], [12, 31, 4]] },
+      { shift: 5, chord: [0, 3, 7, 12], lead: [[0, 27, 4], [4, 24, 4], [8, 22, 4], [12, 19, 4]] },
+    ],
+    arpScale: [0, 2, 3, 7, 10, 12, 14, 19],
+  },
+  // Sector 6: Iron Graveyard — Heavy 128 BPM G minor industrial war-march
+  {
+    id: 'graveyard',
+    bpm: 128,
+    root: 43,
+    leadWave: 'sawtooth',
+    bassWave: 'sawtooth',
+    padLevel: 0.034,
+    kicks: [0, 2, 8, 10, 14],
+    snares: [4, 12],
+    bass: [0, 0, 7, 0, 3, 0, 10, 7],
+    bars: [
+      { shift: 0, chord: [0, 7, 12, 15], lead: [[0, 24, 4], [4, 22, 2], [6, 19, 2], [8, 24, 4], [12, 27, 4]] },
+      { shift: 8, chord: [0, 7, 12, 16], lead: [[0, 24, 4], [4, 23, 2], [6, 19, 2], [8, 24, 4], [12, 28, 4]] },
+      { shift: 5, chord: [0, 7, 12, 15], lead: [[0, 27, 3], [4, 26, 3], [8, 24, 4], [12, 22, 4]] },
+      { shift: 7, chord: [0, 7, 11, 14], lead: [[0, 26, 4], [4, 23, 2], [6, 26, 2], [8, 29, 4], [12, 26, 4]] },
+    ],
+    arpScale: [0, 3, 5, 6, 7, 10, 12],
+  },
+  // Sector 7: Event Horizon — Relentless 150 BPM C# minor cosmic singularity finale!
+  {
+    id: 'singularity',
+    bpm: 150,
+    root: 37,
+    leadWave: 'sawtooth',
+    bassWave: 'sawtooth',
+    padLevel: 0.038,
+    kicks: [0, 4, 8, 12],
+    snares: [4, 12, 15],
+    bass: [0, 12, 0, 12, 3, 12, 7, 12],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12, 15], lead: [[0, 36, 3], [3, 39, 3], [6, 41, 4], [10, 39, 2], [12, 36, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11, 16], lead: [[0, 36, 3], [3, 40, 3], [6, 43, 4], [10, 40, 2], [12, 36, 4]] },
+      { shift: 5, chord: [0, 3, 7, 12, 15], lead: [[0, 39, 3], [4, 36, 3], [8, 34, 4], [12, 31, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10, 16], lead: [[0, 35, 2], [2, 38, 2], [4, 40, 4], [8, 43, 4], [12, 40, 4]] },
+    ],
+    arpScale: [0, 3, 7, 8, 11, 12, 15, 19],
+  },
+  // Track 8: Pulsar Hyperway — Upbeat 142 BPM F minor eurobeat-synthwave overdrive!
+  {
+    id: 'pulsar',
+    bpm: 142,
+    root: 41,
+    leadWave: 'sawtooth',
+    bassWave: 'sawtooth',
+    padLevel: 0.032,
+    kicks: [0, 4, 8, 12],
+    snares: [4, 12],
+    bass: [0, 12, 7, 12, 10, 12, 7, 12],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12], lead: [[0, 24, 2], [2, 27, 2], [4, 31, 2], [6, 29, 2], [8, 27, 2], [10, 31, 2], [12, 36, 4]] },
+      { shift: 8, chord: [0, 4, 7, 12], lead: [[0, 28, 2], [2, 31, 2], [4, 35, 2], [6, 31, 2], [8, 28, 4], [12, 31, 4]] },
+      { shift: 10, chord: [0, 4, 7, 12], lead: [[0, 26, 2], [2, 29, 2], [4, 33, 2], [6, 29, 2], [8, 36, 4], [12, 33, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10], lead: [[0, 28, 2], [2, 31, 2], [4, 34, 4], [8, 36, 2], [10, 34, 2], [12, 31, 4]] },
+    ],
+    arpScale: [0, 3, 5, 7, 10, 12, 15, 17],
+  },
+  // Track 9: Deep Nebula — Hypnotic 126 BPM D minor progressive synth-odyssey
+  {
+    id: 'odyssey',
+    bpm: 126,
+    root: 38,
+    leadWave: 'triangle',
+    bassWave: 'sawtooth',
+    padLevel: 0.04,
+    kicks: [0, 4, 8, 12, 15],
+    snares: [4, 12],
+    bass: [0, 0, 12, 7, 0, 10, 12, 7],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 14], lead: [[0, 26, 4], [4, 24, 2], [6, 22, 2], [8, 19, 4], [12, 24, 4]] },
+      { shift: 3, chord: [0, 4, 7, 14], lead: [[0, 28, 4], [4, 26, 2], [6, 24, 2], [8, 28, 4], [12, 31, 4]] },
+      { shift: 5, chord: [0, 3, 7, 12], lead: [[0, 27, 4], [6, 31, 2], [8, 29, 4], [12, 27, 4]] },
+      { shift: 10, chord: [0, 4, 7, 14], lead: [[0, 28, 3], [4, 26, 3], [8, 24, 4], [12, 22, 4]] },
+    ],
+    arpScale: [0, 2, 3, 7, 9, 12, 14, 15],
+  },
+  // Track 10: Valkyrie Wing — Driving 146 BPM G# minor retro-arcade laser gallop
+  {
+    id: 'valkyrie',
+    bpm: 146,
+    root: 44,
+    leadWave: 'square',
+    bassWave: 'sawtooth',
+    padLevel: 0.03,
+    kicks: [0, 3, 8, 11, 14],
+    snares: [4, 12],
+    bass: [0, 12, 0, 7, 0, 12, 10, 7],
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12], lead: [[0, 24, 2], [2, 27, 2], [4, 31, 3], [8, 34, 2], [10, 31, 2], [12, 27, 4]] },
+      { shift: 5, chord: [0, 3, 7, 10], lead: [[0, 27, 2], [2, 31, 2], [4, 34, 3], [8, 31, 2], [10, 27, 2], [12, 24, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11], lead: [[0, 28, 3], [4, 31, 2], [6, 35, 3], [10, 31, 2], [12, 28, 4]] },
+      { shift: 7, chord: [0, 4, 7, 11], lead: [[0, 28, 2], [2, 31, 2], [4, 35, 2], [6, 36, 2], [8, 35, 4], [12, 31, 4]] },
+    ],
+    arpScale: [0, 3, 7, 10, 12, 15, 19],
+  },
+  // Track 11: Obsidian Core — Dark 134 BPM E Phrygian cyber-industrial pulse
+  {
+    id: 'obsidian',
+    bpm: 134,
+    root: 40,
+    leadWave: 'sawtooth',
+    bassWave: 'sawtooth',
+    padLevel: 0.036,
+    kicks: [0, 6, 8, 14],
+    snares: [4, 12],
+    bass: [0, 1, 0, 7, 0, 12, 8, 7],
+    bars: [
+      { shift: 0, chord: [0, 1, 7, 12], lead: [[0, 24, 3], [4, 25, 3], [8, 24, 2], [10, 22, 2], [12, 19, 4]] },
+      { shift: 1, chord: [0, 4, 7, 12], lead: [[0, 24, 2], [3, 28, 3], [6, 27, 2], [8, 24, 4], [12, 22, 4]] },
+      { shift: 5, chord: [0, 3, 7, 12], lead: [[0, 27, 3], [4, 25, 2], [6, 24, 2], [8, 22, 4], [12, 24, 4]] },
+      { shift: 7, chord: [0, 5, 10, 12], lead: [[0, 24, 2], [2, 22, 2], [4, 25, 4], [8, 24, 4], [12, 19, 4]] },
+    ],
+    arpScale: [0, 1, 5, 7, 8, 10, 12, 13],
+  },
+];
+
+// --- 8 BESPOKE BOSS SOUNDTRACKS (Plus dynamic +9 BPM Final-Phase Overdrive!) ---
 const BOSS_SCORES = [
   {
     bpm: 140,
@@ -86,6 +301,86 @@ const BOSS_SCORES = [
     leadWave: 'sawtooth',
     arpScale: [0, 2, 3, 7, 10, 12, 14, 15],
   },
+  // Boss 3: Cybernetic Breakbeat Acid Duel (136 BPM D minor)
+  {
+    bpm: 136,
+    root: 38,
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 10], riff: [[0, 24, 2], [3, 27, 2], [6, 31, 2], [8, 30, 2], [10, 27, 2], [12, 24, 4]] },
+      { shift: 5, chord: [0, 3, 7, 10], riff: [[0, 27, 2], [3, 30, 2], [6, 31, 3], [10, 29, 2], [12, 27, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11], riff: [[0, 28, 2], [3, 31, 3], [6, 35, 2], [10, 31, 2], [12, 28, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10], riff: [[0, 28, 2], [2, 31, 2], [4, 34, 2], [6, 31, 2], [8, 36, 4], [12, 34, 4]] },
+    ],
+    bassPattern: [0, 12, 0, 3, 0, 12, 6, 7, 0, 12, 0, 10, 0, 7, 3, 12],
+    kicks: [0, 6, 10, 14],
+    snares: [4, 12],
+    leadWave: 'square',
+    arpScale: [0, 3, 5, 6, 7, 10, 12, 15],
+  },
+  // Boss 4: Hyper-Speed Heroic Arcade Climax (154 BPM G minor)
+  {
+    bpm: 154,
+    root: 43,
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12], riff: [[0, 24, 2], [2, 27, 2], [4, 31, 2], [6, 36, 4], [10, 34, 2], [12, 31, 4]] },
+      { shift: 10, chord: [0, 4, 7, 12], riff: [[0, 26, 2], [2, 29, 2], [4, 33, 2], [6, 36, 4], [10, 33, 2], [12, 29, 4]] },
+      { shift: 8, chord: [0, 4, 7, 12], riff: [[0, 28, 2], [2, 31, 2], [4, 36, 4], [8, 35, 2], [10, 31, 2], [12, 28, 4]] },
+      { shift: 7, chord: [0, 4, 7, 11], riff: [[0, 28, 2], [2, 31, 2], [4, 35, 2], [6, 38, 4], [10, 35, 2], [12, 31, 4]] },
+    ],
+    bassPattern: [0, 12, 0, 12, 7, 12, 0, 12, 3, 12, 5, 12, 7, 12, 10, 12],
+    kicks: [0, 4, 8, 12],
+    snares: [4, 12],
+    leadWave: 'sawtooth',
+    arpScale: [0, 3, 7, 10, 12, 15, 17, 19],
+  },
+  // Boss 5: Cosmic Cathedral Singularity (132 BPM B minor)
+  {
+    bpm: 132,
+    root: 47,
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 11, 14], riff: [[0, 24, 4], [4, 23, 2], [6, 19, 2], [8, 24, 4], [12, 27, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11, 16], riff: [[0, 28, 4], [4, 27, 2], [6, 23, 2], [8, 28, 4], [12, 31, 4]] },
+      { shift: 5, chord: [0, 3, 7, 12, 15], riff: [[0, 27, 3], [4, 26, 3], [8, 24, 4], [12, 23, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10, 16], riff: [[0, 28, 2], [2, 31, 2], [4, 34, 4], [8, 35, 4], [12, 31, 4]] },
+    ],
+    bassPattern: [0, 0, 12, 0, 7, 0, 12, 0, 3, 0, 12, 0, 7, 10, 11, 12],
+    kicks: [0, 3, 6, 8, 12, 14],
+    snares: [4, 12],
+    leadWave: 'sawtooth',
+    arpScale: [0, 3, 7, 8, 11, 12, 15, 19],
+  },
+  // Boss 6: Twin-Lead Phrygian Synth-Metal (146 BPM A Phrygian)
+  {
+    bpm: 146,
+    root: 45,
+    bars: [
+      { shift: 0, chord: [0, 7, 12, 13], riff: [[0, 24, 2], [2, 25, 2], [4, 28, 2], [6, 25, 2], [8, 24, 2], [10, 22, 2], [12, 19, 4]] },
+      { shift: 1, chord: [0, 7, 12, 16], riff: [[0, 24, 2], [2, 28, 2], [4, 31, 3], [8, 28, 2], [10, 24, 2], [12, 22, 4]] },
+      { shift: 5, chord: [0, 7, 12, 15], riff: [[0, 27, 2], [2, 29, 2], [4, 31, 3], [8, 29, 2], [10, 27, 2], [12, 24, 4]] },
+      { shift: 7, chord: [0, 5, 10, 12], riff: [[0, 24, 2], [2, 27, 2], [4, 29, 4], [8, 31, 4], [12, 28, 4]] },
+    ],
+    bassPattern: [0, 0, 12, 0, 1, 0, 12, 0, 0, 0, 7, 0, 10, 12, 7, 1],
+    kicks: [0, 2, 4, 8, 10, 12],
+    snares: [4, 12],
+    leadWave: 'sawtooth',
+    arpScale: [0, 1, 4, 5, 7, 8, 10, 12],
+  },
+  // Boss 7: Cyber-Orchestral Sovereign Finale (138 BPM F minor)
+  {
+    bpm: 138,
+    root: 41,
+    bars: [
+      { shift: 0, chord: [0, 3, 7, 12, 15], riff: [[0, 24, 3], [3, 27, 3], [6, 31, 2], [8, 36, 4], [12, 34, 4]] },
+      { shift: 8, chord: [0, 4, 7, 11, 16], riff: [[0, 28, 3], [3, 31, 3], [6, 35, 2], [8, 36, 4], [12, 31, 4]] },
+      { shift: 10, chord: [0, 4, 7, 12, 14], riff: [[0, 26, 3], [4, 29, 3], [8, 33, 4], [12, 31, 4]] },
+      { shift: 7, chord: [0, 4, 7, 10, 16], riff: [[0, 28, 2], [2, 31, 2], [4, 34, 2], [6, 36, 2], [8, 39, 4], [12, 36, 4]] },
+    ],
+    bassPattern: [0, 12, 0, 12, 7, 12, 3, 12, 0, 12, 5, 12, 7, 12, 10, 12],
+    kicks: [0, 4, 8, 10, 12, 14],
+    snares: [4, 12],
+    leadWave: 'square',
+    arpScale: [0, 3, 7, 10, 12, 14, 15, 19],
+  },
 ];
 
 function createImpulseResponse(ctx, duration = 1.65, decay = 2.8) {
@@ -116,9 +411,11 @@ export function createFlightAudio() {
     beat = 0,
     nextBeat = 0,
     wave = 1,
+    sector = 0,
     intensity = 0,
     bossSpec = null,
     bossRank = 0,
+    bossFinalPhase = false,
     volume = 35;
 
   try {
@@ -478,26 +775,127 @@ export function createFlightAudio() {
     }
   }
 
+  function arrangeSector(t, step, spec) {
+    const barIdx = Math.floor(step / 16) % spec.bars.length;
+    const phrasePos = Math.floor(step / 16) % 8;
+    const inLift = phrasePos >= 4; // 4-bar verse -> 4-bar lifted chorus!
+    const isBuild = phrasePos === 3 || phrasePos === 7;
+    const n = step % 16;
+    const bar = spec.bars[barIdx];
+    const stepLen = 60 / spec.bpm / 4;
+    const root = spec.root + bar.shift;
+    const drive = Math.min(1, intensity + (inLift ? 0.3 : 0));
+
+    // 1. Atmospheric dimension synth-chords
+    if (n === 0 || (inLift && n === 10)) {
+      const chordLen = inLift ? stepLen * (n === 0 ? 9.5 : 5.5) : stepLen * 15;
+      bar.chord.forEach((interval, i) => {
+        synthVoice({
+          t,
+          len: chordLen,
+          waveType: spec.id === 'cryo' || spec.id === 'opal' ? 'triangle' : 'sawtooth',
+          freq: hz(root + 12 + interval),
+          level: spec.padLevel * (inLift ? 1.25 : 0.85),
+          attack: spec.id === 'cryo' ? 0.08 : inLift ? 0.02 : 0.11,
+          cutoffStart: (inLift ? 2600 : 1350) + i * 220 + drive * 550,
+          cutoffEnd: 520 + i * 110,
+          q: spec.id === 'rift' ? 2.1 : 1.15,
+          detune: inLift ? 10 : 6,
+          pan: (i - (bar.chord.length - 1) / 2) * 0.34,
+          reverb: spec.id === 'cryo' || spec.id === 'opal' ? 0.56 : 0.4,
+        });
+      });
+    }
+
+    // 2. Signature sector bassline
+    const bassSlot = Math.floor(n / 2) % spec.bass.length;
+    const bassSemi = spec.bass[bassSlot] + (n % 2 === 1 && spec.id !== 'graveyard' ? 12 : 0);
+    const accent = n % 4 === 0 || n === 14;
+    synthVoice({
+      t,
+      len: stepLen * (n % 2 === 0 ? 1.05 : 0.85),
+      waveType: spec.bassWave,
+      freq: hz(root - 12 + bassSemi),
+      level: accent ? 0.17 : 0.115,
+      attack: 0.003,
+      cutoffStart: (accent ? 1680 : 940) + drive * 640 + (spec.id === 'rift' ? 420 : 0),
+      cutoffEnd: 220,
+      q: spec.id === 'rift' ? 3.2 : 2.1,
+      detune: 5,
+    });
+
+    // 3. Sector-specific drums
+    if (spec.kicks.includes(n)) playKick(t, inLift ? 0.45 : 0.38, spec.id === 'graveyard' ? 148 : 164);
+    if (spec.snares.includes(n)) playSnare(t, inLift ? 0.23 : 0.18, spec.id === 'cryo' ? 4200 : 3400);
+    if (isBuild && [11, 12, 13, 14, 15].includes(n)) {
+      playSnare(t, 0.12 + (n - 11) * 0.032, 3500 + (n - 11) * 200);
+    }
+    if (n % 2 === 0 || (inLift && spec.bpm >= 136)) {
+      playHat(t, n % 4 === 2, n % 4 === 2 ? 0.064 : 0.032, n % 4 === 0 ? -0.26 : 0.3);
+    }
+
+    // 4. Sector lead melody (shifts +12 semitones during lifted chorus for Cryo/Opal/Singularity!)
+    const hit = bar.lead.find(([on]) => on === n);
+    if (hit) {
+      const [, offset, dur] = hit;
+      const octaveBoost = inLift && (spec.id === 'opal' || spec.id === 'cryo' || spec.id === 'rift') ? 12 : 0;
+      synthVoice({
+        t,
+        len: stepLen * dur * 0.96,
+        waveType: spec.leadWave,
+        freq: hz(root + offset + octaveBoost),
+        level: inLift ? 0.11 : 0.088,
+        attack: spec.id === 'cryo' ? 0.004 : 0.008,
+        cutoffStart: (inLift ? 4600 : 3000) + drive * 850,
+        cutoffEnd: 1200,
+        q: spec.id === 'rift' ? 2.2 : 1.5,
+        detune: inLift ? 11 : 7,
+        pan: -0.15,
+        reverb: spec.id === 'cryo' ? 0.48 : 0.32,
+        delay: spec.id === 'opal' || spec.id === 'cryo' ? 0.44 : 0.32,
+      });
+    }
+
+    // 5. Sparkling counter-arpeggio
+    if ((inLift || drive > 0.3 || spec.id === 'opal' || spec.id === 'singularity') && n % 2 === 1) {
+      const arp = spec.arpScale[(Math.floor(n / 2) + barIdx * 2) % spec.arpScale.length];
+      synthVoice({
+        t,
+        len: stepLen * 1.25,
+        waveType: 'triangle',
+        freq: hz(root + 24 + arp),
+        level: inLift ? 0.065 : 0.044,
+        attack: 0.003,
+        cutoffStart: 4300,
+        cutoffEnd: 1700,
+        pan: n % 4 === 1 ? 0.46 : -0.46,
+        reverb: 0.38,
+        delay: 0.36,
+      });
+    }
+  }
+
   function arrangeBoss(t, step) {
     const barIdx = Math.floor(step / 16) % bossSpec.bars.length;
     const n = step % 16;
     const bar = bossSpec.bars[barIdx];
-    const stepLen = 60 / bossSpec.bpm / 4;
-    const root = bossSpec.root + bar.shift + ((Math.floor((bossRank - 1) / 3) % 4) * 2);
+    const effectiveBpm = bossSpec.bpm + (bossFinalPhase ? 9 : 0);
+    const stepLen = 60 / effectiveBpm / 4;
+    const root = bossSpec.root + bar.shift + ((Math.floor((bossRank - 1) / BOSS_SCORES.length) % 4) * 2);
 
-    if (n === 0 || (bossSpec === BOSS_SCORES[1] && n === 8)) {
+    if (n === 0 || ((bossRank % 2 === 0 || bossFinalPhase) && n === 8)) {
       bar.chord.forEach((interval, i) => {
         synthVoice({
           t,
           len: stepLen * 7.5,
           waveType: 'sawtooth',
           freq: hz(root + 12 + interval),
-          level: 0.044,
-          attack: 0.025,
-          cutoffStart: 2400 + i * 240,
+          level: bossFinalPhase ? 0.052 : 0.044,
+          attack: 0.022,
+          cutoffStart: (bossFinalPhase ? 3100 : 2400) + i * 240,
           cutoffEnd: 540,
           q: 1.4,
-          detune: 11,
+          detune: bossFinalPhase ? 14 : 11,
           pan: (i - 1.5) * 0.35,
           reverb: 0.42,
         });
@@ -512,17 +910,19 @@ export function createFlightAudio() {
       freq: hz(root + bassSemi),
       level: n % 4 === 0 ? 0.2 : 0.145,
       attack: 0.003,
-      cutoffStart: n % 4 === 0 ? 1850 : 1100,
+      cutoffStart: n % 4 === 0 ? 1950 : 1150,
       cutoffEnd: 260,
       q: 2.5,
       detune: 6,
     });
 
-    if (bossSpec.kicks.includes(n)) playKick(t, 0.48, 174);
+    if (bossSpec.kicks.includes(n) || (bossFinalPhase && n === 14)) playKick(t, 0.48, 174);
     if (bossSpec.snares.includes(n) || (barIdx === 3 && n >= 12)) {
       playSnare(t, barIdx === 3 && n >= 12 ? 0.16 + (n - 12) * 0.032 : 0.24, 3600);
     }
-    if (n % 2 === 0) playHat(t, n === 14, 0.055, n % 4 === 0 ? -0.3 : 0.3);
+    if (n % 2 === 0 || bossFinalPhase) {
+      playHat(t, n === 14, n % 2 === 0 ? 0.055 : 0.034, n % 4 === 0 ? -0.3 : 0.3);
+    }
 
     const hit = bar.riff.find(([on]) => on === n);
     if (hit) {
@@ -532,28 +932,28 @@ export function createFlightAudio() {
         len: stepLen * dur * 0.94,
         waveType: bossSpec.leadWave,
         freq: hz(root + offset),
-        level: 0.115,
+        level: bossFinalPhase ? 0.128 : 0.115,
         attack: 0.008,
-        cutoffStart: 4400,
+        cutoffStart: bossFinalPhase ? 5200 : 4400,
         cutoffEnd: 1500,
         q: 1.8,
-        detune: 10,
+        detune: bossFinalPhase ? 13 : 10,
         pan: -0.15,
         reverb: 0.3,
         delay: 0.34,
       });
     }
 
-    if (n % 2 === 1) {
+    if (n % 2 === 1 || bossFinalPhase) {
       const note = bossSpec.arpScale[(n + barIdx * 3) % bossSpec.arpScale.length];
       synthVoice({
         t,
-        len: stepLen * 1.1,
-        waveType: 'triangle',
-        freq: hz(root + 24 + note),
-        level: 0.058,
+        len: stepLen * 1.05,
+        waveType: bossFinalPhase ? 'sawtooth' : 'triangle',
+        freq: hz(root + (bossFinalPhase && n % 2 === 0 ? 36 : 24) + note),
+        level: bossFinalPhase ? 0.058 : 0.052,
         attack: 0.003,
-        cutoffStart: 3800,
+        cutoffStart: 4200,
         cutoffEnd: 1600,
         pan: n % 4 === 1 ? 0.45 : -0.45,
         delay: 0.32,
@@ -561,13 +961,24 @@ export function createFlightAudio() {
     }
   }
 
+  function currentStepLen() {
+    if (bossSpec) return 60 / (bossSpec.bpm + (bossFinalPhase ? 9 : 0)) / 4;
+    const secSpec = SECTOR_SCORES[sector % SECTOR_SCORES.length];
+    return 60 / secSpec.bpm / 4;
+  }
+
   function schedule() {
     if (!session) return;
     if (nextBeat < ctx.currentTime - 0.18) nextBeat = ctx.currentTime + 0.02;
     while (nextBeat < ctx.currentTime + 0.18) {
-      if (bossSpec) arrangeBoss(nextBeat, beat++);
-      else arrangeMain(nextBeat, beat++);
-      nextBeat += bossSpec ? 60 / bossSpec.bpm / 4 : MAIN_STEP;
+      if (bossSpec) {
+        arrangeBoss(nextBeat, beat++);
+      } else {
+        const secSpec = SECTOR_SCORES[sector % SECTOR_SCORES.length];
+        if (secSpec.useMainAnthem) arrangeMain(nextBeat, beat++);
+        else arrangeSector(nextBeat, beat++, secSpec);
+      }
+      nextBeat += currentStepLen();
     }
   }
 
@@ -845,6 +1256,26 @@ export function createFlightAudio() {
         break;
       case 'sniperLock':
         sfxVoice(t, 0.075, 'sine', 1320, 1760, 0.13, 0.002, 4800, 0, 0.15);
+        break;
+      case 'blink':
+        // Crisp phase-warp teleport zip
+        sfxVoice(t, 0.16, 'plasma', 260, 1480, 0.18, 0.004, 4200, 0, 0.25);
+        sfxVoice(t, 0.11, 'noise', 0, 0, 0.14, 0.003, 3800, 0, 0.2);
+        break;
+      case 'gravity':
+        // Deep cosmic gravitational well implosion hum
+        sfxVoice(t, 0.65, 'sine', 145, 42, 0.42, 0.04, 650, 0, 0.35);
+        sfxVoice(t + 0.04, 0.55, 'sawtooth', 96, 62, 0.16, 0.05, 820, 0, 0.35);
+        break;
+      case 'cluster':
+        // Heavy mortar thump / cluster burst
+        sfxVoice(t, 0.2, 'sine', 190, 62, 0.28, 0.004, 980, 0, 0.2);
+        sfxVoice(t, 0.14, 'noise', 0, 0, 0.16, 0.004, 2100, 0, 0.2);
+        break;
+      case 'emp':
+        // Industrial electric discharge pulse
+        sfxVoice(t, 0.34, 'sawtooth', 520, 95, 0.2, 0.005, 2800, 0, 0.3);
+        sfxVoice(t, 0.22, 'noise', 0, 0, 0.2, 0.004, 4200, 0, 0.25);
         break;
       case 'victory':
         // Triumphant heroic brass fanfare when a Flagship collapses!
@@ -1163,18 +1594,23 @@ export function createFlightAudio() {
     const t = ctx.currentTime + 0.05;
     chord.forEach((n, i) => {
       sfxVoice(
-        t + i * 0.08,
-        4.6,
-        i === 0 ? 'sine' : 'triangle',
+        t + i * 0.07,
+        4.7,
+        i === 0 ? 'sine' : i === 1 ? 'sawtooth' : 'triangle',
         hz(n),
         hz(n) * (i % 2 ? 1.003 : 0.997),
-        i === 0 ? 0.16 : 0.065,
-        1.1,
-        920 + i * 180,
-        (i - 2) * 0.28,
+        i === 0 ? 0.28 : i === 1 ? 0.085 : 0.145,
+        0.75,
+        i === 1 ? 820 : 1750 + i * 260,
+        (i - 2) * 0.3,
         0,
         ambientBus,
       );
+    });
+    // Gentle crystalline orbital arpeggio shimmer over the warm pad!
+    [0, 1.1, 2.2, 3.3].forEach((off, idx) => {
+      const note = chord[(idx + 2) % chord.length] + 12;
+      sfxVoice(t + off + 0.25, 1.25, 'triangle', hz(note), hz(note) * 1.002, 0.085, 0.04, 3200, (idx % 2 ? 0.36 : -0.36), 0, ambientBus);
     });
   }
 
@@ -1188,7 +1624,7 @@ export function createFlightAudio() {
     }
     ambientBus = ctx.createGain();
     ambientBus.gain.setValueAtTime(0.0001, ctx.currentTime);
-    ambientBus.gain.exponentialRampToValueAtTime(0.32, ctx.currentTime + 1.2);
+    ambientBus.gain.exponentialRampToValueAtTime(0.78, ctx.currentTime + 0.85);
     ambientBus.connect(compressor);
     playAmbientBar();
     ambientTimer = setInterval(playAmbientBar, 4400);
@@ -1214,20 +1650,41 @@ export function createFlightAudio() {
     overclockOff,
     setWave(value) {
       wave = value;
+      const nextTrack = Math.max(0, Math.floor((value || 1) - 1));
+      if (nextTrack !== sector) {
+        sector = nextTrack;
+        if (session && !bossSpec) {
+          beat = 0;
+          session.delayNode.delayTime.setTargetAtTime(currentStepLen() * 3, ctx.currentTime, 0.05);
+        }
+      }
+    },
+    setSector(index) {
+      const next = Math.max(0, Math.floor(index || 0) * 2);
+      if (next === sector) return;
+      sector = next;
+      if (session && !bossSpec) {
+        beat = 0;
+        session.delayNode.delayTime.setTargetAtTime(currentStepLen() * 3, ctx.currentTime, 0.05);
+      }
     },
     setIntensity(value) {
       intensity = Math.max(0, Math.min(1, value));
+    },
+    setBossPhase(isFinal = false) {
+      bossFinalPhase = Boolean(isFinal);
     },
     setBoss(rank) {
       const playing = Boolean(session);
       if (playing) stop();
       bossRank = rank || 0;
+      bossFinalPhase = false;
       if (rank) {
         const base = BOSS_SCORES[(rank - 1) % BOSS_SCORES.length];
         // Higher procedural boss ranks escalate tempo and transpose key slightly for fresh intensity
         bossSpec = {
           ...base,
-          bpm: Math.min(168, base.bpm + Math.floor((rank - 1) / 3) * 6),
+          bpm: Math.min(168, base.bpm + Math.floor((rank - 1) / BOSS_SCORES.length) * 5),
         };
       } else {
         bossSpec = null;
@@ -1238,6 +1695,8 @@ export function createFlightAudio() {
     rewind() {
       bossRank = 0;
       bossSpec = null;
+      bossFinalPhase = false;
+      sector = 0;
       intensity = 0;
       beat = 0;
     },
