@@ -42,7 +42,7 @@ export const SHIP_SKINS = [
   {
     id: 'solar',
     name: 'Solar Gold',
-    cost: 180,
+    cost: 450,
     swatch: ['#fff1c2', '#c49648', '#ff6e42'],
     accent: '#ffe18c',
     map: {
@@ -59,7 +59,7 @@ export const SHIP_SKINS = [
   {
     id: 'crimson',
     name: 'Crimson Ace',
-    cost: 260,
+    cost: 750,
     swatch: ['#f7e4e4', '#bd4a52', '#ffcf6e'],
     accent: '#ff8b78',
     map: {
@@ -76,7 +76,7 @@ export const SHIP_SKINS = [
   {
     id: 'stealth',
     name: 'Void Stealth',
-    cost: 360,
+    cost: 1200,
     swatch: ['#6c7c94', '#2c374a', '#c89eff'],
     accent: '#c89eff',
     map: {

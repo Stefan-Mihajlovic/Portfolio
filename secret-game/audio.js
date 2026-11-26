@@ -1034,29 +1034,102 @@ export function createFlightAudio() {
     setTimeout(() => b.disconnect(), 450);
   }
 
-  // Unique signature selection SFX for each playable ship!
+  // Realistic mechanical / propulsion spacecraft SFX for each playable ship (zero musical bee-boops!)
   function uiShip(rig = 'kestrel') {
     if (!volume || !init()) return;
     ctx.resume().catch(() => {});
-    const b = ctx.createGain();
-    b.connect(compressor);
+    const bus = ctx.createGain();
+    bus.gain.value = 0.88;
+    bus.connect(compressor);
     const t = ctx.currentTime;
+    const tempNodes = [bus];
+
+    const sweptNoise = (start, dur, type, f0, f1, q, peak, atk = 0.015, panStart = 0, panEnd = panStart) => {
+      const src = ctx.createBufferSource();
+      src.buffer = noise;
+      src.loop = true;
+      const flt = ctx.createBiquadFilter();
+      flt.type = type;
+      flt.Q.value = q;
+      flt.frequency.setValueAtTime(Math.max(40, f0), start);
+      flt.frequency.exponentialRampToValueAtTime(Math.max(40, f1), start + dur);
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0.0001, start);
+      env.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), start + atk);
+      env.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      const pan = ctx.createStereoPanner();
+      pan.pan.setValueAtTime(panStart, start);
+      if (panEnd !== panStart) pan.pan.linearRampToValueAtTime(panEnd, start + dur);
+      src.connect(flt).connect(env).connect(pan).connect(bus);
+      src.start(start);
+      src.stop(start + dur + 0.03);
+      tempNodes.push(src, flt, env, pan);
+    };
+
+    const mechOsc = (start, dur, waveType, f0, f1, fltType, c0, c1, q, peak, atk = 0.006, panVal = 0) => {
+      const osc = ctx.createOscillator();
+      osc.type = waveType;
+      osc.frequency.setValueAtTime(Math.max(22, f0), start);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(22, f1), start + dur);
+      const flt = ctx.createBiquadFilter();
+      flt.type = fltType;
+      flt.Q.value = q;
+      flt.frequency.setValueAtTime(Math.max(50, c0), start);
+      flt.frequency.exponentialRampToValueAtTime(Math.max(50, c1), start + dur);
+      const env = ctx.createGain();
+      env.gain.setValueAtTime(0.0001, start);
+      env.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), start + atk);
+      env.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = panVal;
+      osc.connect(flt).connect(env).connect(pan).connect(bus);
+      osc.start(start);
+      osc.stop(start + dur + 0.03);
+      tempNodes.push(osc, flt, env, pan);
+    };
+
     if (rig === 'falcon') {
-      // Agile Striker: brisk thruster whoosh + snappy twin seeker target-lock chirps
-      sfxVoice(t, 0.12, 'noise', 0, 0, 0.16, 0.004, 3400, 0, 0, b);
-      sfxVoice(t + 0.01, 0.065, 'sine', 880, 1180, 0.16, 0.002, 4600, -0.18, 0, b);
-      sfxVoice(t + 0.08, 0.095, 'triangle', 1180, 1568, 0.17, 0.002, 5200, 0.18, 0, b);
+      // FALCON (Striker Jet): Fast twin-afterburner flyby whoosh + crisp pneumatic wing-flap snaps
+      sweptNoise(t, 0.34, 'bandpass', 240, 1950, 1.35, 0.34, 0.055, -0.45, 0.45);
+      sweptNoise(t + 0.09, 0.28, 'bandpass', 1700, 420, 1.2, 0.24, 0.03, 0.25, -0.15);
+      sweptNoise(t + 0.02, 0.16, 'highpass', 3200, 1600, 0.7, 0.14, 0.025, 0.15, 0.35);
+      // Twin hydraulic vane lock snaps (pure mechanical impulse)
+      sweptNoise(t + 0.01, 0.028, 'bandpass', 2600, 1900, 3.2, 0.28, 0.002, -0.2);
+      mechOsc(t + 0.01, 0.045, 'triangle', 165, 58, 'lowpass', 720, 180, 1.0, 0.28, 0.002, -0.18);
+      sweptNoise(t + 0.068, 0.024, 'bandpass', 3100, 2200, 3.6, 0.24, 0.002, 0.22);
+      mechOsc(t + 0.068, 0.04, 'triangle', 195, 72, 'lowpass', 820, 220, 1.0, 0.22, 0.002, 0.2);
     } else if (rig === 'aegis') {
-      // Heavy Cruiser: deep armored bulkhead thud + warm low plasma shield hum
-      sfxVoice(t, 0.22, 'sine', 135, 58, 0.42, 0.003, 620, 0, 0, b);
-      sfxVoice(t + 0.015, 0.24, 'sawtooth', 146.8, 138.6, 0.13, 0.012, 920, -0.2, 0, b);
-      sfxVoice(t + 0.015, 0.24, 'triangle', 220.0, 220.0, 0.16, 0.015, 1400, 0.2, 0, b);
+      // AEGIS (Heavy Armored Cruiser): 500-ton hydraulic bulkhead clamp + deep heavy reactor rumble + pressure hiss
+      // Seismic sub-bass hull thump
+      mechOsc(t, 0.32, 'sine', 96, 33, 'lowpass', 260, 85, 0.8, 0.56, 0.004, 0);
+      // Deep detuned armored reactor growl (dark lowpass — heavy steel warship rumble)
+      mechOsc(t + 0.015, 0.42, 'sawtooth', 52, 62, 'lowpass', 460, 155, 2.2, 0.22, 0.035, -0.25);
+      mechOsc(t + 0.015, 0.42, 'sawtooth', 53.6, 63.8, 'lowpass', 440, 145, 2.2, 0.2, 0.035, 0.25);
+      // Pneumatic bulkhead pressure vent hiss
+      sweptNoise(t + 0.018, 0.22, 'bandpass', 1500, 420, 1.5, 0.26, 0.012, 0, 0);
+      // Heavy steel deadbolt lock clunk
+      mechOsc(t + 0.09, 0.075, 'triangle', 148, 48, 'lowpass', 620, 140, 1.2, 0.34, 0.002, 0);
+      sweptNoise(t + 0.09, 0.045, 'bandpass', 980, 480, 2.6, 0.24, 0.002, 0);
     } else {
-      // Kestrel (Rail-Lance): sleek magnetic rail charge sweep + crisp cyan harmonic lock
-      sfxVoice(t, 0.16, 'plasma', 420, 880, 0.17, 0.004, 4000, -0.14, 0, b);
-      sfxVoice(t + 0.055, 0.17, 'triangle', 659.25, 1318.5, 0.15, 0.003, 4800, 0.14, 0, b);
+      // KESTREL (Rail-Lance Interceptor): Sleek precision jet-turbine intake spool-up + magnetic rail breech lock
+      // Resonant turbine spool sweeping up through intake
+      sweptNoise(t, 0.32, 'bandpass', 340, 2850, 5.2, 0.28, 0.06, -0.18, 0.18);
+      sweptNoise(t + 0.02, 0.26, 'bandpass', 680, 1450, 1.4, 0.17, 0.04, 0.12, -0.12);
+      // Subtle low-mid electromagnetic railgun coil whine (filtered sawtooth, mechanical not melodic)
+      mechOsc(t + 0.01, 0.28, 'sawtooth', 128, 290, 'bandpass', 360, 1280, 3.8, 0.16, 0.04, 0);
+      mechOsc(t + 0.01, 0.28, 'sawtooth', 130.5, 294, 'bandpass', 380, 1320, 3.6, 0.13, 0.04, 0.15);
+      // Crisp titanium breech snap-lock at end of spool
+      sweptNoise(t + 0.14, 0.032, 'bandpass', 3600, 1800, 2.8, 0.26, 0.002, 0);
+      mechOsc(t + 0.14, 0.055, 'triangle', 220, 74, 'lowpass', 900, 200, 1.0, 0.26, 0.002, 0);
     }
-    setTimeout(() => b.disconnect(), 480);
+
+    setTimeout(() => {
+      for (const n of tempNodes) {
+        try {
+          n.disconnect();
+        } catch {}
+      }
+    }, 620);
   }
 
   // Subtle, lush orbital synth-pad ambient drone for Main Menu (starts softly after first user gesture!)

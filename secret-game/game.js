@@ -84,32 +84,38 @@ const UPGRADE_DEFS = [
   {
     id: 'weapon',
     name: 'Starting Firepower',
-    desc: 'Start runs at MK II → MK VI (unlocks homing seekers at MK IV, piercing bolts at MK V, twin rails at MK VI).',
-    costs: [75, 160, 300, 480, 720],
+    desc: 'Start runs at MK II → MK VI (homing seekers at MK IV, piercing bolts at MK V, twin lances at MK VI).',
+    costs: [180, 420, 820, 1450, 2300],
   },
   {
     id: 'hull',
     name: 'Reinforced Hull',
     desc: '+1 permanent red Hull armor block per level for this ship.',
-    costs: [70, 150, 280],
+    costs: [200, 520, 1050],
   },
   {
     id: 'shield',
     name: 'Shield Capacitors',
     desc: '+1 rechargeable Shield block per level for this ship.',
-    costs: [60, 140, 260],
+    costs: [180, 460, 920],
   },
   {
     id: 'thruster',
     name: 'Thruster & Dash',
     desc: '+9% speed and -14% Phase Dash cooldown per level.',
-    costs: [50, 120, 230],
+    costs: [150, 380, 780],
   },
   {
     id: 'nova',
     name: 'Nova & Magnet Core',
     desc: '+20% starting Nova charge and +35% wider loot magnet per level.',
-    costs: [55, 130, 240],
+    costs: [160, 400, 820],
+  },
+  {
+    id: 'cooling',
+    name: 'Cryo Cooling Core',
+    desc: 'Reduces weapon heat buildup & boosts cooling per level. Level 4 eliminates overheating completely.',
+    costs: [900, 2100, 4200, 7500],
   },
 ];
 
@@ -122,7 +128,7 @@ const MILESTONE_DEFS = [
   { id: 'wave10', label: 'Reach Wave 10', reward: 160 },
 ];
 
-const emptyShipUpgrades = () => ({ weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0 });
+const emptyShipUpgrades = () => ({ weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0, cooling: 0 });
 let meta = {
   coins: 0,
   overclock: false,
@@ -234,6 +240,7 @@ function completeMilestone(id) {
 function getEffectiveRig(key = selectedRig) {
   const base = RIGS[key] || RIGS.kestrel;
   const u = meta.ships[key] || emptyShipUpgrades();
+  const coolLvl = clamp(u.cooling || 0, 0, 4);
   return {
     ...base,
     hull: base.hull + u.hull,
@@ -244,6 +251,9 @@ function getEffectiveRig(key = selectedRig) {
     startWeapon: 1 + u.weapon,
     startNova: Math.min(100, 25 + u.nova * 20),
     magnetScale: 1 + u.nova * 0.35,
+    heatScale: [1, 0.78, 0.56, 0.34, 0][coolLvl],
+    coolScale: [1, 1.2, 1.45, 1.75, 2.5][coolLvl],
+    noOverheat: coolLvl >= 4,
   };
 }
 
@@ -1134,21 +1144,37 @@ function draw() {
       ctx.restore();
     }
 
-    // Focus hitbox core & graze ring
-    if (preciseSteering() || pointer) {
-      ctx.strokeStyle = 'rgba(121, 227, 213, 0.25)';
-      ctx.lineWidth = 1;
+    // Focus hitbox core & graze ring (brighter tactical lock ring when Focus / LANCE is engaged!)
+    const isFocusedDraw = preciseSteering();
+    if (isFocusedDraw || pointer) {
+      ctx.save();
+      ctx.strokeStyle = isFocusedDraw ? 'rgba(150, 246, 255, 0.56)' : 'rgba(121, 227, 213, 0.25)';
+      ctx.lineWidth = isFocusedDraw ? 1.5 : 1;
       ctx.beginPath();
-      ctx.arc(player.x, player.y, 23, 0, TAU);
+      ctx.arc(player.x, player.y, isFocusedDraw ? 21 : 23, 0, TAU);
       ctx.stroke();
+
+      if (isFocusedDraw) {
+        // 4 crisp focus reticle brackets around hitbox
+        ctx.strokeStyle = 'rgba(196, 255, 244, 0.85)';
+        ctx.lineWidth = 1.4;
+        for (let i = 0; i < 4; i++) {
+          const a = (i * TAU) / 4 + Math.PI / 4;
+          ctx.beginPath();
+          ctx.moveTo(player.x + Math.cos(a) * 16, player.y + Math.sin(a) * 16);
+          ctx.lineTo(player.x + Math.cos(a) * 23, player.y + Math.sin(a) * 23);
+          ctx.stroke();
+        }
+      }
 
       ctx.beginPath();
       ctx.arc(player.x, player.y, player.r, 0, TAU);
       ctx.strokeStyle = '#112633';
       ctx.lineWidth = 1.8;
       ctx.stroke();
-      ctx.fillStyle = '#c4fff4d8';
+      ctx.fillStyle = isFocusedDraw ? '#e6fffb' : '#c4fff4d8';
       ctx.fill();
+      ctx.restore();
     }
 
     if (immune > 0 && player.dashTime <= 0) {
@@ -1815,21 +1841,24 @@ function updateHud() {
   focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
 
+  const effRig = getEffectiveRig();
   const heatState = weaponOverheated ? 'overheat' : ventBoostTime > 0 ? 'vent' : weaponHeat >= 70 ? 'warm' : 'cool';
   heatBlockEl.dataset.state = heatState;
   heatBlockEl.dataset.vent = String(weaponOverheated && !ventAttempted);
   heatFillEl.style.width = `${clamp(weaponHeat, 0, 100).toFixed(1)}%`;
-  heatPctEl.textContent = `${Math.round(weaponHeat)}%`;
+  heatPctEl.textContent = effRig.noOverheat ? 'CRYO' : `${Math.round(weaponHeat)}%`;
   heatLabelEl.textContent =
-    weaponOverheated && !ventAttempted
-      ? 'VENT [SPACE]'
-      : weaponOverheated
-        ? 'OVERHEAT'
-        : ventBoostTime > 0
-          ? 'VENT BOOST'
-          : overdriveTime > 0
-            ? 'NO HEAT'
-            : 'HEAT';
+    effRig.noOverheat
+      ? 'NO HEAT'
+      : weaponOverheated && !ventAttempted
+        ? 'VENT [SPACE]'
+        : weaponOverheated
+          ? 'OVERHEAT'
+          : ventBoostTime > 0
+            ? 'VENT BOOST'
+            : overdriveTime > 0
+              ? 'NO HEAT'
+              : 'HEAT';
   heatLabelEl.classList.toggle('is-overheat', weaponOverheated);
   heatLabelEl.classList.toggle('is-warm', !weaponOverheated && weaponHeat >= 70);
 
@@ -2070,7 +2099,7 @@ function hitPlayer() {
 }
 
 function preciseSteering() {
-  return keys.has('ShiftLeft') || keys.has('ShiftRight');
+  return keys.has('ShiftLeft') || keys.has('ShiftRight') || Boolean(pointer?.focused);
 }
 
 function attemptPerfectVent() {
@@ -2208,13 +2237,13 @@ function firePlayerWeapons(focused) {
   sound.effect(focused ? 'focusFire' : 'fire');
   nextShot = rig.fireRate * (od ? 0.74 : vb ? 0.8 : 1);
 
-  // Chicken Invaders Weapon Heat accumulation (Overdrive & Perfect Vent Boost fire heat-free!)
-  if (!od && !vb) {
-    const baseHeat = selectedRig === 'aegis' ? 3.2 : selectedRig === 'falcon' ? 2.25 : 2.6;
-    const tierHeat = (weaponLevel - 1) * (selectedRig === 'aegis' ? 0.26 : selectedRig === 'falcon' ? 0.19 : 0.22);
-    const touchEase = pointer?.isTouch ? 0.85 : 1;
-    weaponHeat = Math.min(100, weaponHeat + (baseHeat + tierHeat) * touchEase);
-    heatCoolDelay = 0.12;
+  // Chicken Invaders Weapon Heat accumulation (exponential with weapon MK tier; Overdrive, Vent Boost & Maxed Cryo Core fire heat-free!)
+  if (!od && !vb && !rig.noOverheat) {
+    const baseHeat = selectedRig === 'aegis' ? 3.5 : selectedRig === 'falcon' ? 2.45 : 2.85;
+    const expMult = Math.pow(1.135, weaponLevel - 1);
+    const touchEase = pointer?.isTouch ? 0.88 : 1;
+    weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * touchEase);
+    heatCoolDelay = 0.15;
 
     if (weaponHeat >= 100) {
       weaponOverheated = true;
@@ -2571,12 +2600,12 @@ function update(dt) {
   const wantsFire = !controlsLocked && (keys.has('Space') || Boolean(pointer) || autoFire);
   const isFiring = wantsFire && !weaponOverheated;
 
-  if (overdriveTime > 0) {
-    // Nova Overdrive instantly clears overheat and keeps barrels ice-cool!
+  if (overdriveTime > 0 || rig.noOverheat) {
+    // Nova Overdrive or Level 4 Cryo Cooling Core keeps barrels ice-cool!
     weaponOverheated = false;
     weaponHeat = Math.max(0, weaponHeat - dt * 140);
   } else if (weaponOverheated) {
-    weaponHeat = Math.max(0, weaponHeat - dt * 54);
+    weaponHeat = Math.max(0, weaponHeat - dt * 44 * rig.coolScale);
     if (Math.random() < dt * 22) {
       smoke.push({
         x: player.x + (Math.random() < 0.5 ? -10 : 10),
@@ -2606,8 +2635,8 @@ function update(dt) {
     if (heatCoolDelay > 0) {
       heatCoolDelay = Math.max(0, heatCoolDelay - dt);
     } else if (weaponHeat > 0) {
-      // Feathering/pausing fire cools rapidly so skilled trigger control stays ice-cool!
-      const coolRate = isFiring ? 10 : 64;
+      // Feathering/pausing fire cools rapidly (boosted further by Cryo Cooling Core upgrades!)
+      const coolRate = (isFiring ? 8.5 : 58) * rig.coolScale;
       weaponHeat = Math.max(0, weaponHeat - dt * coolRate);
     }
     if (weaponHeat >= 78 && Math.random() < dt * 14) {
@@ -3473,6 +3502,20 @@ canvas.addEventListener('contextmenu', (e) => {
   }
 });
 
+// Suppress iOS Safari double-tap-and-hold magnifier loupe & mobile double-tap/pinch zoom on the playfield!
+const blockCanvasGesture = (e) => {
+  if (mode === 'playing') e.preventDefault();
+};
+canvas.addEventListener('touchstart', blockCanvasGesture, { passive: false });
+canvas.addEventListener('touchmove', blockCanvasGesture, { passive: false });
+canvas.addEventListener('touchend', blockCanvasGesture, { passive: false });
+canvas.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener('gesturechange', (e) => e.preventDefault(), { passive: false });
+canvas.addEventListener('dblclick', (e) => e.preventDefault());
+canvas.addEventListener('selectstart', (e) => e.preventDefault());
+
+let lastTouchDown = { time: 0, x: 0, y: 0 };
+
 canvas.addEventListener('pointerdown', (e) => {
   if (mode !== 'playing') return;
   if (e.button === 2) {
@@ -3482,10 +3525,32 @@ canvas.addEventListener('pointerdown', (e) => {
   }
   if (pointer || e.button !== 0) return;
   if (weaponOverheated) attemptPerfectVent();
-  canvas.setPointerCapture(e.pointerId);
+  try {
+    canvas.setPointerCapture(e.pointerId);
+  } catch {}
   let lift = 0;
-  // Hybrid Touch Finger Offset: if tapping on/near the ship on a phone, smoothly lift ship ~46px above thumb!
+  let touchFocused = false;
+  // Touch & Pointer Double-Tap & Hold Focus (LANCE) + Hybrid Touch Finger Offset!
   if (e.pointerType === 'touch') {
+    const now = performance.now();
+    const dtTap = now - lastTouchDown.time;
+    const distTap = Math.hypot(e.clientX - lastTouchDown.x, e.clientY - lastTouchDown.y);
+    if (dtTap > 0 && dtTap <= 340 && distTap <= 84) {
+      touchFocused = true;
+      lastTouchDown.time = 0;
+      sound.uiClick();
+      popups.push({
+        x: player.x,
+        y: player.y - 28,
+        text: 'LANCE FOCUS',
+        color: '#96f6ff',
+        life: 0.72,
+        maxLife: 0.72,
+        size: 11,
+      });
+    } else {
+      lastTouchDown = { time: now, x: e.clientX, y: e.clientY };
+    }
     const bounds = canvas.getBoundingClientRect();
     if (bounds.width && bounds.height) {
       const tx = ((e.clientX - bounds.left) * w) / bounds.width;
@@ -3503,7 +3568,9 @@ canvas.addEventListener('pointerdown', (e) => {
     goalY: player.y,
     lift,
     isTouch: e.pointerType === 'touch',
+    focused: touchFocused,
   };
+  if (touchFocused) updateHud();
 });
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'intro') return;
@@ -3522,9 +3589,16 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = e.clientX;
   pointer.y = e.clientY;
 });
-canvas.addEventListener('lostpointercapture', (e) => {
-  if (pointer?.id === e.pointerId) pointer = null;
-});
+function releasePointer(e) {
+  if (pointer?.id === e.pointerId) {
+    const wasFocused = pointer.focused;
+    pointer = null;
+    if (wasFocused) updateHud();
+  }
+}
+canvas.addEventListener('lostpointercapture', releasePointer);
+canvas.addEventListener('pointerup', releasePointer);
+canvas.addEventListener('pointercancel', releasePointer);
 
 // Unlock subtle Main Menu orbital ambient music on first interaction
 window.addEventListener(
@@ -3732,7 +3806,7 @@ function renderUpgrades() {
     btn.type = 'button';
     btn.className = 'buy-btn' + (maxed ? ' maxed' : '');
     btn.disabled = maxed || !affordable;
-    btn.innerHTML = maxed ? 'MAXED' : `<i class="coin-dot" aria-hidden="true"></i>${cost}`;
+    btn.innerHTML = maxed ? 'MAXED' : `<i class="coin-dot" aria-hidden="true"></i>${cost.toLocaleString()}`;
     if (!maxed) {
       btn.addEventListener('click', () => {
         if (meta.coins < cost) return;
@@ -3787,7 +3861,7 @@ function renderUpgrades() {
     nameEl.textContent = skin.name;
     const costEl = document.createElement('span');
     costEl.className = 'skin-cost' + (isOwned ? ' owned' : '');
-    costEl.textContent = isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : String(skin.cost);
+    costEl.textContent = isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : skin.cost.toLocaleString();
 
     btn.append(preview, nameEl, costEl);
     btn.addEventListener('click', () => {
@@ -3810,7 +3884,7 @@ function renderUpgrades() {
   }
 
   refundBtn.disabled = totalSpent === 0;
-  refundBtn.textContent = `Refund ${RIGS[hangarRig].name} (${totalSpent} coins)`;
+  refundBtn.textContent = `Refund ${RIGS[hangarRig].name} (${totalSpent.toLocaleString()} coins)`;
 }
 
 function syncMetaUi() {
