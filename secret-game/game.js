@@ -207,12 +207,14 @@ const bossArmor = document.querySelector('#boss-armor');
 const bossPartsEl = document.querySelector('#boss-parts');
 const weaponTierEl = document.querySelector('#weapon-tier');
 const fireModeEl = document.querySelector('#fire-mode');
+const focusChip = document.querySelector('#focus-chip');
 const autofireBtn = document.querySelector('#autofire');
 const novaBlock = document.querySelector('#nova-block');
 const novaLabel = document.querySelector('#nova-label');
 const novaPct = document.querySelector('#nova-pct');
 const novaFill = document.querySelector('#nova-fill');
 const dashPip = document.querySelector('#dash-pip');
+const novaHint = document.querySelector('#nova-hint');
 const touchDash = document.querySelector('#touch-dash');
 const touchNova = document.querySelector('#touch-nova');
 const pauseButton = document.querySelector('#pause');
@@ -296,6 +298,8 @@ let distance = 0;
 let introTime = 0;
 let introCursorX = 0.5;
 let introCursorY = 0.5;
+let introRoll = 0;
+let introPitch = 0;
 let time = 0;
 let currentWave = 1;
 let spawnIn = 0;
@@ -424,21 +428,10 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   }
 
   ctx.scale(width / 94, width / 94);
+  if (opts.pitch) ctx.scale(1, 1 - Math.abs(opts.pitch) * 0.12);
 
-  if (mode === 'intro') {
-    if (opts.tier >= 2) {
-      ctx.fillStyle = PALETTE.ink;
-      ctx.fillRect(-35, 1, 7, 17);
-      ctx.fillRect(28, 1, 7, 17);
-      ctx.fillStyle = opts.tier >= 4 ? PALETTE.gold : rig.accent;
-      ctx.fillRect(-33.5, 3, 4, 12);
-      ctx.fillRect(29.5, 3, 4, 12);
-    }
-    drawInterceptor(ctx, variant);
-  } else {
-    // 2.5D Chicken Invaders-style longitudinal roll around the nose-to-tail axis!
-    drawBankedShip(ctx, variant, roll, opts.tier || 1, rig.accent);
-  }
+  // Full 2.5D longitudinal roll on both Start screen hero & active flight!
+  drawBankedShip(ctx, variant, roll, opts.tier || 1, rig.accent);
 
   // Muzzle flash
   if (opts.muzzle > 0) {
@@ -570,34 +563,47 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
-  // Interactive Hangar / Intro hero flyover
+  // Interactive Hangar / Intro hero flyover with rich 2.5D mouse-reactive roll & pitch!
   if (intro) {
     const portrait = w < h;
+    const cx = introCursorX - 0.5;
+    const cy = introCursorY - 0.5;
     const x =
       w * (portrait ? 0.48 : 0.65) +
       Math.sin(introTime * 0.45) * 5 +
-      (introCursorX - 0.5) * (portrait ? 12 : 24);
+      cx * (portrait ? 14 : 30);
     const y =
       h * (portrait ? 0.25 : 0.43) +
       Math.cos(introTime * 0.55) * 4 +
-      (introCursorY - 0.5) * 14;
-    const size = Math.min(w * (portrait ? 0.25 : 0.19), h * (portrait ? 0.2 : 0.31));
+      cy * 20;
+    const size = Math.min(w * (portrait ? 0.25 : 0.195), h * (portrait ? 0.2 : 0.32));
     const rig = RIGS[selectedRig];
+    const heading = 0.76 + introRoll * 0.16 + introPitch * 0.08;
+    const bankSpan = Math.cos(introRoll * 0.72);
 
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(0.76);
+    ctx.rotate(heading);
     ctx.scale(size / 94, size / 94);
     for (const side of [-1, 1]) {
+      const tipX = side * 23 * bankSpan;
+      const tipY = 32 + side * introRoll * 6;
+      const bendX = -15 - introRoll * 28;
+      const endX = -138 - introRoll * 38;
+      const endY = 272 - introPitch * 22;
       ctx.beginPath();
-      ctx.moveTo(side * 23 - 2, 32);
-      ctx.bezierCurveTo(side * 23 - 4, 108, -15, 168, -138, 272);
-      ctx.bezierCurveTo(-26, 179, side * 23 + 6, 99, side * 23 + 2, 32);
+      ctx.moveTo(tipX - 2, tipY);
+      ctx.bezierCurveTo(tipX - 4, 108, bendX, 168, endX, endY);
+      ctx.bezierCurveTo(bendX - 11, 179, tipX + 6, 99, tipX + 2, tipY);
       ctx.fillStyle = rig.accent + '66';
       ctx.fill();
     }
     ctx.restore();
-    paintShip(x, y, size, 0.76 + (introCursorX - 0.5) * 0.08, 1.25, selectedRig, { tier: 2 });
+    paintShip(x, y, size, heading, 1.25 - introPitch * 0.35, selectedRig, {
+      tier: Math.max(2, getEffectiveRig().startWeapon),
+      roll: introRoll,
+      pitch: introPitch,
+    });
     ctx.restore();
     return;
   }
@@ -1365,15 +1371,17 @@ function updateHud() {
     comboHud.style.setProperty('--combo-life', `${Math.max(0, (comboTimer / 4.2) * 100)}%`);
   }
 
-  // Weapon & mode badges
+  // Weapon & mode dock
   const roman = ['I', 'II', 'III', 'IV'][clamp(weaponLevel - 1, 0, 3)];
   weaponTierEl.textContent = `MK ${roman}`;
   const focused = preciseSteering();
   fireModeEl.textContent = overdriveTime > 0 ? 'OVERDRIVE' : focused ? 'LANCE' : 'WIDE';
-  fireModeEl.classList.toggle('focus-on', focused || overdriveTime > 0);
+  fireModeEl.classList.toggle('focus-on', focused && overdriveTime <= 0);
+  fireModeEl.classList.toggle('overdrive-on', overdriveTime > 0);
+  focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
 
-  // Nova / Overdrive gauge
+  // Nova / Overdrive dock
   const pct = overdriveTime > 0 ? Math.min(100, (overdriveTime / 4.8) * 100) : Math.min(100, novaCharge);
   novaFill.style.width = `${pct.toFixed(1)}%`;
   novaPct.textContent = overdriveTime > 0 ? `${overdriveTime.toFixed(1)}s` : `${Math.floor(novaCharge)}%`;
@@ -1381,6 +1389,7 @@ function updateHud() {
   novaBlock.dataset.ready = String(novaCharge >= 50);
   novaBlock.dataset.overdrive = String(overdriveTime > 0);
   dashPip.dataset.ready = String(player.dashCd <= 0);
+  novaHint.dataset.ready = String(novaCharge >= 50);
   touchNova.disabled = novaCharge < 50;
   touchDash.disabled = player.dashCd > 0;
 }
@@ -1891,19 +1900,22 @@ function update(dt) {
     missileTimer = interval * (overdriveTime > 0 ? 0.72 : 1);
   }
 
-  // Smart Wave Director (2 full waves per sector before Flagship arrives!)
+  // Smart Wave Director with Crowd Budget (prevents overwhelming pileups on endless waves!)
   if (!boss && !warp) {
     spawnIn -= dt;
-    const activeHostiles = enemies.filter((e) => e.kind !== 'rock' && !e.dead).length;
+    const combatHostiles = enemies.filter((e) => !e.dead && e.kind !== 'rock' && e.kind !== 'mine');
+    const heavyCount = combatHostiles.filter((e) => ['gunship', 'prism', 'minelayer'].includes(e.kind)).length;
     if (spawnCount >= nextBossAtSpawn) {
-      if (activeHostiles === 0 && spawnIn <= 0.4) {
+      if (combatHostiles.length === 0 && spawnIn <= 0.4) {
         beginBoss();
       }
     } else {
-      if (activeHostiles === 0 && spawnIn > 0.55) {
-        spawnIn = 0.55;
+      if (combatHostiles.length === 0 && spawnIn > 0.6) {
+        spawnIn = 0.6;
       }
-      if (spawnIn <= 0) {
+      // Hold next squad cleanly if arena already has heavy threats or >= 5 active combat craft
+      const arenaCrowded = combatHostiles.length >= 5 || heavyCount >= 2;
+      if (spawnIn <= 0 && !arenaCrowded) {
         const wave = Math.floor(spawnCount / 6) + 1;
         const beat = spawnCount % 6;
         hud.style.setProperty('--wave-progress', ((beat + 1) / 6) * 100 + '%');
@@ -1923,8 +1935,9 @@ function update(dt) {
           if (enemy.kind === 'rock') enemy.shape = outlineRock();
         }
         spawnCount++;
-        const cadence = 1 + Math.min(1.15, (wave - 1) * 0.14);
-        spawnIn += (beat === 5 ? waveLength / 6 + 1.05 : waveLength / 6 - 0.18) / cadence;
+        // Smooth asymptotic pacing ceiling (never spawns exponentially faster!)
+        const cadence = 1 + 0.36 * (1 - Math.exp(-(wave - 1) * 0.2));
+        spawnIn = (beat === 5 ? waveLength / 6 + 1.25 : waveLength / 6) / cadence;
       }
     }
   }
@@ -2311,8 +2324,16 @@ function tick(now) {
   if (document.hidden || (mode !== 'playing' && mode !== 'intro')) return;
   const dt = lastTime ? Math.min(0.04, (now - lastTime) / 1000) : 0;
   lastTime = now;
-  if (mode === 'intro') introTime += dt;
-  else update(dt);
+  if (mode === 'intro') {
+    introTime += dt;
+    // Silky spring-damped 2.5D roll & pitch tracking cursor on Start screen!
+    const targetRoll = clamp((introCursorX - 0.5) * 1.9 + Math.sin(introTime * 0.55) * 0.14, -0.92, 0.92);
+    const targetPitch = clamp((introCursorY - 0.5) * 1.5 + Math.cos(introTime * 0.45) * 0.1, -0.8, 0.8);
+    introRoll += (targetRoll - introRoll) * (1 - Math.exp(-dt * 7.5));
+    introPitch += (targetPitch - introPitch) * (1 - Math.exp(-dt * 7.5));
+  } else {
+    update(dt);
+  }
   draw();
   if (mode === 'playing' || (mode === 'intro' && !reducedMotion.matches)) {
     frame = requestAnimationFrame(tick);
@@ -2444,16 +2465,16 @@ canvas.addEventListener('pointerdown', (e) => {
   canvas.setPointerCapture(e.pointerId);
   pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, goalX: player.x, goalY: player.y };
 });
-canvas.addEventListener('pointermove', (e) => {
-  if (mode === 'intro') {
-    const bounds = canvas.getBoundingClientRect();
-    if (bounds.width && bounds.height) {
-      introCursorX = clamp((e.clientX - bounds.left) / bounds.width, 0, 1);
-      introCursorY = clamp((e.clientY - bounds.top) / bounds.height, 0, 1);
-      if (reducedMotion.matches) draw();
-    }
-    return;
+window.addEventListener('pointermove', (e) => {
+  if (mode !== 'intro') return;
+  const bounds = canvas.getBoundingClientRect();
+  if (bounds.width && bounds.height) {
+    introCursorX = clamp((e.clientX - bounds.left) / bounds.width, 0, 1);
+    introCursorY = clamp((e.clientY - bounds.top) / bounds.height, 0, 1);
+    if (reducedMotion.matches) draw();
   }
+});
+canvas.addEventListener('pointermove', (e) => {
   if (!pointer || pointer.id !== e.pointerId) return;
   const bounds = canvas.getBoundingClientRect();
   pointer.goalX = clamp(pointer.goalX + ((e.clientX - pointer.x) * w) / bounds.width, 19, w - 19);

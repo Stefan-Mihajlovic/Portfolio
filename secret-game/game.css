@@ -364,14 +364,123 @@ summary {
   text-transform: uppercase;
 }
 
+/* Unified frosted cockpit dock style matching the centerpiece Hull/Shield dock */
+.hud-dock {
+  display: grid;
+  gap: 7px;
+  padding: 9px 13px 10px;
+  border-radius: 12px;
+  background: rgb(9 15 26 / 0.76);
+  border: 1px solid rgb(164 196 206 / 0.24);
+  backdrop-filter: blur(10px);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
 .hud-bottom-left {
   position: fixed;
   left: max(var(--edge), env(safe-area-inset-left));
-  bottom: max(20px, env(safe-area-inset-bottom));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+.dock-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+}
+.weapon-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font:
+    700 11px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.06em;
+}
+.tier-tag {
+  color: var(--ink);
+}
+.mode-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  color: var(--muted);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(164 196 206 / 0.18);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+.mode-tag.focus-on {
+  color: #10202b;
+  background: var(--teal);
+  border-color: var(--teal);
+}
+.mode-tag.overdrive-on {
+  color: #1c1308;
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.dock-keys {
   display: flex;
   align-items: center;
-  gap: 10px;
-  pointer-events: none;
+  gap: 6px;
+}
+.hud-key-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 5px;
+  border-radius: 7px;
+  background: rgb(16 26 42 / 0.7);
+  border: 1px solid rgb(164 196 206 / 0.18);
+  font:
+    600 11px/1 Cabinet,
+    system-ui,
+    sans-serif;
+  color: var(--muted);
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    opacity 0.16s ease;
+}
+.hud-key-chip kbd {
+  padding: 3px 6px;
+  font-size: 10px;
+}
+.hud-key-chip[data-active='true'],
+.hud-key-chip[data-ready='true'] {
+  color: var(--ink);
+  border-color: rgb(121 227 213 / 0.45);
+}
+.hud-key-chip[data-ready='false'] {
+  opacity: 0.48;
+}
+.hud-key-chip.nova[data-ready='true'] {
+  color: var(--gold);
+  border-color: rgb(255 214 107 / 0.6);
+  background: rgb(56 40 16 / 0.55);
+}
+.hud-key-chip.toggle {
+  pointer-events: auto;
+  min-height: 28px;
+}
+.hud-key-chip.toggle:hover {
+  border-color: rgb(121 227 213 / 0.5);
+  color: var(--ink);
+}
+.hud-key-chip.toggle[aria-pressed='true'] {
+  color: #f9edcf;
+  background: rgb(32 54 66 / 0.85);
+  border-color: rgb(121 227 213 / 0.72);
+}
+.hud-key-chip.toggle[aria-pressed='true'] kbd {
+  background: linear-gradient(180deg, #98f0e2, #63cfc4);
+  color: #0e1d26;
+  box-shadow: inset 0 -2px #3b9991;
 }
 
 .hud-bottom-center {
@@ -487,67 +596,26 @@ summary {
   box-shadow: none;
 }
 
-.weapon-strip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.badge {
-  font:
-    700 10px/1 ui-monospace,
-    monospace;
-  letter-spacing: 0.08em;
-  padding: 5px 8px;
-  border-radius: 4px;
-  color: var(--ink);
-  background: rgb(16 25 39 / 0.78);
-  border: 1px solid rgb(121 227 213 / 0.38);
-}
-.badge.subtle {
-  color: var(--muted);
-  border-color: var(--line);
-}
-.badge.focus-on {
-  color: #10202b;
-  background: var(--teal);
-  border-color: var(--teal);
-}
-.badge.toggle {
-  min-height: 26px;
-  color: var(--muted);
-  border-color: var(--line);
-  transition:
-    color 0.16s ease,
-    border-color 0.16s ease,
-    background-color 0.16s ease;
-}
-.badge.toggle[aria-pressed='true'] {
-  color: #10202b;
-  background: #e9dfc1;
-  border-color: #e9dfc1;
-}
-
 .hud-bottom-right {
   position: fixed;
   right: max(var(--edge), env(safe-area-inset-right));
   bottom: max(18px, env(safe-area-inset-bottom));
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   pointer-events: none;
 }
 .gauge-block {
-  width: 158px;
+  min-width: 176px;
   font:
     11px ui-monospace,
     monospace;
-  display: grid;
-  gap: 5px;
 }
 .gauge-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 12px;
 }
 .gauge-head b {
   font-size: 12px;
@@ -555,11 +623,11 @@ summary {
   font-variant-numeric: tabular-nums;
 }
 .nova-track {
-  height: 6px;
-  border-radius: 3px;
-  background: rgb(52 66 84 / 0.75);
+  height: 7px;
+  border-radius: 4px;
+  background: rgb(42 56 74 / 0.8);
   overflow: hidden;
-  border: 1px solid rgb(164 196 206 / 0.22);
+  border: 1px solid rgb(164 196 206 / 0.2);
 }
 #nova-fill {
   display: block;
@@ -568,36 +636,18 @@ summary {
   background: linear-gradient(to right, var(--teal), var(--amber));
   transition: width 0.08s linear;
 }
-#nova-block[data-ready='true'] .gauge-head b,
-#nova-block[data-ready='true'] .nova-hint {
-  color: var(--amber);
+#nova-block[data-ready='true'] {
+  border-color: rgb(255 214 107 / 0.62);
+  box-shadow: 0 0 22px rgb(255 214 107 / 0.16);
+}
+#nova-block[data-ready='true'] .gauge-head b {
+  color: var(--gold);
+}
+#nova-block[data-overdrive='true'] {
+  border-color: rgb(250 117 77 / 0.75);
 }
 #nova-block[data-overdrive='true'] #nova-fill {
   background: linear-gradient(to right, #ffe89e, #fa754d);
-}
-.gauge-sub {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-}
-.dash-pip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-.dash-pip i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #3d4e60;
-}
-.dash-pip[data-ready='true'] {
-  color: var(--teal);
-}
-.dash-pip[data-ready='true'] i {
-  background: var(--teal);
 }
 
 .touch-pad {
@@ -1225,7 +1275,7 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open) {
   .touch-pad {
     display: flex;
   }
-  .gauge-sub {
+  .dock-keys {
     display: none;
   }
 }
@@ -1315,6 +1365,7 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open) {
   }
   .hud-bottom-left {
     bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
+    padding: 6px 9px;
   }
   .hud-bottom-center {
     padding: 7px 12px 9px;
@@ -1330,7 +1381,8 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open) {
     bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
   }
   .gauge-block {
-    width: 112px;
+    min-width: 118px;
+    padding: 6px 9px;
   }
 }
 

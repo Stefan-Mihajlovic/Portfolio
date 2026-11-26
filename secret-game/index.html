@@ -45,12 +45,18 @@
             <div id="boss-parts" class="boss-parts"></div>
           </div>
 
-          <div class="hud-bottom-left">
-            <div class="weapon-strip">
-              <span id="weapon-tier" class="badge">MK I</span>
-              <span id="fire-mode" class="badge subtle">WIDE</span>
-              <button id="autofire" class="badge toggle" type="button" aria-pressed="false" title="Toggle auto-fire (F)">
-                AUTO
+          <div class="hud-bottom-left hud-dock">
+            <div class="dock-head">
+              <span class="metric-label">Weapon</span>
+              <div class="weapon-tags">
+                <b id="weapon-tier" class="tier-tag">MK I</b>
+                <span id="fire-mode" class="mode-tag">WIDE</span>
+              </div>
+            </div>
+            <div class="dock-keys">
+              <span id="focus-chip" class="hud-key-chip"><kbd>Shift</kbd><span>Focus</span></span>
+              <button id="autofire" class="hud-key-chip toggle" type="button" aria-pressed="false" title="Toggle auto-fire (F)">
+                <kbd>F</kbd><span>Auto</span>
               </button>
             </div>
           </div>
@@ -67,15 +73,15 @@
           </div>
 
           <div class="hud-bottom-right">
-            <div class="gauge-block" id="nova-block">
+            <div class="gauge-block hud-dock" id="nova-block">
               <div class="gauge-head">
                 <span class="metric-label" id="nova-label">Nova</span>
                 <b id="nova-pct">0%</b>
               </div>
               <div class="nova-track" aria-hidden="true"><i id="nova-fill"></i></div>
-              <div class="gauge-sub">
-                <span id="dash-pip" class="dash-pip" data-ready="true"><i></i>DASH [C]</span>
-                <span class="nova-hint" id="nova-hint">[E] PULSE</span>
+              <div class="dock-keys">
+                <span id="dash-pip" class="hud-key-chip" data-ready="true"><kbd>C</kbd><span>Dash</span></span>
+                <span id="nova-hint" class="hud-key-chip nova" data-ready="false"><kbd>E</kbd><span>Pulse</span></span>
               </div>
             </div>
             <div class="touch-pad">

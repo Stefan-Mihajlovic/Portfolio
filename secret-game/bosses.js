@@ -208,8 +208,9 @@ export function createBoss(rank, w, runSeed = 1) {
       : null;
 
   const palette = BOSS_PALETTES[palIdx];
-  const maxHp = Math.round(3 * (28 + rank * 12 + rank * rank * 1.9));
-  const scale = 1 + Math.min(0.28, (rank - 1) * 0.045);
+  // Smooth linear-asymptotic scaling so Rank 5, 10, 20+ stay exciting & fair, never exponential bloat!
+  const maxHp = Math.round(3 * (28 + rank * 14));
+  const scale = 1 + Math.min(0.24, (rank - 1) * 0.04);
 
   const boss = {
     kind: 'boss',
@@ -415,9 +416,9 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   }
 
   const pressure = b.phase - 1;
-  const speed = 1 + 0.12 * (b.rank - 1) * 0.7;
+  const speed = 1 + 0.35 * (1 - Math.exp(-(b.rank - 1) * 0.25));
   const liveParts = aliveBossParts(b);
-  b.courseTime += dt * speed * (1 + pressure * 0.09 + (liveParts.length === 0 ? 0.14 : 0));
+  b.courseTime += dt * speed * (1 + pressure * 0.08 + (liveParts.length === 0 ? 0.12 : 0));
   const t = b.courseTime;
   const amplitude = Math.max(0, Math.min(w * 0.31, w / 2 - 72));
 
@@ -445,13 +446,13 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   if (b.ringQueue > 0) {
     b.ringTimer -= dt;
     if (b.ringTimer <= 0) {
-      b.ringTimer = 0.26;
-      const petals = Math.min(20, 11 + b.rank + pressure * 2);
-      const opening = Math.sin((b.volley + b.ringQueue) * 0.9) * 0.78;
-      const spd = 154 + b.rank * 10 + pressure * 12;
+      b.ringTimer = 0.32;
+      const petals = Math.min(15, 10 + pressure * 2 + Math.min(2, Math.floor(b.rank / 3)));
+      const opening = Math.sin((b.volley + b.ringQueue) * 0.85) * 0.72;
+      const spd = Math.min(225, 152 + b.rank * 6 + pressure * 10);
       for (let i = 0; i < petals; i++) {
         const angle = (i / petals - 0.5) * TAU + b.ringQueue * 0.16;
-        if (Math.abs(angle - opening) > 0.34) {
+        if (Math.abs(angle - opening) > 0.42) {
           shots.push({
             x: b.x,
             y: b.y + 14,
@@ -499,8 +500,9 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   }
 
   b.launchIn -= dt;
-  if (b.launchIn <= 0) {
-    b.launchIn = launchWing(b, enemies, w, h) ? Math.max(5.5, 9.2 - pressure * 0.6 - b.rank * 0.25) : 0.7;
+  const activeMines = enemies.filter((m) => m.kind === 'mine' && !m.dead).length;
+  if (b.launchIn <= 0 && activeMines <= 1) {
+    b.launchIn = launchWing(b, enemies, w, h) ? Math.max(7.5, 10.5 - pressure * 0.5) : 0.9;
   }
 
   b.x += (goalX - b.x) * (1 - Math.exp(-dt * 1.8));
@@ -511,7 +513,7 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   if (b.fireIn > 0.5) b.aim = Math.atan2(player.x - b.x, Math.max(45, player.y - b.y));
   if (b.fireIn > 0) return;
 
-  const specialCycle = b.rank >= 3 ? 3 : 4;
+  const specialCycle = 4;
   if ((b.volley + 1) % specialCycle === 0) {
     b.volley++;
     const useSecondary = b.secondarySpecial && b.phase >= 2 && b.volley % 2 === 0;
@@ -525,63 +527,62 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
         toX: Math.max(0.14, Math.min(0.86, player.x / w)),
         toY: Math.max(0.42, Math.min(0.68, player.y / h)),
       };
-      b.fireIn = 1.65;
+      b.fireIn = 1.75;
       sound.effect('dash');
       return;
     }
     if (spec === 'beam') {
-      b.twinBeam = b.phase === 3 || b.rank >= 3;
-      b.beamAngle = Math.max(-0.36, Math.min(0.36, b.aim)) - (b.volley % 2 ? 0.3 : -0.3);
-      b.beamSweep = (b.volley % 2 ? 0.58 : -0.58) * (1 + b.rank * 0.04);
-      b.beamWarn = 0.9;
-      b.fireIn = 1.5;
+      b.twinBeam = b.phase === 3 && b.rank >= 3;
+      b.beamAngle = Math.max(-0.34, Math.min(0.34, b.aim)) - (b.volley % 2 ? 0.28 : -0.28);
+      b.beamSweep = (b.volley % 2 ? 0.52 : -0.52);
+      b.beamWarn = 0.95;
+      b.fireIn = 1.65;
       return;
     }
     if (spec === 'minefield') {
-      const mines = Math.min(6, 3 + b.phase);
+      const mines = Math.min(4, Math.max(0, 4 - activeMines));
       for (let i = 0; i < mines; i++) {
-        const mx = w * (0.14 + (i / Math.max(1, mines - 1)) * 0.72);
+        const mx = w * (0.18 + (i / Math.max(1, mines - 1)) * 0.64);
         enemies.push(
           createEnemy('mine', mx, b.y + 34 + (i % 2) * 20, b.rank + 1, {
-            threat: 1 + b.rank * 0.14,
-            fuse: 3.6 + (i % 2) * 0.5,
+            threat: 1 + Math.min(0.35, b.rank * 0.06),
+            fuse: 3.8 + (i % 2) * 0.5,
           }),
         );
       }
-      b.fireIn = 1.35;
+      b.fireIn = 1.5;
       sound.effect('volley');
       return;
     }
     if (spec === 'barrage') {
-      // Sweeping twin shotgun walls
-      const spd = Math.min(275, 165 + b.rank * 10);
+      const spd = Math.min(230, 160 + b.rank * 6);
       for (const side of [-1, 1]) {
-        for (let k = 0; k < 4 + pressure; k++) {
-          const a = b.aim + side * (0.12 + k * 0.11);
+        for (let k = 0; k < 3 + Math.min(1, pressure); k++) {
+          const a = b.aim + side * (0.16 + k * 0.13);
           shots.push({
             x: b.x + side * 24,
             y: b.y + 18,
             r: 4.3,
-            vx: Math.sin(a) * (spd * (0.85 + k * 0.06)),
-            vy: Math.cos(a) * (spd * (0.85 + k * 0.06)),
+            vx: Math.sin(a) * (spd * (0.86 + k * 0.06)),
+            vy: Math.cos(a) * (spd * (0.86 + k * 0.06)),
             hostile: true,
             color: b.palette.light,
           });
         }
       }
-      b.fireIn = 1.3;
+      b.fireIn = 1.45;
       sound.effect('volley');
       return;
     }
     if (spec === 'ringburst') {
-      b.ringQueue = 2 + b.phase;
+      b.ringQueue = 2 + Math.min(1, pressure);
       b.ringTimer = 0.05;
-      b.fireIn = 1.75;
+      b.fireIn = 1.85;
       return;
     }
   }
 
-  const velocity = Math.min(285, 156 + b.rank * 11 + pressure * 14);
+  const velocity = Math.min(235, 152 + Math.min(45, b.rank * 7) + pressure * 12);
   const bulletColor = b.palette.bullet;
   function fire(x, y, angle, spd = velocity, color = bulletColor) {
     shots.push({
@@ -596,50 +597,51 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   }
 
   if (b.volleyStyle === 'aimed') {
-    const spreadCount = 1 + pressure + Math.min(2, Math.floor(b.rank / 3));
-    for (let i = -spreadCount; i <= spreadCount; i++) fire(b.x, b.y + 20, b.aim + i * 0.17);
+    const spreadCount = 1 + Math.min(2, pressure);
+    for (let i = -spreadCount; i <= spreadCount; i++) fire(b.x, b.y + 20, b.aim + i * 0.19);
   } else if (b.volleyStyle === 'fan') {
-    const width = 2 + pressure + Math.min(2, Math.floor(b.rank / 3));
-    for (let i = -width; i <= width; i++) fire(b.x, b.y + 18, i * 0.22 + (b.volley % 2 ? 0.1 : -0.1));
+    const width = 2 + Math.min(2, pressure);
+    for (let i = -width; i <= width; i++) fire(b.x, b.y + 18, i * 0.24 + (b.volley % 2 ? 0.11 : -0.11));
   } else if (b.volleyStyle === 'spiral') {
-    const petals = Math.min(20, 10 + pressure * 2 + b.rank);
+    const petals = Math.min(15, 10 + pressure * 2);
     const opening = Math.sin(b.volley * 0.72) * (b.phase === 2 ? -0.82 : 0.82);
     for (let i = 0; i < petals; i++) {
       const angle = (i / petals - 0.5) * TAU + (b.volley % 2 ? 0.12 : -0.12);
-      if (Math.abs(angle - opening) > 0.36) fire(b.x, b.y + 12, angle, velocity * 0.96);
+      if (Math.abs(angle - opening) > 0.42) fire(b.x, b.y + 12, angle, velocity * 0.94);
     }
   } else if (b.volleyStyle === 'helix') {
-    const arms = 3 + pressure;
+    const arms = 2 + pressure;
     for (let i = 0; i < arms; i++) {
-      const a = b.aim + (i - (arms - 1) / 2) * 0.28 + Math.sin(b.volley * 0.9) * 0.18;
-      fire(b.x, b.y + 18, a, velocity * 1.04);
-      fire(b.x, b.y + 18, a + 0.08, velocity * 0.86);
+      const a = b.aim + (i - (arms - 1) / 2) * 0.3 + Math.sin(b.volley * 0.9) * 0.16;
+      fire(b.x, b.y + 18, a, velocity * 1.02);
     }
   } else if (b.volleyStyle === 'burst') {
-    for (let k = 0; k < 3; k++) {
-      const s = velocity * (0.82 + k * 0.16);
-      fire(b.x, b.y + 20, b.aim - 0.14, s);
+    for (let k = 0; k < 2; k++) {
+      const s = velocity * (0.86 + k * 0.16);
+      fire(b.x, b.y + 20, b.aim - 0.16, s);
       fire(b.x, b.y + 20, b.aim, s * 1.05, b.palette.light);
-      fire(b.x, b.y + 20, b.aim + 0.14, s);
+      fire(b.x, b.y + 20, b.aim + 0.16, s);
     }
   } else {
-    for (let i = -3; i <= 3; i++) fire(b.x, b.y + 18, i * 0.26, velocity * 0.94);
-    fire(b.x, b.y + 20, b.aim, velocity * 1.16, '#fff0c2');
+    for (let i = -2; i <= 2; i++) fire(b.x, b.y + 18, i * 0.28, velocity * 0.92);
+    fire(b.x, b.y + 20, b.aim, velocity * 1.12, '#fff0c2');
   }
 
-  for (const p of liveParts) {
-    const pAim = Math.atan2(player.x - p.x, Math.max(60, player.y - p.y));
-    if (p.role === 'turret') fire(p.x, p.y + 12, pAim + (p.side || 0) * 0.1, velocity * 1.06);
-    else if (p.role === 'pylon') fire(p.x, p.y + 10, pAim, velocity * 0.88, '#ffd287');
-    else if (p.role === 'prism') fire(p.x, p.y, pAim, velocity * 1.04, b.palette.light);
-    else if (p.role === 'bay' && b.volley % 2 === 0) {
-      enemies.push(createEnemy('mine', p.x, p.y + 14, b.rank, { threat: 1 + b.rank * 0.12, fuse: 3.8 }));
+  // Subsystems take turns firing (staggered by volley index) so patterns stay clean & readable!
+  if (liveParts.length > 0) {
+    const activeSub = liveParts[b.volley % liveParts.length];
+    const pAim = Math.atan2(player.x - activeSub.x, Math.max(60, player.y - activeSub.y));
+    if (activeSub.role === 'turret') fire(activeSub.x, activeSub.y + 12, pAim, velocity * 1.02);
+    else if (activeSub.role === 'pylon') fire(activeSub.x, activeSub.y + 10, pAim, velocity * 0.88, '#ffd287');
+    else if (activeSub.role === 'prism') fire(activeSub.x, activeSub.y, pAim, velocity * 1.0, b.palette.light);
+    else if (activeSub.role === 'bay' && activeMines < 3 && b.volley % 2 === 0) {
+      enemies.push(createEnemy('mine', activeSub.x, activeSub.y + 14, b.rank, { threat: 1.1, fuse: 4.0 }));
     }
   }
 
   b.volley++;
-  const baseInterval = Math.max(0.68, 1.38 - b.rank * 0.06);
-  b.fireIn = 0.45 + (baseInterval - 0.3) / (1 + pressure * 0.16);
+  const baseInterval = Math.max(1.02, 1.48 - Math.min(0.38, b.rank * 0.04));
+  b.fireIn = 0.55 + (baseInterval - 0.35) / (1 + pressure * 0.12);
   sound.effect('volley');
 }
 
