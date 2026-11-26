@@ -22,11 +22,82 @@ function plates(spec) {
   return spec.map(([color, path]) => [color, new Path2D(path)]);
 }
 
-function print(ctx, layers) {
+function print(ctx, layers, colorMap = null) {
   for (const [color, path] of layers) {
-    ctx.fillStyle = color;
+    ctx.fillStyle = (colorMap && colorMap[color]) || color;
     ctx.fill(path);
   }
+}
+
+// Unlockable Ship Skins / Liveries (coin sink for maxed hangars!)
+export const SHIP_SKINS = [
+  {
+    id: 'standard',
+    name: 'Standard',
+    cost: 0,
+    swatch: ['#faf1d6', '#8395a3', '#79e3d5'],
+    accent: null,
+    map: null,
+  },
+  {
+    id: 'solar',
+    name: 'Solar Gold',
+    cost: 180,
+    swatch: ['#fff1c2', '#c49648', '#ff6e42'],
+    accent: '#ffe18c',
+    map: {
+      '#faf1d6': '#fff1c2',
+      '#8395a3': '#c49648',
+      '#3f5069': '#6b4724',
+      '#fa754d': '#ff5c3d',
+      '#79e3d5': '#ffe18c',
+      '#ffd18a': '#ff9e5e',
+      '#9be9ff': '#ffe18c',
+      '#e4fff5': '#fffbe0',
+    },
+  },
+  {
+    id: 'crimson',
+    name: 'Crimson Ace',
+    cost: 260,
+    swatch: ['#f7e4e4', '#bd4a52', '#ffcf6e'],
+    accent: '#ff8b78',
+    map: {
+      '#faf1d6': '#f7e4e4',
+      '#8395a3': '#bd4a52',
+      '#3f5069': '#59202e',
+      '#fa754d': '#ffcf6e',
+      '#79e3d5': '#ff8b78',
+      '#ffd18a': '#ff8b78',
+      '#9be9ff': '#ff9f8a',
+      '#e4fff5': '#fff0ec',
+    },
+  },
+  {
+    id: 'stealth',
+    name: 'Void Stealth',
+    cost: 360,
+    swatch: ['#6c7c94', '#2c374a', '#c89eff'],
+    accent: '#c89eff',
+    map: {
+      '#faf1d6': '#6c7c94',
+      '#8395a3': '#2c374a',
+      '#3f5069': '#161e2b',
+      '#fa754d': '#b388ff',
+      '#79e3d5': '#c89eff',
+      '#ffd18a': '#c89eff',
+      '#9be9ff': '#c89eff',
+      '#e4fff5': '#f0e4ff',
+    },
+  },
+];
+
+export function getSkin(skinId = 'standard') {
+  return SHIP_SKINS.find((s) => s.id === skinId) || SHIP_SKINS[0];
+}
+
+export function getSkinAccent(skinId, fallback) {
+  return getSkin(skinId).accent || fallback;
 }
 
 // --- PLAYER SHIPS (Hull layers separated from Canopy so 2.5D roll NEVER draws a double cockpit!) ---
@@ -112,13 +183,15 @@ const shipCanopies = {
   ]),
 };
 
-export function drawInterceptor(ctx, variant = 'kestrel') {
-  print(ctx, shipHulls[variant] || kestrelHull);
-  print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
+export function drawInterceptor(ctx, variant = 'kestrel', skinId = 'standard') {
+  const colorMap = getSkin(skinId).map;
+  print(ctx, shipHulls[variant] || kestrelHull, colorMap);
+  print(ctx, shipCanopies[variant] || shipCanopies.kestrel, colorMap);
 }
 
 // 2.5D Chicken Invaders-style longitudinal roll with single parallax cockpit (zero double cockpit!)
-export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, accent = teal) {
+export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, accent = teal, skinId = 'standard') {
+  const colorMap = getSkin(skinId).map;
   const r = Math.max(-1, Math.min(1, roll));
   const absR = Math.abs(r);
   const scaleX = Math.cos(r * 0.72);
@@ -159,7 +232,7 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
   }
 
   // Draw hull ONLY (no baked-in canopy!)
-  print(ctx, shipHulls[variant] || kestrelHull);
+  print(ctx, shipHulls[variant] || kestrelHull, colorMap);
 
   // Directional 3D roll shading across wings
   if (absR > 0.06) {
@@ -188,7 +261,7 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
   ctx.save();
   ctx.translate(r * 4.5, 0);
   ctx.transform(Math.max(0.74, scaleX), skewY * 0.45, 0, 1, 0, 0);
-  print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
+  print(ctx, shipCanopies[variant] || shipCanopies.kestrel, colorMap);
   ctx.restore();
 }
 
@@ -247,7 +320,14 @@ const foes = {
   ]),
 };
 
-export function drawFoe(ctx, e) {
+const SECTOR_FOE_TINTS = [
+  null,
+  { '#d96854': '#e66442', '#cf899e': '#e08b63', '#bf6d4d': '#cc5a3b' },
+  { '#d96854': '#c26db8', '#cf899e': '#b294e8', '#bf6d4d': '#9668b8' },
+  { '#d96854': '#d98948', '#cf899e': '#e0a969', '#bf6d4d': '#b87638' },
+];
+
+export function drawFoe(ctx, e, sectorIndex = 0) {
   ctx.save();
   ctx.translate(e.x, e.y);
 
@@ -320,7 +400,7 @@ export function drawFoe(ctx, e) {
     ctx.restore();
   }
 
-  print(ctx, foes[e.kind] || foes.raider);
+  print(ctx, foes[e.kind] || foes.raider, e.kind === 'courier' ? null : SECTOR_FOE_TINTS[sectorIndex % 4]);
 
   if (e.flash > 0) {
     ctx.globalCompositeOperation = 'lighter';
@@ -407,25 +487,22 @@ export function outlineRock() {
   });
 }
 
-export function drawRock(ctx, e) {
+export function drawRock(ctx, e, sectorIndex = 0) {
   ctx.save();
   ctx.translate(e.x, e.y);
   ctx.rotate(e.angle);
   ctx.scale(e.r, e.r);
+  const sec = sectorIndex % 4;
+  const molten = e.molten || sec === 1;
   const shades = e.flash > 0
     ? Array(10).fill('#e6dccd')
-    : [
-        '#6f7182',
-        '#55576c',
-        '#41475d',
-        '#30384d',
-        '#535568',
-        '#89858d',
-        '#aba099',
-        '#888592',
-        '#a59f9f',
-        '#848292',
-      ];
+    : molten
+      ? ['#57312e', '#472526', '#331c21', '#26141a', '#4f2b28', '#733e34', '#944f3c', '#6e3b31', '#8a4c3b', '#63332d']
+      : sec === 2
+        ? ['#6e678f', '#57507a', '#443e66', '#312d4f', '#5b537d', '#887ea8', '#a89ac7', '#867ca8', '#9e92bd', '#7c739e']
+        : sec === 3
+          ? ['#61534a', '#4c403a', '#38302c', '#292321', '#4d413b', '#7a6859', '#99826c', '#776557', '#8f7965', '#6e5d50']
+          : ['#6f7182', '#55576c', '#41475d', '#30384d', '#535568', '#89858d', '#aba099', '#888592', '#a59f9f', '#848292'];
   e.shape.forEach(([x, y], i) => {
     const [nx, ny] = e.shape[(i + 1) % e.shape.length];
     ctx.fillStyle = shades[i];
@@ -435,17 +512,17 @@ export function drawRock(ctx, e) {
     ctx.lineTo(nx, ny);
     ctx.fill();
   });
-  ctx.strokeStyle = '#d3c5b8';
-  ctx.lineWidth = 0.04;
+  ctx.strokeStyle = molten ? '#ff9c63' : sec === 2 ? '#d6c8ff' : '#d3c5b8';
+  ctx.lineWidth = molten ? 0.055 : 0.04;
   ctx.beginPath();
   ctx.moveTo(...e.shape[6]);
   ctx.lineTo(...e.shape[7]);
   ctx.lineTo(...e.shape[8]);
   ctx.stroke();
 
-  if (e.maxHp > 1 && e.hp < e.maxHp) {
-    ctx.strokeStyle = '#ffbe78cc';
-    ctx.lineWidth = 0.06;
+  if (molten || (e.maxHp > 1 && e.hp < e.maxHp)) {
+    ctx.strokeStyle = molten ? '#ff9d57e0' : '#ffbe78cc';
+    ctx.lineWidth = molten ? 0.075 : 0.06;
     ctx.beginPath();
     ctx.moveTo(-0.35, -0.15);
     ctx.lineTo(0.05, 0.08);
@@ -835,6 +912,16 @@ export function loadPlanets(_inFlight, redraw) {
 
 export function getSector(index) {
   return SECTORS[Math.max(0, index) % SECTORS.length];
+}
+
+export function getSectorHazard(index) {
+  const hazards = [
+    'STANDARD ORBIT',
+    'MOLTEN ASTEROIDS',
+    'ION CURRENT DRIFT',
+    'SOLAR SURGE',
+  ];
+  return hazards[Math.max(0, index) % hazards.length];
 }
 
 export function getSectorName(index) {

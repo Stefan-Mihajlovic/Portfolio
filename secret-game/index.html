@@ -36,6 +36,7 @@
           <span class="hud-coins" aria-label="Run coins">
             <i class="coin-dot" aria-hidden="true"></i><b id="run-coins-hud">0</b>
           </span>
+          <span id="overclock-hud-badge" class="overclock-hud-badge" hidden>OVERCLOCK</span>
           <div id="boss-hud" hidden>
             <label for="boss-armor">
               <b id="boss-name"></b>
@@ -286,6 +287,15 @@
           </button>
         </div>
         <div id="upgrade-list" class="upgrade-list"></div>
+        <div class="hangar-section-label">Ship Livery</div>
+        <div id="skin-list" class="skin-list"></div>
+        <div class="overclock-bar">
+          <div>
+            <strong>Overclock Mode</strong>
+            <p>+60% Coins &amp; +35% Score. Faster, tougher waves and flagships.</p>
+          </div>
+          <button id="overclock-toggle" class="overclock-toggle" type="button" aria-pressed="false">OFF</button>
+        </div>
         <div class="hangar-footer">
           <button id="refund-upgrades" type="button" class="refund-btn">Refund this ship</button>
         </div>
@@ -297,22 +307,33 @@
           <button type="submit" class="modal-close" aria-label="Close field guide">×</button>
         </form>
 
+        <div class="records-strip" aria-label="Personal records">
+          <div><span>Best Wave</span><b id="rec-wave">01</b></div>
+          <div><span>Best Sector</span><b id="rec-sector">01</b></div>
+          <div><span>Flagships</span><b id="rec-bosses">0</b></div>
+          <div><span>Flawless</span><b id="rec-flawless">0</b></div>
+        </div>
+
+        <h3 class="manual-subhead">Milestones</h3>
+        <div id="milestone-list" class="milestone-list"></div>
+
+        <h3 class="manual-subhead">Flight systems</h3>
         <div class="manual-systems">
           <div>
+            <strong>Ship Specialties</strong>
+            <p><b>Kestrel:</b> Nova fires a full-screen Rail-Beam. <b>Falcon:</b> Dash triggers Bullet-Time + seekers. <b>Aegis:</b> Nova reflects enemy fire.</p>
+          </div>
+          <div>
             <strong>Weapon Tiers (MK I–VII)</strong>
-            <p>Unlock wide spreads, automatic homing seekers (MK IV+), piercing bolts (MK V+), and twin rails (MK VI+).</p>
+            <p>Unlock wide spreads, homing seekers (MK IV+), piercing bolts (MK V+), and quad salvos (MK VI+).</p>
           </div>
           <div>
-            <strong>Phase Dash <kbd>C</kbd> / <kbd>RMB</kbd></strong>
-            <p>Short invulnerable burst that slips through fire and pulls in nearby shards and coins.</p>
+            <strong>Flawless Boss Reward</strong>
+            <p>Defeat any flagship without taking a hit to recover <b>+1 permanent Hull</b> and earn bonus coins.</p>
           </div>
           <div>
-            <strong>Nova Pulse <kbd>E</kbd></strong>
-            <p>At 50%+ charge, turns enemy bullets into golden shards and activates Overdrive.</p>
-          </div>
-          <div>
-            <strong>Overshield &amp; Coins</strong>
-            <p>Grab golden <b>OS</b> cells for 6.5s of indestructible ramming armor. Upgrade each ship separately.</p>
+            <strong>Overshield &amp; Sectors</strong>
+            <p>Grab golden <b>OS</b> cells for 6.5s of ramming armor. Each sector adds its own hazard (Molten Debris, Ion Drift, Solar Surge).</p>
           </div>
         </div>
 

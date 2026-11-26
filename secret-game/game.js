@@ -1,11 +1,14 @@
 import { connectFlightPassage } from '../assets/sky/flight-passage.js';
 import {
   PALETTE,
+  SHIP_SKINS,
+  getSkinAccent,
   drawSpaceBackdrop,
   drawPlanets,
   loadPlanets,
   getSector,
   getSectorName,
+  getSectorHazard,
   outlineRock,
   drawRock,
   drawFoe,
@@ -110,19 +113,47 @@ const UPGRADE_DEFS = [
   },
 ];
 
+const MILESTONE_DEFS = [
+  { id: 'sector2', label: 'Reach Sector 02 (Caldera Belt)', reward: 75 },
+  { id: 'sector3', label: 'Reach Sector 03 (Opal Expanse)', reward: 120 },
+  { id: 'bosses3', label: 'Defeat 3 Flagships (total)', reward: 100 },
+  { id: 'flawless', label: 'Flawless Boss Clear (no hit)', reward: 150 },
+  { id: 'combo5', label: 'Reach ×5.0 Combo Multiplier', reward: 90 },
+  { id: 'wave10', label: 'Reach Wave 10', reward: 160 },
+];
+
 const emptyShipUpgrades = () => ({ weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0 });
 let meta = {
   coins: 0,
+  overclock: false,
   ships: {
     kestrel: emptyShipUpgrades(),
     falcon: emptyShipUpgrades(),
     aegis: emptyShipUpgrades(),
   },
+  skins: {
+    kestrel: ['standard'],
+    falcon: ['standard'],
+    aegis: ['standard'],
+  },
+  equippedSkin: {
+    kestrel: 'standard',
+    falcon: 'standard',
+    aegis: 'standard',
+  },
+  records: {
+    bestWave: 1,
+    bestSector: 1,
+    bossesDowned: 0,
+    flawlessBosses: 0,
+  },
+  milestones: {},
 };
 try {
   const raw = JSON.parse(localStorage.getItem('low-orbit-meta') || 'null');
   if (raw && typeof raw === 'object') {
     meta.coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
+    meta.overclock = Boolean(raw.overclock);
     if (raw.ships && typeof raw.ships === 'object') {
       for (const shipKey of Object.keys(RIGS)) {
         for (const def of UPGRADE_DEFS) {
@@ -133,12 +164,35 @@ try {
         }
       }
     } else if (raw.upgrades && typeof raw.upgrades === 'object') {
-      // Cleanly migrate legacy global upgrades to Kestrel so returning players lose nothing!
       for (const def of UPGRADE_DEFS) {
         meta.ships.kestrel[def.id] = Math.max(
           0,
           Math.min(def.costs.length, Math.floor(Number(raw.upgrades[def.id]) || 0)),
         );
+      }
+    }
+    if (raw.skins && typeof raw.skins === 'object') {
+      const validIds = new Set(SHIP_SKINS.map((s) => s.id));
+      for (const shipKey of Object.keys(RIGS)) {
+        const owned = Array.isArray(raw.skins[shipKey]) ? raw.skins[shipKey].filter((id) => validIds.has(id)) : [];
+        meta.skins[shipKey] = Array.from(new Set(['standard', ...owned]));
+      }
+    }
+    if (raw.equippedSkin && typeof raw.equippedSkin === 'object') {
+      for (const shipKey of Object.keys(RIGS)) {
+        const eq = raw.equippedSkin[shipKey];
+        if (meta.skins[shipKey].includes(eq)) meta.equippedSkin[shipKey] = eq;
+      }
+    }
+    if (raw.records && typeof raw.records === 'object') {
+      meta.records.bestWave = Math.max(1, Math.floor(Number(raw.records.bestWave) || 1));
+      meta.records.bestSector = Math.max(1, Math.floor(Number(raw.records.bestSector) || 1));
+      meta.records.bossesDowned = Math.max(0, Math.floor(Number(raw.records.bossesDowned) || 0));
+      meta.records.flawlessBosses = Math.max(0, Math.floor(Number(raw.records.flawlessBosses) || 0));
+    }
+    if (raw.milestones && typeof raw.milestones === 'object') {
+      for (const m of MILESTONE_DEFS) {
+        if (raw.milestones[m.id]) meta.milestones[m.id] = true;
       }
     }
   }
@@ -148,6 +202,33 @@ function saveMeta() {
   try {
     localStorage.setItem('low-orbit-meta', JSON.stringify(meta));
   } catch {}
+}
+
+function getRigAccent(key = selectedRig) {
+  const base = RIGS[key] || RIGS.kestrel;
+  return getSkinAccent(meta.equippedSkin[key] || 'standard', base.accent);
+}
+
+function completeMilestone(id) {
+  if (meta.milestones[id]) return;
+  const def = MILESTONE_DEFS.find((m) => m.id === id);
+  if (!def) return;
+  meta.milestones[id] = true;
+  meta.coins += def.reward;
+  if (mode === 'playing') runCoins += def.reward;
+  saveMeta();
+  sound.effect('overshield');
+  if (mode === 'playing') {
+    popups.push({
+      x: w * 0.5,
+      y: Math.max(110, player.y - 46),
+      text: `MILESTONE +${def.reward} COINS`,
+      color: PALETTE.gold,
+      life: 1.5,
+      maxLife: 1.5,
+      size: 14,
+    });
+  }
 }
 
 function getEffectiveRig(key = selectedRig) {
@@ -211,6 +292,7 @@ const upgradeDot = document.querySelector('#upgrade-dot');
 const coinBankBtn = document.querySelector('#coin-bank-btn');
 const coinBankEl = document.querySelector('#coin-bank');
 const runCoinsHud = document.querySelector('#run-coins-hud');
+const overclockHudBadge = document.querySelector('#overclock-hud-badge');
 const restartMenu = document.querySelector('#restart-menu');
 const hud = document.querySelector('#hud');
 const scoreLabel = document.querySelector('#score');
@@ -312,6 +394,13 @@ let peakMultiplier = 1;
 let novaCharge = 0;
 let overdriveTime = 0;
 let overshieldTime = 0;
+let railBeamTime = 0;
+let railBeamTick = 0;
+let reflectShieldTime = 0;
+let bulletTime = 0;
+let bossHitTaken = false;
+let ionWind = 0;
+let meteorTimer = 4.5;
 let runCoins = 0;
 let missileTimer = 0;
 
@@ -348,7 +437,7 @@ function getMultiplier() {
 }
 
 function addScore(base, x, y, showPopup = false, color = PALETTE.paper) {
-  const mult = getMultiplier();
+  const mult = getMultiplier() * (meta.overclock ? 1.35 : 1);
   const gained = Math.round(base * mult);
   score += gained;
   if (showPopup && x !== undefined) {
@@ -370,6 +459,7 @@ function bumpCombo(amount = 1) {
   comboTimer = 4.2;
   const mult = getMultiplier();
   if (mult > peakMultiplier) peakMultiplier = mult;
+  if (mult >= 5) completeMilestone('combo5');
 }
 
 function showBanner(kicker, headline, tone = 'teal', duration = 2.4) {
@@ -410,7 +500,8 @@ function resize() {
 }
 
 function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, opts = {}) {
-  const rig = RIGS[variant] || RIGS.kestrel;
+  const accent = getRigAccent(variant);
+  const skinId = meta.equippedSkin[variant] || 'standard';
   const roll = opts.roll || 0;
   ctx.save();
   ctx.translate(x, y + (opts.recoil || 0));
@@ -426,8 +517,8 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   const sway = mode === 'intro' ? 0 : -roll * width * 0.14;
   const flame = ctx.createLinearGradient(0, tail, sway, tail + plume);
   flame.addColorStop(0, '#fff7d4');
-  flame.addColorStop(0.3, opts.overdrive ? '#ffba73e0' : rig.accent + 'dc');
-  flame.addColorStop(1, rig.accent + '00');
+  flame.addColorStop(0.3, opts.overdrive ? '#ffba73e0' : accent + 'dc');
+  flame.addColorStop(1, accent + '00');
   ctx.fillStyle = flame;
   ctx.beginPath();
   ctx.moveTo(-width * 0.1, tail);
@@ -452,8 +543,8 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   ctx.scale(width / 94, width / 94);
   if (opts.pitch) ctx.scale(1, 1 - Math.abs(opts.pitch) * 0.12);
 
-  // Full 2.5D longitudinal roll on both Start screen hero & active flight!
-  drawBankedShip(ctx, variant, roll, opts.tier || 1, rig.accent);
+  // Full 2.5D longitudinal roll with equipped livery skin!
+  drawBankedShip(ctx, variant, roll, opts.tier || 1, accent, skinId);
 
   // Muzzle flash
   if (opts.muzzle > 0) {
@@ -589,10 +680,10 @@ function draw() {
   if (intro) {
     if (!introShip.ready && w && h) {
       introShip.x = w * 0.72;
-      introShip.y = h * 0.28;
+      introShip.y = h * 0.24;
       introShip.ready = true;
     }
-    const rig = RIGS[selectedRig];
+    const accent = getRigAccent(selectedRig);
     const size = Math.min(w * (w < h ? 0.14 : 0.085), h * 0.125, 84);
 
     // Sweeping wingtip contrails trailing behind the patrolling ship
@@ -600,7 +691,7 @@ function draw() {
       if (trail.length < 2) continue;
       for (let i = 1; i < trail.length; i++) {
         const a = i / trail.length;
-        ctx.strokeStyle = rig.accent;
+        ctx.strokeStyle = accent;
         ctx.globalAlpha = a * 0.34;
         ctx.lineWidth = 1 + a * 2.4;
         ctx.beginPath();
@@ -617,6 +708,24 @@ function draw() {
     });
     ctx.restore();
     return;
+  }
+
+  // Sector 3 (Opal Expanse) subtle visual ion drift current streaks
+  if (sectorIndex % 4 === 2 && !warp && Math.abs(ionWind) > 6) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(196, 172, 255, 0.14)';
+    ctx.lineWidth = 1.2;
+    const dir = Math.sign(ionWind);
+    const shift = ((time * ionWind * 2.2) % w + w) % w;
+    for (let i = 0; i < 14; i++) {
+      const sy = ((i + 0.5) / 14) * h;
+      const sx = (((i * 193) + shift) % (w + 120)) - 60;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx + dir * 46, sy + 6);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   // Smoke & missile wakes
@@ -674,10 +783,10 @@ function draw() {
       }
     }
     if (enemy.escort && enemy.age < 0) drawEntry(ctx, enemy, w);
-    else if (enemy.kind === 'rock') drawRock(ctx, enemy);
+    else if (enemy.kind === 'rock') drawRock(ctx, enemy, sectorIndex);
     else if (enemy.kind === 'mine') drawMine(ctx, enemy);
     else if (enemy.kind === 'boss') drawBoss(ctx, enemy, w, h);
-    else drawFoe(ctx, enemy);
+    else drawFoe(ctx, enemy, sectorIndex);
   }
 
   // Spinning armor debris chunks
@@ -697,32 +806,15 @@ function draw() {
     ctx.restore();
   }
 
-  // Projectiles with crisp bullet-hell contrast
+  // PASS 1: Friendly projectiles (subtle translucency on high MK tiers so incoming enemy fire stays 100% readable!)
   for (const s of shots) {
+    if (s.hostile) continue;
     ctx.save();
     ctx.translate(s.x, s.y);
     ctx.rotate(Math.atan2(s.vx, -s.vy));
-    if (s.hostile) {
-      // High-contrast outline + warm glow + white-hot core
-      ctx.fillStyle = '#120b16';
-      ctx.beginPath();
-      ctx.arc(0, 0, s.r + 1.8, 0, TAU);
-      ctx.fill();
-
-      ctx.fillStyle = s.color || '#ff7d52';
-      ctx.beginPath();
-      ctx.arc(0, 0, s.r + 0.5, 0, TAU);
-      ctx.fill();
-
-      ctx.fillStyle = '#fff5dc';
-      ctx.beginPath();
-      ctx.arc(0, 0, s.r * 0.48, 0, TAU);
-      ctx.fill();
-      ctx.restore();
-      continue;
-    }
 
     if (s.homing) {
+      ctx.globalAlpha = 0.92;
       ctx.fillStyle = '#ffd18a';
       ctx.beginPath();
       ctx.moveTo(0, -8);
@@ -737,27 +829,67 @@ function draw() {
       continue;
     }
 
-    if (s.pierce > 0) {
+    if (s.reflected) {
       ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = 'rgba(255, 212, 112, 0.42)';
-      ctx.fillRect(-5, -13, 10, 26);
-      ctx.fillStyle = '#ffcb6b';
-      ctx.fillRect(-2.4, -11, 4.8, 22);
-      ctx.fillStyle = '#fffdf2';
-      ctx.fillRect(-1.1, -9, 2.2, 14);
+      ctx.fillStyle = 'rgba(130, 245, 255, 0.45)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 8.5, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#9bf3f7';
+      ctx.fillRect(-2.4, -10, 4.8, 20);
+      ctx.fillStyle = '#fffef4';
+      ctx.fillRect(-1.1, -8, 2.2, 13);
       ctx.restore();
       continue;
     }
 
+    if (s.pierce > 0) {
+      ctx.globalAlpha = 0.86;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = 'rgba(255, 212, 112, 0.34)';
+      ctx.fillRect(-4.6, -13, 9.2, 26);
+      ctx.fillStyle = '#ffcb6b';
+      ctx.fillRect(-2.2, -11, 4.4, 22);
+      ctx.fillStyle = '#fffdf2';
+      ctx.fillRect(-1, -9, 2, 14);
+      ctx.restore();
+      continue;
+    }
+
+    ctx.globalAlpha = weaponLevel >= 5 ? 0.68 : 0.8;
     ctx.globalCompositeOperation = 'lighter';
-    const bw = s.heavy ? 4.4 : s.focused ? 2.6 : 2.1;
-    const bh = s.focused ? 22 : s.heavy ? 16 : 15;
-    ctx.fillStyle = s.color || (s.focused ? '#99f7ff55' : '#6fddff45');
-    ctx.fillRect(-bw * 1.6, -bh * 0.55, bw * 3.2, bh * 1.15);
+    const bw = s.heavy ? 4.2 : s.focused ? 2.5 : 2.0;
+    const bh = s.focused ? 21 : s.heavy ? 16 : 14;
+    ctx.fillStyle = s.color || (s.focused ? '#99f7ff48' : '#6fddff3a');
+    ctx.fillRect(-bw * 1.5, -bh * 0.55, bw * 3.0, bh * 1.12);
     ctx.fillStyle = s.overdrive ? '#ffcf7d' : s.focused ? '#96f6ff' : '#7ae2f2';
-    ctx.fillRect(-bw * 0.7, -bh * 0.5, bw * 1.4, bh);
+    ctx.fillRect(-bw * 0.68, -bh * 0.5, bw * 1.36, bh);
     ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(-bw * 0.32, -bh * 0.42, bw * 0.64, bh * 0.56);
+    ctx.fillRect(-bw * 0.3, -bh * 0.42, bw * 0.6, bh * 0.54);
+    ctx.restore();
+  }
+
+  // Kestrel Signature Perk: Full-Screen Forward Orbital Rail-Beam during Nova!
+  if (railBeamTime > 0 && hull > 0 && playerDying <= 0) {
+    const pulse = 0.85 + 0.15 * Math.sin(time * 54);
+    const fade = Math.min(1, railBeamTime / 0.25);
+    const bw = 22 * pulse * fade;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = `rgba(121, 227, 213, ${0.24 * fade})`;
+    ctx.fillRect(player.x - bw * 1.45, 0, bw * 2.9, player.y - 16);
+    ctx.fillStyle = `rgba(175, 250, 245, ${0.65 * fade})`;
+    ctx.fillRect(player.x - bw * 0.62, 0, bw * 1.24, player.y - 16);
+    ctx.fillStyle = `rgba(255, 253, 244, ${0.95 * fade})`;
+    ctx.fillRect(player.x - bw * 0.24, 0, bw * 0.48, player.y - 16);
+    // Muzzle flare
+    const g = ctx.createRadialGradient(player.x, player.y - 18, 2, player.x, player.y - 18, bw * 2.1);
+    g.addColorStop(0, `rgba(255, 254, 245, ${0.9 * fade})`);
+    g.addColorStop(1, 'rgba(121, 227, 213, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y - 18, bw * 2.1, 0, TAU);
+    ctx.fill();
     ctx.restore();
   }
 
@@ -789,7 +921,7 @@ function draw() {
   // Player ship — hidden during warp tunnel or after exploding in death sequence
   const hideForTunnel = warp && warp.phase === 'tunnel';
   if (hull > 0 && !hideForTunnel && playerDying <= 0) {
-    const rig = RIGS[selectedRig];
+    const accent = getRigAccent(selectedRig);
     for (const trail of player.trails) {
       if (trail.length < 2) continue;
       ctx.beginPath();
@@ -798,7 +930,7 @@ function draw() {
         if (i === 0) ctx.moveTo(pt.x, pt.y);
         else ctx.lineTo(pt.x, pt.y);
       }
-      ctx.strokeStyle = overdriveTime > 0 ? 'rgba(255, 206, 128, 0.28)' : rig.accent + '36';
+      ctx.strokeStyle = overdriveTime > 0 ? 'rgba(255, 206, 128, 0.28)' : accent + '36';
       ctx.lineWidth = 1.6;
       ctx.stroke();
     }
@@ -885,6 +1017,30 @@ function draw() {
       ctx.restore();
     }
 
+    // Aegis Signature Perk: Reflective Mirror Octagon Shield during Nova!
+    if (reflectShieldTime > 0) {
+      const blink = reflectShieldTime < 0.8 ? 0.45 + 0.55 * Math.sin(time * 28) : 1;
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.globalAlpha = blink;
+      ctx.rotate(-time * 2.2);
+      ctx.strokeStyle = '#9bf3f7';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (i * TAU) / 8;
+        const rx = Math.cos(a) * 35;
+        const ry = Math.sin(a) * 35;
+        if (i === 0) ctx.moveTo(rx, ry);
+        else ctx.lineTo(rx, ry);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(155, 243, 247, 0.1)';
+      ctx.fill();
+      ctx.restore();
+    }
+
     // Focus hitbox core & graze ring
     if (preciseSteering() || pointer) {
       ctx.strokeStyle = 'rgba(121, 227, 213, 0.25)';
@@ -909,6 +1065,38 @@ function draw() {
       ctx.lineWidth = 1.2;
       ctx.stroke();
     }
+  }
+
+  // PASS 2: Hostile bullets rendered ABOVE player lasers, sparks, and debris so enemy fire is ALWAYS crisp and readable!
+  for (const s of shots) {
+    if (!s.hostile) continue;
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.fillStyle = '#0e0814';
+    ctx.beginPath();
+    ctx.arc(0, 0, s.r + 2.0, 0, TAU);
+    ctx.fill();
+
+    ctx.fillStyle = s.color || '#ff7d52';
+    ctx.beginPath();
+    ctx.arc(0, 0, s.r + 0.6, 0, TAU);
+    ctx.fill();
+
+    ctx.fillStyle = '#fff7e0';
+    ctx.beginPath();
+    ctx.arc(0, 0, s.r * 0.5, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Falcon Bullet-Time subtle edge shimmer
+  if (bulletTime > 0 && mode === 'playing') {
+    const a = Math.min(0.24, bulletTime * 0.45);
+    const bt = ctx.createRadialGradient(w * 0.5, h * 0.5, Math.min(w, h) * 0.34, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
+    bt.addColorStop(0, 'rgba(121, 227, 213, 0)');
+    bt.addColorStop(1, `rgba(121, 227, 213, ${a})`);
+    ctx.fillStyle = bt;
+    ctx.fillRect(0, 0, w, h);
   }
 
   // Floating score & callout popups
@@ -1098,7 +1286,35 @@ function triggerPhaseDash() {
   player.dashCd = rig.dashCd;
   immune = Math.max(immune, 0.26);
   sound.effect('phaseDash');
-  impacts.push({ x: player.x, y: player.y, radius: 14, color: rig.accent, life: 0.3, maxLife: 0.3 });
+  impacts.push({ x: player.x, y: player.y, radius: 14, color: getRigAccent(selectedRig), life: 0.3, maxLife: 0.3 });
+
+  // Falcon Signature Perk: Phase Dash triggers 0.6s Bullet-Time + fires a 4-missile micro-seeker burst!
+  if (selectedRig === 'falcon') {
+    bulletTime = Math.max(bulletTime, 0.6);
+    for (const ox of [-20, -9, 9, 20]) {
+      shots.push({
+        x: player.x + ox,
+        y: player.y,
+        r: 4.5,
+        vx: Math.sign(ox) * 165,
+        vy: -195,
+        dmg: 1.5,
+        hostile: false,
+        homing: true,
+        age: 0,
+      });
+    }
+    sound.effect('missile');
+    popups.push({
+      x: player.x,
+      y: player.y - 24,
+      text: 'BULLET TIME',
+      color: '#9bf3f7',
+      life: 0.75,
+      maxLife: 0.75,
+      size: 12,
+    });
+  }
 }
 
 function triggerNovaPulse() {
@@ -1120,13 +1336,25 @@ function triggerNovaPulse() {
   addShake(11);
   triggerHitstop(0.05);
   sound.effect('nova');
+
+  // Distinct Ship Signature Nova Perks!
+  let callout = 'OVERDRIVE';
+  if (selectedRig === 'kestrel') {
+    railBeamTime = 1.2 * power;
+    railBeamTick = 0;
+    sound.effect('beam');
+    callout = 'RAIL-BEAM OVERDRIVE';
+  } else if (selectedRig === 'aegis') {
+    reflectShieldTime = 3.4 * power;
+    callout = 'REFLECT SHIELD';
+  }
   popups.push({
     x: player.x,
     y: player.y - 24,
-    text: 'OVERDRIVE',
-    color: PALETTE.gold,
-    life: 0.9,
-    maxLife: 0.9,
+    text: callout,
+    color: selectedRig === 'aegis' ? '#9bf3f7' : PALETTE.gold,
+    life: 0.95,
+    maxLife: 0.95,
     size: 14,
   });
 
@@ -1165,7 +1393,8 @@ function triggerNovaPulse() {
 }
 
 function beginBoss() {
-  boss = createBoss(nextBossRank++, w, runSeed);
+  bossHitTaken = false;
+  boss = createBoss(nextBossRank++, w, runSeed, meta.overclock);
   enemies = [boss, ...enemies.filter((e) => e.kind === 'rock')];
   for (const s of shots) if (s.hostile) s.dead = true;
   document.querySelector('#boss-name').textContent =
@@ -1283,6 +1512,42 @@ function finishBossCollapse(b) {
   addShake(16);
   sound.effect('nova');
   sound.setBoss(0);
+
+  // Track persistent boss & flawless records + skill-based +1 Hull reward!
+  meta.records.bossesDowned++;
+  if (meta.records.bossesDowned >= 3) completeMilestone('bosses3');
+  if (!bossHitTaken) {
+    meta.records.flawlessBosses++;
+    completeMilestone('flawless');
+    const bonusCoins = Math.round((25 * b.rank) * (meta.overclock ? 1.6 : 1));
+    runCoins += bonusCoins;
+    meta.coins += bonusCoins;
+    if (hull < maxHull) {
+      hull++;
+      popups.push({
+        x: player.x,
+        y: player.y - 34,
+        text: 'FLAWLESS +1 HULL',
+        color: '#98ffdc',
+        life: 1.5,
+        maxLife: 1.5,
+        size: 14,
+      });
+    } else {
+      addScore(1200, player.x, player.y - 34, true, '#98ffdc');
+    }
+    popups.push({
+      x: b.x,
+      y: b.y - 26,
+      text: `NO-HIT +${bonusCoins} COINS`,
+      color: PALETTE.gold,
+      life: 1.4,
+      maxLife: 1.4,
+      size: 14,
+    });
+  }
+  saveMeta();
+
   // Schedule next flagship after 2 full waves in the next sector
   nextBossAtSpawn = spawnCount + 12;
   spawnIn = 1.4;
@@ -1293,7 +1558,12 @@ function finishBossCollapse(b) {
     nextSector: sectorIndex + 1,
     switched: false,
   };
-  showBanner('FLAGSHIP DESTROYED', `${b.name} NEUTRALIZED`, 'gold', 1.8);
+  showBanner(
+    bossHitTaken ? 'FLAGSHIP DESTROYED' : 'FLAWLESS FLAGSHIP CLEAR',
+    `${b.name} NEUTRALIZED`,
+    'gold',
+    1.8,
+  );
   updateHud();
 }
 
@@ -1451,6 +1721,10 @@ function setMode(next) {
     sectorIndex = 0;
     hitFlash = 0;
     overshieldTime = 0;
+    railBeamTime = 0;
+    reflectShieldTime = 0;
+    bulletTime = 0;
+    ionWind = 0;
     playerDying = 0;
     deathTick = 0;
     bossHud.hidden = true;
@@ -1476,6 +1750,10 @@ function setMode(next) {
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
     syncMetaUi();
     action.focus({ preventScroll: true });
+    // Keep live ambient drifting space running smoothly on Ship lost!
+    if (lost && !document.hidden && !reducedMotion.matches) {
+      frame = requestAnimationFrame(tick);
+    }
   }
   draw();
 }
@@ -1502,6 +1780,14 @@ function launch() {
   novaCharge = rig.startNova;
   overdriveTime = 0;
   overshieldTime = 0;
+  railBeamTime = 0;
+  railBeamTick = 0;
+  reflectShieldTime = 0;
+  bulletTime = 0;
+  bossHitTaken = false;
+  ionWind = 0;
+  meteorTimer = 4.5;
+  overclockHudBadge.hidden = !meta.overclock;
   weaponLevel = rig.startWeapon;
   maxHull = rig.hull;
   hull = rig.hull;
@@ -1548,6 +1834,7 @@ function launch() {
 
 function hitPlayer() {
   if (immune > 0 || player.dashTime > 0 || overshieldTime > 0 || warp || playerDying > 0) return;
+  if (boss && !boss.dead) bossHitTaken = true;
   combo = Math.floor(combo * 0.35);
   immune = 1.65;
 
@@ -1850,6 +2137,42 @@ function update(dt) {
   if (overshieldTime > 0) {
     overshieldTime = Math.max(0, overshieldTime - dt);
   }
+  if (railBeamTime > 0) {
+    railBeamTime = Math.max(0, railBeamTime - dt);
+  }
+  if (reflectShieldTime > 0) {
+    reflectShieldTime = Math.max(0, reflectShieldTime - dt);
+  }
+  if (bulletTime > 0) {
+    bulletTime = Math.max(0, bulletTime - dt);
+  }
+  const worldDt = bulletTime > 0 ? dt * 0.36 : dt;
+
+  // Sector-specific environmental effects!
+  const secMod = sectorIndex % 4;
+  ionWind = secMod === 2 && !warp ? Math.sin(time * 0.75) * 44 : 0;
+  if (secMod === 3 && !warp && !boss) {
+    meteorTimer -= worldDt;
+    if (meteorTimer <= 0) {
+      meteorTimer = between(3.6, 5.4);
+      const fromLeft = Math.random() < 0.5;
+      const m = createEnemy('rock', fromLeft ? -18 : w + 18, between(40, h * 0.32), currentWave, {
+        r: between(14, 19),
+        hp: 2,
+        maxHp: 2,
+        split: false,
+        molten: true,
+        vx: (fromLeft ? 1 : -1) * between(165, 225),
+        vy: between(120, 175),
+        points: 85,
+        shards: 3,
+        overclock: meta.overclock,
+        sectorIndex,
+      });
+      m.shape = outlineRock();
+      enemies.push(m);
+    }
+  }
   if (comboTimer > 0 && !warp) {
     comboTimer -= dt;
     if (comboTimer <= 0) combo = 0;
@@ -1929,7 +2252,13 @@ function update(dt) {
         player.vy = 0;
         spawnIn = 0.8;
         const secNum = String(sectorIndex + 1).padStart(2, '0');
-        showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, 'NEW ORBIT REACHED', 'teal', 2.2);
+        if (sectorIndex + 1 > meta.records.bestSector) {
+          meta.records.bestSector = sectorIndex + 1;
+          saveMeta();
+        }
+        if (sectorIndex + 1 >= 2) completeMilestone('sector2');
+        if (sectorIndex + 1 >= 3) completeMilestone('sector3');
+        showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, getSectorHazard(sectorIndex), 'teal', 2.4);
       }
     }
   }
@@ -1954,7 +2283,12 @@ function update(dt) {
     player.ghosts.push({ x: player.x, y: player.y, bank: player.bank, life: 0.24 });
     if (player.ghosts.length > 6) player.ghosts.shift();
   } else if (pointer) {
-    // 1:1 instant touch & mouse tracking (ZERO lag!), computing velocity purely for crisp 2.5D roll bank
+    // 1:1 instant touch & mouse tracking (ZERO lag!), with smooth touch finger-lift so thumb never hides ship!
+    if (pointer.lift && Math.abs(pointer.lift) > 0.2) {
+      const step = pointer.lift * (1 - Math.exp(-dt * 26));
+      pointer.goalY = clamp(pointer.goalY + step, 24, h - 24);
+      pointer.lift -= step;
+    }
     const prevX = player.x;
     const prevY = player.y;
     player.x = clamp(pointer.goalX, 19, w - 19);
@@ -2044,7 +2378,7 @@ function update(dt) {
 
   // Smart Wave Director with Crowd Budget (prevents overwhelming pileups on endless waves!)
   if (!boss && !warp) {
-    spawnIn -= dt;
+    spawnIn -= worldDt;
     const combatHostiles = enemies.filter((e) => !e.dead && e.kind !== 'rock' && e.kind !== 'mine');
     const heavyCount = combatHostiles.filter((e) => ['gunship', 'prism', 'minelayer'].includes(e.kind)).length;
     if (spawnCount >= nextBossAtSpawn) {
@@ -2065,6 +2399,11 @@ function update(dt) {
           currentWave = wave;
           waveLabel.textContent = String(wave).padStart(2, '0');
           sound.setWave(wave);
+          if (wave > meta.records.bestWave) {
+            meta.records.bestWave = wave;
+            saveMeta();
+          }
+          if (wave >= 10) completeMilestone('wave10');
           if (wave > 1) {
             const opName = waveNames[(wave - 1) % waveNames.length];
             const secNum = String(sectorIndex + 1).padStart(2, '0');
@@ -2072,14 +2411,42 @@ function update(dt) {
           }
         }
         const first = enemies.length;
-        spawnFormation(enemies, w, wave, beat, player.x);
+        spawnFormation(enemies, w, wave, beat, player.x, { overclock: meta.overclock, sectorIndex });
         for (const enemy of enemies.slice(first)) {
           if (enemy.kind === 'rock') enemy.shape = outlineRock();
         }
         spawnCount++;
         // Smooth asymptotic pacing ceiling (never spawns exponentially faster!)
-        const cadence = 1 + 0.36 * (1 - Math.exp(-(wave - 1) * 0.2));
+        const cadence = (1 + 0.36 * (1 - Math.exp(-(wave - 1) * 0.2))) * (meta.overclock ? 1.12 : 1);
         spawnIn = (beat === 5 ? waveLength / 6 + 1.25 : waveLength / 6) / cadence;
+      }
+    }
+  }
+
+  // Kestrel Signature Perk: Forward Orbital Rail-Beam melts bullets & slices enemies/bosses in its column!
+  if (railBeamTime > 0 && hull > 0 && playerDying <= 0) {
+    for (const s of shots) {
+      if (s.hostile && !s.dead && s.y < player.y && Math.abs(s.x - player.x) < 26 + s.r) {
+        s.dead = true;
+        dropShards(s.x, s.y, 1, true);
+      }
+    }
+    railBeamTick -= dt;
+    if (railBeamTick <= 0) {
+      railBeamTick = 0.075;
+      for (const e of enemies) {
+        if (e.dead || e.y > player.y) continue;
+        if (e === boss) {
+          if (e.entering > 0 || e.dying > 0) continue;
+          for (const part of aliveBossParts(e)) {
+            if (Math.abs(part.x - player.x) < 24 + part.r) damageBossPart(e, part, 2.2);
+          }
+          if (Math.abs(e.x - player.x) < 24 + e.r) damageBossCore(e, 2.6);
+        } else if (Math.abs(e.x - player.x) < 24 + e.r) {
+          e.hp -= 2.8;
+          e.flash = 0.14;
+          if (e.hp <= 0) killEnemy(e);
+        }
       }
     }
   }
@@ -2117,11 +2484,23 @@ function update(dt) {
           continue;
         }
       }
-      flyBoss(enemy, dt, w, h, player, shots, sound, enemies);
+      flyBoss(enemy, worldDt, w, h, player, shots, sound, enemies);
     } else if (enemy.escort) {
-      flyEscort(enemy, dt, w, h, player, shots, sound);
+      flyEscort(enemy, worldDt, w, h, player, shots, sound);
     } else {
-      flyEnemy(enemy, dt, w, h, player, shots, sound, enemies);
+      flyEnemy(enemy, worldDt, w, h, player, shots, sound, enemies, ionWind);
+    }
+
+    // Sector 2 & 4 Molten Asteroid ember trail
+    if (!enemy.dead && enemy.molten && Math.random() < worldDt * 18) {
+      sparks.push({
+        x: enemy.x + between(-enemy.r * 0.4, enemy.r * 0.4),
+        y: enemy.y + between(-enemy.r * 0.4, enemy.r * 0.4),
+        vx: -enemy.vx * 0.25 + between(-20, 20),
+        vy: -enemy.vy * 0.25 + between(-15, 15),
+        life: 0.28,
+        color: Math.random() < 0.5 ? '#ff9d57' : '#ffe099',
+      });
     }
 
     // Emit damage smoke on wounded heavy craft / boss
@@ -2210,10 +2589,26 @@ function update(dt) {
       }
     }
 
-    s.x += s.vx * dt;
-    s.y += s.vy * dt;
+    const stepDt = s.hostile ? worldDt : dt;
+    s.x += s.vx * stepDt;
+    s.y += s.vy * stepDt;
 
     if (s.hostile) {
+      // Aegis Signature Perk: Reflective Mirror bounces enemy bullets right back at them!
+      if (reflectShieldTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 37 + s.r) {
+        s.hostile = false;
+        s.reflected = true;
+        s.pierce = 1;
+        s.hitIds = new Set();
+        s.dmg = 2.8;
+        s.vx = -s.vx * 0.55;
+        s.vy = -Math.max(460, Math.abs(s.vy) * 2.2);
+        addScore(25);
+        bumpCombo(1);
+        impacts.push({ x: s.x, y: s.y, radius: 11, color: '#9bf3f7', life: 0.24, maxLife: 0.24 });
+        sound.effect('graze', 6);
+        continue;
+      }
       // Indestructible Overshield vaporizes bullets on contact!
       if (overshieldTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 30 + s.r) {
         s.dead = true;
@@ -2350,7 +2745,8 @@ function update(dt) {
         addScore(p.nova ? 20 : 12);
         sound.effect('shard', Math.min(10, Math.floor(combo / 2)));
       } else if (p.kind === 'coin') {
-        const value = 2 + sectorIndex;
+        const baseVal = 2 + sectorIndex;
+        const value = meta.overclock ? Math.round(baseVal * 1.6) : baseVal;
         runCoins += value;
         meta.coins += value;
         saveMeta();
@@ -2471,31 +2867,46 @@ function update(dt) {
 
 function updateIntroFlight(dt) {
   introTime += dt;
+  const portrait = w < h;
   if (!introShip.ready && w && h) {
-    introShip.x = w * 0.22;
-    introShip.y = h * 0.34;
+    introShip.x = w * 0.74;
+    introShip.y = h * (portrait ? 0.16 : 0.22);
     introShip.ready = true;
   }
-  // Smooth figure-8 patrol loop across the open sky + gentle attraction toward mouse cursor!
-  const portrait = w < h;
-  const patrolX = w * (0.5 + Math.sin(introTime * 0.48) * 0.34);
+  // Scenic outer orbit around the planet & flanks, steering smoothly around the centered Low Orbit UI!
+  const orbitA = introTime * 0.52;
+  const patrolX = w * (0.5 + Math.cos(orbitA) * (portrait ? 0.36 : 0.39));
   const patrolY = portrait
-    ? h * (0.21 + Math.sin(introTime * 0.96) * 0.08)
-    : h * (0.28 + Math.sin(introTime * 0.96) * 0.14);
+    ? h * (0.17 + Math.sin(orbitA * 2) * 0.06)
+    : h * (0.21 + Math.sin(orbitA) * 0.14);
   const mouseX = introCursorX * w;
-  const mouseY = clamp(introCursorY * h, h * 0.1, h * 0.68);
-  const targetX = patrolX * 0.62 + mouseX * 0.38;
-  const targetY = patrolY * 0.62 + mouseY * 0.38;
+  const mouseY = clamp(introCursorY * h, h * 0.09, h * 0.76);
+  let targetX = patrolX * 0.68 + mouseX * 0.32;
+  let targetY = patrolY * 0.68 + mouseY * 0.32;
+
+  // Soft elliptical avoidance zone around center title & ship cards so ship never slices over the letters!
+  const cx = w * 0.5;
+  const cy = h * (portrait ? 0.5 : 0.5);
+  const rx = w * (portrait ? 0.45 : 0.29);
+  const ry = h * (portrait ? 0.24 : 0.24);
+  const nx = (targetX - cx) / rx;
+  const ny = (targetY - cy) / ry;
+  const distNorm = Math.hypot(nx, ny);
+  if (distNorm < 1.05) {
+    const pushAngle = Math.atan2(ny || -1, nx || 0.2);
+    targetX = cx + Math.cos(pushAngle) * rx * 1.1;
+    targetY = clamp(cy + Math.sin(pushAngle) * ry * 1.1, h * 0.09, h * 0.82);
+  }
 
   const dx = targetX - introShip.x;
   const dy = targetY - introShip.y;
-  const desiredVx = clamp(dx * 2.2, -320, 320);
-  const desiredVy = clamp(dy * 2.2, -240, 240);
+  const desiredVx = clamp(dx * 2.2, -310, 310);
+  const desiredVy = clamp(dy * 2.2, -230, 230);
   const prevVx = introShip.vx;
   introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * 3.4));
   introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * 3.4));
-  introShip.x += introShip.vx * dt;
-  introShip.y += introShip.vy * dt;
+  introShip.x = clamp(introShip.x + introShip.vx * dt, 24, w - 24);
+  introShip.y = clamp(introShip.y + introShip.vy * dt, 30, h - 46);
 
   const spd = Math.hypot(introShip.vx, introShip.vy);
   if (spd > 14) {
@@ -2511,7 +2922,7 @@ function updateIntroFlight(dt) {
   // Record wingtip contrails behind the flying ship
   const cos = Math.cos(introShip.heading);
   const sin = Math.sin(introShip.heading);
-  const span = Math.min(w * (w < h ? 0.14 : 0.078), h * 0.115, 76) * 0.33 * Math.cos(introShip.roll * 0.72);
+  const span = Math.min(w * (portrait ? 0.14 : 0.085), h * 0.125, 84) * 0.33 * Math.cos(introShip.roll * 0.72);
   for (let i = 0; i < 2; i++) {
     const s = i === 0 ? -1 : 1;
     const wx = introShip.x + cos * (s * span) - sin * 14;
@@ -2522,17 +2933,49 @@ function updateIntroFlight(dt) {
   }
 }
 
+function updateOverDrift(dt) {
+  // Keep space gently drifting and lingering death particles fading smoothly on Ship lost!
+  distance += dt * 32;
+  for (const p of sparks) {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= dt;
+  }
+  for (const d of debris) {
+    d.x += d.vx * dt;
+    d.y += d.vy * dt;
+    d.angle += d.spin * dt;
+    d.life -= dt;
+  }
+  for (const puff of smoke) {
+    puff.x += puff.vx * dt;
+    puff.y += puff.vy * dt;
+    puff.life -= dt;
+  }
+  for (const ring of impacts) ring.life -= dt;
+  for (const sw of shockwaves) sw.life -= dt;
+  for (const pop of popups) pop.life -= dt;
+  sparks = sparks.filter((p) => p.life > 0);
+  debris = debris.filter((d) => d.life > 0);
+  smoke = smoke.filter((p) => p.life > 0);
+  impacts = impacts.filter((ring) => ring.life > 0);
+  shockwaves = shockwaves.filter((sw) => sw.life > 0);
+  popups = popups.filter((pop) => pop.life > 0);
+}
+
 function tick(now) {
-  if (document.hidden || (mode !== 'playing' && mode !== 'intro')) return;
+  if (document.hidden || (mode !== 'playing' && mode !== 'intro' && mode !== 'over')) return;
   const dt = lastTime ? Math.min(0.04, (now - lastTime) / 1000) : 0;
   lastTime = now;
   if (mode === 'intro') {
     updateIntroFlight(dt);
+  } else if (mode === 'over') {
+    updateOverDrift(dt);
   } else {
     update(dt);
   }
   draw();
-  if (mode === 'playing' || (mode === 'intro' && !reducedMotion.matches)) {
+  if (mode === 'playing' || ((mode === 'intro' || mode === 'over') && !reducedMotion.matches)) {
     frame = requestAnimationFrame(tick);
   }
 }
@@ -2546,24 +2989,40 @@ function syncRigButtons() {
 }
 syncRigButtons();
 
-// Render crisp ship illustrations inside each ship picker button
-for (const thumb of document.querySelectorAll('.rig-preview')) {
-  const c = thumb.getContext('2d');
-  const rigKey = thumb.dataset.ship;
-  const rig = RIGS[rigKey] || RIGS.kestrel;
-  c.save();
-  c.translate(56, 56);
-  const glow = c.createRadialGradient(0, 6, 4, 0, 6, 44);
-  glow.addColorStop(0, rig.accent + '36');
-  glow.addColorStop(1, rig.accent + '00');
-  c.fillStyle = glow;
-  c.beginPath();
-  c.arc(0, 6, 44, 0, TAU);
-  c.fill();
-  c.scale(0.84, 0.84);
-  drawInterceptor(c, rigKey);
-  c.restore();
+// Render crisp ship illustrations inside each ship picker button & hangar tab (reflecting equipped livery!)
+function renderShipPreviews() {
+  for (const thumb of document.querySelectorAll('.rig-preview')) {
+    const c = thumb.getContext('2d');
+    const rigKey = thumb.dataset.ship;
+    const accent = getRigAccent(rigKey);
+    const skinId = meta.equippedSkin[rigKey] || 'standard';
+    c.clearRect(0, 0, thumb.width, thumb.height);
+    c.save();
+    c.translate(56, 56);
+    const glow = c.createRadialGradient(0, 6, 4, 0, 6, 44);
+    glow.addColorStop(0, accent + '36');
+    glow.addColorStop(1, accent + '00');
+    c.fillStyle = glow;
+    c.beginPath();
+    c.arc(0, 6, 44, 0, TAU);
+    c.fill();
+    c.scale(0.84, 0.84);
+    drawInterceptor(c, rigKey, skinId);
+    c.restore();
+  }
+  for (const thumb of document.querySelectorAll('.tab-preview')) {
+    const c = thumb.getContext('2d');
+    const rigKey = thumb.dataset.ship;
+    const skinId = meta.equippedSkin[rigKey] || 'standard';
+    c.clearRect(0, 0, thumb.width, thumb.height);
+    c.save();
+    c.translate(32, 32);
+    c.scale(0.5, 0.5);
+    drawInterceptor(c, rigKey, skinId);
+    c.restore();
+  }
 }
+renderShipPreviews();
 
 for (const btn of document.querySelectorAll('.rig-option')) {
   btn.addEventListener('click', () => {
@@ -2665,7 +3124,19 @@ canvas.addEventListener('pointerdown', (e) => {
   }
   if (pointer || e.button !== 0) return;
   canvas.setPointerCapture(e.pointerId);
-  pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, goalX: player.x, goalY: player.y };
+  let lift = 0;
+  // Hybrid Touch Finger Offset: if tapping on/near the ship on a phone, smoothly lift ship ~46px above thumb!
+  if (e.pointerType === 'touch') {
+    const bounds = canvas.getBoundingClientRect();
+    if (bounds.width && bounds.height) {
+      const tx = ((e.clientX - bounds.left) * w) / bounds.width;
+      const ty = ((e.clientY - bounds.top) * h) / bounds.height;
+      if (Math.hypot(tx - player.x, ty - player.y) < 62) {
+        lift = Math.min(0, ty - 46 - player.y);
+      }
+    }
+  }
+  pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, goalX: player.x, goalY: player.y, lift };
 });
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'intro') return;
@@ -2716,7 +3187,14 @@ const manual = document.querySelector('#manual');
 const hangar = document.querySelector('#hangar');
 const hangarCoinsEl = document.querySelector('#hangar-coins');
 const upgradeListEl = document.querySelector('#upgrade-list');
+const skinListEl = document.querySelector('#skin-list');
+const overclockToggle = document.querySelector('#overclock-toggle');
 const refundBtn = document.querySelector('#refund-upgrades');
+const recWaveEl = document.querySelector('#rec-wave');
+const recSectorEl = document.querySelector('#rec-sector');
+const recBossesEl = document.querySelector('#rec-bosses');
+const recFlawlessEl = document.querySelector('#rec-flawless');
+const milestoneListEl = document.querySelector('#milestone-list');
 
 let supportsDisplayTransition;
 function canTransitionDisplay() {
@@ -2809,16 +3287,6 @@ function canAffordAnyUpgrade() {
   });
 }
 
-// Render tiny ship icons inside the per-ship Hangar tabs
-for (const thumb of document.querySelectorAll('.tab-preview')) {
-  const c = thumb.getContext('2d');
-  c.save();
-  c.translate(32, 32);
-  c.scale(0.5, 0.5);
-  drawInterceptor(c, thumb.dataset.ship);
-  c.restore();
-}
-
 for (const tab of document.querySelectorAll('.hangar-tab')) {
   tab.addEventListener('click', () => {
     hangarRig = tab.dataset.tab;
@@ -2826,8 +3294,32 @@ for (const tab of document.querySelectorAll('.hangar-tab')) {
   });
 }
 
+overclockToggle.addEventListener('click', () => {
+  meta.overclock = !meta.overclock;
+  saveMeta();
+  sound.uiBuy();
+  renderUpgrades();
+});
+
+function renderRecordsAndMilestones() {
+  recWaveEl.textContent = String(meta.records.bestWave).padStart(2, '0');
+  recSectorEl.textContent = String(meta.records.bestSector).padStart(2, '0');
+  recBossesEl.textContent = String(meta.records.bossesDowned);
+  recFlawlessEl.textContent = String(meta.records.flawlessBosses);
+  milestoneListEl.innerHTML = '';
+  for (const def of MILESTONE_DEFS) {
+    const done = Boolean(meta.milestones[def.id]);
+    const item = document.createElement('div');
+    item.className = 'milestone-item' + (done ? ' done' : '');
+    item.innerHTML = `<span>${def.label}</span><span class="milestone-reward">${done ? '✓ DONE' : '+' + def.reward}</span>`;
+    milestoneListEl.append(item);
+  }
+}
+
 function renderUpgrades() {
   hangarCoinsEl.textContent = meta.coins.toLocaleString();
+  overclockToggle.setAttribute('aria-pressed', String(meta.overclock));
+  overclockToggle.textContent = meta.overclock ? 'ON' : 'OFF';
   for (const tab of document.querySelectorAll('.hangar-tab')) {
     tab.setAttribute('aria-selected', String(tab.dataset.tab === hangarRig));
   }
@@ -2878,6 +3370,42 @@ function renderUpgrades() {
     row.append(info, btn);
     upgradeListEl.append(row);
   }
+
+  // Render unlockable per-ship Liveries / Skins
+  const ownedSkins = meta.skins[hangarRig] || ['standard'];
+  const equipped = meta.equippedSkin[hangarRig] || 'standard';
+  skinListEl.innerHTML = '';
+  for (const skin of SHIP_SKINS) {
+    const isOwned = ownedSkins.includes(skin.id);
+    const isEquipped = equipped === skin.id;
+    const canBuy = !isOwned && meta.coins >= skin.cost;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'skin-btn';
+    btn.setAttribute('aria-pressed', String(isEquipped));
+    btn.disabled = !isOwned && !canBuy;
+    btn.innerHTML = `
+      <span class="skin-swatches">${skin.swatch.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+      <span>${skin.name}</span>
+      <span class="skin-cost ${isOwned ? 'owned' : ''}">${isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : skin.cost}</span>
+    `;
+    btn.addEventListener('click', () => {
+      if (!isOwned) {
+        if (meta.coins < skin.cost) return;
+        meta.coins -= skin.cost;
+        meta.skins[hangarRig].push(skin.id);
+      }
+      meta.equippedSkin[hangarRig] = skin.id;
+      saveMeta();
+      sound.uiBuy();
+      renderShipPreviews();
+      syncMetaUi();
+      renderUpgrades();
+      draw();
+    });
+    skinListEl.append(btn);
+  }
+
   refundBtn.disabled = totalSpent === 0;
   refundBtn.textContent = `Refund ${RIGS[hangarRig].name} (${totalSpent} coins)`;
 }
@@ -2911,7 +3439,10 @@ refundBtn.addEventListener('click', () => {
   renderUpgrades();
 });
 
-document.querySelector('#guide-open').addEventListener('click', () => manual.showModal());
+document.querySelector('#guide-open').addEventListener('click', () => {
+  renderRecordsAndMilestones();
+  manual.showModal();
+});
 hangarOpenBtn.addEventListener('click', openHangar);
 coinBankBtn.addEventListener('click', () => {
   if (mode !== 'playing') openHangar();

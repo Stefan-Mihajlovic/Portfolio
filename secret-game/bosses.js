@@ -187,7 +187,7 @@ function buildPartsForChassis(chassis, rank, rng) {
   return parts;
 }
 
-export function createBoss(rank, w, runSeed = 1) {
+export function createBoss(rank, w, runSeed = 1, overclock = false) {
   const rng = makeRng(rank * 1301 + runSeed * 53 + 7);
   // 100% procedural order from Rank 1 onward!
   const chassisIdx = pickShuffledIndex(rank, runSeed, CHASSIS_TYPES.length);
@@ -209,11 +209,12 @@ export function createBoss(rank, w, runSeed = 1) {
 
   const palette = BOSS_PALETTES[palIdx];
   // Smooth linear-asymptotic scaling so Rank 5, 10, 20+ stay exciting & fair, never exponential bloat!
-  const maxHp = Math.round(3 * (28 + rank * 14));
+  const maxHp = Math.round(3 * (28 + rank * 14) * (overclock ? 1.18 : 1));
   const scale = 1 + Math.min(0.24, (rank - 1) * 0.04);
 
   const boss = {
     kind: 'boss',
+    overclock,
     rank,
     seed: rank * 1301 + runSeed * 53,
     chassis: chassis.id,
@@ -416,7 +417,7 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   }
 
   const pressure = b.phase - 1;
-  const speed = 1 + 0.35 * (1 - Math.exp(-(b.rank - 1) * 0.25));
+  const speed = (1 + 0.35 * (1 - Math.exp(-(b.rank - 1) * 0.25))) * (b.overclock ? 1.14 : 1);
   const liveParts = aliveBossParts(b);
   b.courseTime += dt * speed * (1 + pressure * 0.08 + (liveParts.length === 0 ? 0.12 : 0));
   const t = b.courseTime;

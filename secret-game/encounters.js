@@ -35,10 +35,12 @@ export const waveLength = 15.5;
 
 export function createEnemy(kind, x, y, wave, overrides = {}) {
   const tier = Math.max(0, wave - 1);
-  // Asymptotic speed curve: climbs smoothly toward ~1.38x so bullets always stay dodgeable!
-  const speed = 1 + 0.38 * (1 - Math.exp(-tier * 0.16));
+  const overclock = Boolean(overrides.overclock);
+  const sec = (overrides.sectorIndex || 0) % 4;
+  // Asymptotic speed curve: climbs smoothly toward ~1.38x (+14% in Overclock, +7% in Eclipse Corona)
+  const speed = (1 + 0.38 * (1 - Math.exp(-tier * 0.16))) * (overclock ? 1.14 : 1) * (sec === 3 ? 1.07 : 1);
   // Sub-linear logarithmic HP growth: enemies feel tougher on late waves without turning into bullet sponges
-  const hpMult = 1 + Math.log2(1 + tier * 0.55) * 0.36;
+  const hpMult = (1 + Math.log2(1 + tier * 0.55) * 0.36) * (overclock ? 1.15 : 1);
 
   const rMap = {
     rock: 18 + Math.random() * 10,
@@ -124,7 +126,8 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
   };
 }
 
-export function spawnFormation(enemies, w, wave, beat, playerX) {
+export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
+  const { overclock = false, sectorIndex = 0 } = opts;
   const bankIdx = Math.min(phrases.length - 1, Math.floor((wave - 1) / 2));
   const kind = phrases[bankIdx][beat % 6];
   const center = Math.max(0.2, Math.min(0.8, (playerX / w) * 0.4 + 0.18 + Math.random() * 0.36));
@@ -134,7 +137,15 @@ export function spawnFormation(enemies, w, wave, beat, playerX) {
     const r = extra.r ?? { rock: 22, raider: 16, kite: 14, lancer: 15, gunship: 24, prism: 18, minelayer: 22, courier: 20 }[type] ?? 16;
     const x = Math.max(r + 12, Math.min(w - r - 12, lane * w));
     const y = -r - 10 - delay * 95;
-    enemies.push(createEnemy(type, x, y, wave, { dir, ...extra }));
+    enemies.push(
+      createEnemy(type, x, y, wave, {
+        dir,
+        overclock,
+        sectorIndex,
+        molten: type === 'rock' && sectorIndex % 4 === 1,
+        ...extra,
+      }),
+    );
   }
 
   if (kind === 'echelon') {
@@ -195,14 +206,14 @@ export function spawnFormation(enemies, w, wave, beat, playerX) {
   }
 }
 
-export function flyEnemy(e, dt, w, h, player, shots, sound, enemies) {
+export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0) {
   e.age += dt;
   e.flash = Math.max(0, e.flash - dt);
   const wv = e.wave || 1;
 
   if (e.kind === 'mine') {
     e.y += e.vy * dt;
-    e.x += Math.sin(e.age * 2.5 + e.angle) * 14 * dt;
+    e.x = Math.max(e.r + 10, Math.min(w - e.r - 10, e.x + (Math.sin(e.age * 2.5 + e.angle) * 14 + ionWind * 0.7) * dt));
     e.fuse -= dt;
     if (e.fuse <= 0) {
       e.dead = true;
@@ -319,6 +330,7 @@ export function flyEnemy(e, dt, w, h, player, shots, sound, enemies) {
 
   if (e.kind === 'rock') {
     e.angle += e.spin * dt;
+    if (ionWind) e.vx += (ionWind * 0.55 - e.vx) * (1 - Math.exp(-dt * 1.4));
   } else {
     if (e.kind === 'kite') e.vx = e.dir * Math.cos(e.age * 2.05) * Math.min(150, w * 0.34);
     if (e.kind === 'raider') {
