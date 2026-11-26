@@ -1,25 +1,41 @@
 import { createPixelRenderer } from '../assets/sky/dust-field.js';
 import { nebulaRegion } from '../assets/sky/nebula.js';
 
-// The hangar illustration and all flying craft share this ink-and-enamel palette.
-const ink = '#111a29',
-  paper = '#faf1d6',
-  steel = '#81939f',
-  shadow = '#42536b';
-const vermilion = '#fa754d',
-  teal = '#77e1d5',
-  tau = Math.PI * 2;
+// Shared ink-and-enamel aerospace palette harmonized with the portfolio's cosmic sky.
+export const PALETTE = {
+  ink: '#0d1422',
+  deep: '#080c16',
+  paper: '#faf1d6',
+  cream: '#efe4c6',
+  steel: '#8395a3',
+  shadow: '#3f5069',
+  teal: '#79e3d5',
+  cyan: '#9bf3f7',
+  vermilion: '#fa754d',
+  amber: '#ffbe78',
+  rose: '#df7b95',
+  violet: '#a88be0',
+  gold: '#ffe18c',
+};
+
+const { ink, paper, steel, shadow, vermilion, teal, amber, gold } = PALETTE;
+const TAU = Math.PI * 2;
+
 function plates(spec) {
   return spec.map(([color, path]) => [color, new Path2D(path)]);
 }
+
 function print(ctx, layers) {
   for (const [color, path] of layers) {
     ctx.fillStyle = color;
     ctx.fill(path);
   }
 }
-// Broad wings, twin nacelles and a long central canopy remain legible at HUD scale.
-const interceptor = plates([
+
+// --- PLAYER SHIPS (3 distinct silhouettes sharing the graphic novel enamel language) ---
+
+// VX-01 KESTREL — balanced interceptor (preserves the iconic portfolio visitor silhouette)
+const kestrelPlates = plates([
   [
     ink,
     'M0 -52 Q5 -49 9 -26 L15 -7 22 0 26 -21 30 -19 31 8 47 26 47 36 30 31 27 41 18 39 15 26 8 26 6 44 -6 44 -8 26 -15 26 -18 39 -27 41 -30 31 -47 36 -47 26 -31 8 -30 -19 -26 -21 -22 0 -15 -7 -9 -26 Q-5 -49 0 -52Z',
@@ -40,147 +56,650 @@ const interceptor = plates([
   [shadow, 'M0 -34 6 -18 10 9 5 27 0 35 -5 27 -6 11Z'],
   [ink, 'M0 -22 Q6 -15 6 -4 L4 7 0 12 -5 7 -6 -3 Q-5 -16 0 -22Z'],
   [teal, 'M0 -18 Q3 -13 4 -5 L3 1 -3 -2 Q-3 -12 0 -18Z'],
-  ['#e0fff1', 'M0 -16 1 -12 -2 -4Z'],
+  ['#e4fff5', 'M0 -16 1 -12 -2 -4Z'],
   [paper, 'M-7 13 -2 17 -2 26 -5 22Z M7 13 2 17 2 26 5 22Z'],
   [vermilion, 'M-6 27 -2 30 -2 36 -5 32Z M6 27 2 30 2 36 5 32Z'],
   [ink, 'M-5 36 5 36 5 42 -5 42Z'],
   [teal, 'M-4 38 4 38 3 41 -3 41Z'],
 ]);
-export function drawInterceptor(ctx) {
-  print(ctx, interceptor);
+
+// VX-07 FALCON — swept forward-wing dart (high speed, seeker missiles)
+const falconPlates = plates([
+  [
+    ink,
+    'M0 -56 L8 -28 16 -12 40 -26 44 -14 29 14 33 34 20 31 12 24 7 43 -7 43 -12 24 -20 31 -33 34 -29 14 -44 -14 -40 -26 -16 -12 -8 -28Z',
+  ],
+  [steel, 'M-11 -10 -38 -22 -41 -13 -24 16 -11 18Z M11 -10 38 -22 41 -13 24 16 11 18Z'],
+  [paper, 'M-13 -9 -37 -20 -31 -6 -16 8Z M13 -9 37 -20 31 -6 16 8Z'],
+  [vermilion, 'M-36 -20 -40 -13 -32 -4 -29 -10Z M36 -20 40 -13 32 -4 29 -10Z'],
+  [shadow, 'M-27 14 -29 29 -19 26 -14 14Z M27 14 29 29 19 26 14 14Z'],
+  [steel, 'M0 -52 L7 -26 12 10 6 39 -6 39 -12 10 -7 -26Z'],
+  [paper, 'M0 -51 -2 -18 -8 8 -4 26 -10 10 -6 -24Z M2 -45 6 -22 8 2 4 -14Z'],
+  [ink, 'M0 -24 Q5 -16 5 -2 L3 10 0 15 -3 10 -5 -2 Q-5 -16 0 -24Z'],
+  ['#ffd18a', 'M0 -20 Q3 -13 3 -4 L2 4 -2 1 Q-3 -12 0 -20Z'],
+  ['#fff8e0', 'M0 -18 1 -13 -1 -5Z'],
+  [amber, 'M-24 27 -18 28 -18 31 -24 30Z M24 27 18 28 18 31 24 30Z'],
+  [ink, 'M-5 35 5 35 5 41 -5 41Z'],
+  ['#ffd18a', 'M-4 37 4 37 3 40 -3 40Z'],
+]);
+
+// VX-04 AEGIS — armored twin-hull vanguard (heavy plasma, 4 shields)
+const aegisPlates = plates([
+  [
+    ink,
+    'M0 -45 L12 -32 16 -14 26 -24 37 -18 45 10 43 34 26 37 22 29 11 33 8 42 -8 42 -11 33 -22 29 -26 37 -43 34 -45 10 -37 -18 -26 -24 -16 -14 -12 -32Z',
+  ],
+  [steel, 'M-14 -12 -26 -21 -35 -15 -42 10 -40 30 -26 33 -17 18Z M14 -12 26 -21 35 -15 42 10 40 30 26 33 17 18Z'],
+  [paper, 'M-26 -19 -33 -14 -39 9 -30 16 -22 -4Z M26 -19 33 -14 39 9 30 16 22 -4Z'],
+  [shadow, 'M-40 16 -39 30 -26 32 -23 18Z M40 16 39 30 26 32 23 18Z'],
+  [teal, 'M-34 26 -27 28 -27 32 -34 30Z M34 26 27 28 27 32 34 30Z'],
+  [steel, 'M0 -42 L10 -29 15 10 9 37 -9 37 -15 10 -10 -29Z'],
+  [paper, 'M0 -40 -4 -18 -11 8 -6 24 -12 10 -8 -27Z M3 -35 9 -20 11 4 6 -12Z'],
+  [vermilion, 'M-14 6 -9 10 -9 22 -14 18Z M14 6 9 10 9 22 14 18Z'],
+  [ink, 'M0 -24 Q8 -16 8 -2 L6 10 0 14 -6 10 -8 -2 Q-8 -16 0 -24Z'],
+  ['#9be9ff', 'M0 -20 Q5 -13 5 -4 L3 3 -4 1 Q-5 -12 0 -20Z'],
+  ['#effcff', 'M-1 -17 2 -11 -2 -5Z'],
+  [ink, 'M-7 34 7 34 7 40 -7 40Z'],
+  ['#9be9ff', 'M-5 36 5 36 4 39 -4 39Z'],
+]);
+
+const shipModels = {
+  kestrel: kestrelPlates,
+  falcon: falconPlates,
+  aegis: aegisPlates,
+};
+
+export function drawInterceptor(ctx, variant = 'kestrel') {
+  print(ctx, shipModels[variant] || kestrelPlates);
 }
 
-const foes = {
-  lancer: plates([
-    [ink, 'M0 24 -8 10 -12 -14 -5 -7 0 -20 5 -7 12 -14 8 10Z'],
-    ['#e8996d', 'M0 19 -6 8 -10 -10 -4 -3 0 -14 4 -3 10 -10 6 8Z'],
-    ['#8e4550', 'M0 16 -4 5 0 -9 4 5Z'],
-    [paper, 'M0 11 -1 4 0 0 1 4Z'],
-  ]),
+// --- ENEMY SILHOUETTES (6 tactical archetypes + golden supply courier) ---
 
+const foes = {
   raider: plates([
-    [ink, 'M-20 -11 -7 -5 0 -13 7 -5 20 -11 16 8 7 6 0 18 -7 6 -16 8Z'],
-    ['#d66653', 'M-18 -8 -5 -1 0 -9 5 -1 18 -8 14 5 6 3 0 14 -6 3 -14 5Z'],
-    ['#763e51', 'M-17 -7 -5 2 0 11 5 2 17 -7 8 1 0 6 -8 1Z'],
+    [ink, 'M-21 -12 -7 -5 0 -14 7 -5 21 -12 17 9 7 7 0 19 -7 7 -17 9Z'],
+    ['#d96854', 'M-18 -9 -5 -1 0 -10 5 -1 18 -9 14 6 6 3 0 15 -6 3 -14 6Z'],
+    ['#753d50', 'M-16 -7 -5 2 0 11 5 2 16 -7 8 1 0 6 -8 1Z'],
+    [paper, 'M-14 -7 -10 -5 -12 -1Z M14 -7 10 -5 12 -1Z'],
   ]),
   kite: plates([
-    [ink, 'M0 20 -18 0 -10 -15 -3 -7 0 -19 3 -7 10 -15 18 0Z'],
-    ['#ca899a', 'M0 16 -15 0 -10 -11 -5 1 0 -13 5 1 10 -11 15 0Z'],
-    ['#694555', 'M-14 0 -3 5 0 13 3 5 14 0 5 1 0 -7 -5 1Z'],
+    [ink, 'M0 21 -19 0 -11 -16 -3 -7 0 -20 3 -7 11 -16 19 0Z'],
+    ['#cf899e', 'M0 17 -16 0 -10 -12 -5 1 0 -14 5 1 10 -12 16 0Z'],
+    ['#684254', 'M-14 0 -3 5 0 13 3 5 14 0 5 1 0 -7 -5 1Z'],
+    [paper, 'M0 -12 -2 -4 0 -1 2 -4Z'],
+  ]),
+  lancer: plates([
+    [ink, 'M0 26 -9 10 -14 -15 -5 -7 0 -22 5 -7 14 -15 9 10Z'],
+    ['#ee9a69', 'M0 21 -6 8 -11 -11 -4 -3 0 -16 4 -3 11 -11 6 8Z'],
+    ['#8d424e', 'M0 17 -4 5 0 -10 4 5Z'],
+    [paper, 'M0 12 -2 4 0 -2 2 4Z'],
   ]),
   gunship: plates([
     [
       ink,
-      'M-22 -9 -15 -15 -6 -12 0 -17 6 -12 15 -15 22 -9 23 10 16 15 10 5 5 9 3 18 -3 18 -5 9 -10 5 -16 15 -23 10Z',
+      'M-23 -10 -15 -16 -6 -12 0 -18 6 -12 15 -16 23 -10 24 11 16 16 10 6 5 10 3 19 -3 19 -5 10 -10 6 -16 16 -24 11Z',
     ],
     [
-      '#b86a4c',
-      'M-20 -8 -14 -12 -5 -8 0 -13 5 -8 14 -12 20 -8 20 8 16 11 12 2 4 6 2 15 -2 15 -4 6 -12 2 -16 11 -20 8Z',
+      '#bf6d4d',
+      'M-20 -8 -14 -13 -5 -8 0 -14 5 -8 14 -13 20 -8 21 9 16 12 12 3 4 7 2 16 -2 16 -4 7 -12 3 -16 12 -21 9Z',
     ],
-    ['#613c48', 'M-14 -10 -13 2 -18 8 -18 -5Z M14 -10 13 2 18 8 18 -5Z M-7 -6 0 -10 7 -6 0 4Z'],
-    [paper, 'M-19 -5 -15 -8 -16 -4 -19 -2Z M19 -5 15 -8 16 -4 19 -2Z'],
+    ['#5c3a47', 'M-15 -10 -13 2 -19 8 -19 -5Z M15 -10 13 2 19 8 19 -5Z M-7 -6 0 -11 7 -6 0 5Z'],
+    [paper, 'M-19 -5 -15 -9 -16 -4 -19 -2Z M19 -5 15 -9 16 -4 19 -2Z'],
+  ]),
+  prism: plates([
+    [ink, 'M0 -21 18 -7 18 7 0 21 -18 7 -18 -7Z'],
+    ['#9881d4', 'M0 -17 14 -6 14 6 0 17 -14 6 -14 -6Z'],
+    ['#4a3c74', 'M0 -12 10 -4 10 4 0 12 -10 4 -10 -4Z'],
+    ['#e7ddff', 'M0 -15 3 -5 0 -1 -3 -5Z M0 15 3 5 0 1 -3 5Z'],
+  ]),
+  minelayer: plates([
+    [ink, 'M-22 -8 -10 -16 10 -16 22 -8 20 12 8 18 -8 18 -20 12Z'],
+    ['#7f8c7a', 'M-19 -6 -9 -13 9 -13 19 -6 17 10 7 15 -7 15 -17 10Z'],
+    ['#424d4a', 'M-13 -4 13 -4 11 9 -11 9Z'],
+    [amber, 'M-16 -2 -12 -2 -12 5 -16 5Z M12 -2 16 -2 16 5 12 5Z'],
+    [paper, 'M-6 -11 6 -11 4 -7 -4 -7Z'],
+  ]),
+  courier: plates([
+    [ink, 'M0 -20 17 -10 21 4 12 16 0 20 -12 16 -21 4 -17 -10Z'],
+    [gold, 'M0 -16 13 -8 17 3 9 13 0 16 -9 13 -17 3 -13 -8Z'],
+    ['#3d5a63', 'M-10 -6 10 -6 12 4 0 10 -12 4Z'],
+    [teal, 'M0 -11 6 -2 0 7 -6 -2Z'],
+    [paper, 'M-14 -7 -9 -9 -10 -3Z M14 -7 9 -9 10 -3Z'],
   ]),
 };
+
 export function drawFoe(ctx, e) {
   ctx.save();
   ctx.translate(e.x, e.y);
-  ctx.rotate(e.tilt || 0);
-  ctx.scale(e.r / 18, e.r / 18);
+
+  // Lancer dive sightline
   if (e.kind === 'lancer' && e.locked && e.fireIn > 0) {
-    ctx.strokeStyle = '#ffa67999';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([4, 6]);
+    ctx.save();
+    ctx.rotate(e.tilt || 0);
+    const charge = Math.max(0, 1 - e.fireIn / 0.78);
+    ctx.strokeStyle = `rgba(255, 166, 121, ${0.28 + charge * 0.55})`;
+    ctx.lineWidth = 1 + charge * 1.4;
+    ctx.setLineDash([5, 6]);
     ctx.beginPath();
-    ctx.moveTo(0, 16);
-    ctx.lineTo(0, 160);
+    ctx.moveTo(0, 14);
+    ctx.lineTo(0, 290);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
   }
-  print(ctx, foes[e.kind]);
-  const charge = e.fireIn < 0.6 && e.fireIn >= 0;
-  ctx.fillStyle = e.flash > 0 || charge ? paper : '#ffab69';
-  ctx.beginPath();
-  ctx.arc(0, 2, charge ? 2.6 + (1 - e.fireIn / 0.6) * 2.6 : 2.4, 0, tau);
-  ctx.fill();
-  if (charge) {
-    ctx.strokeStyle = '#ffd1a4';
-    ctx.lineWidth = 1;
+
+  // Prism thermal beam telegraph / active beam
+  if (e.kind === 'prism' && (e.beamWarn > 0 || e.beamActive > 0)) {
+    ctx.save();
+    ctx.rotate(e.beamAngle || 0);
+    if (e.beamActive > 0) {
+      const pulse = 0.8 + 0.2 * Math.sin(e.age * 45);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = 'rgba(182, 134, 255, 0.24)';
+      ctx.fillRect(-13 * pulse, 12, 26 * pulse, 760);
+      ctx.fillStyle = 'rgba(232, 198, 255, 0.65)';
+      ctx.fillRect(-5 * pulse, 12, 10 * pulse, 760);
+      ctx.fillStyle = '#fff9f0';
+      ctx.fillRect(-2, 12, 4, 760);
+      ctx.globalCompositeOperation = 'source-over';
+    } else {
+      const p = 1 - e.beamWarn / 0.9;
+      ctx.strokeStyle = `rgba(218, 174, 255, ${0.25 + p * 0.65})`;
+      ctx.lineWidth = 0.8 + p * 2.2;
+      ctx.setLineDash([7, 7]);
+      ctx.beginPath();
+      ctx.moveTo(0, 12);
+      ctx.lineTo(0, 760);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+  }
+
+  ctx.rotate(e.tilt || 0);
+  const scale = e.r / 18;
+  ctx.scale(scale, scale);
+
+  // Engine glow on active craft
+  if (e.kind !== 'prism' && e.kind !== 'courier') {
+    const flick = 0.75 + 0.25 * Math.sin((e.age || 0) * 28);
+    ctx.fillStyle = e.kind === 'lancer' && e.fireIn <= 0 ? '#ffe7b3' : '#ff8c5990';
     ctx.beginPath();
-    ctx.arc(0, 2, 6 + e.fireIn * 9, 0, tau);
+    ctx.moveTo(-4, -14);
+    ctx.lineTo(0, -21 - flick * (e.kind === 'lancer' && e.fireIn <= 0 ? 18 : 6));
+    ctx.lineTo(4, -14);
+    ctx.fill();
+  }
+
+  // Courier rotating beacon halo
+  if (e.kind === 'courier') {
+    ctx.save();
+    ctx.rotate((e.age || 0) * 1.8);
+    ctx.strokeStyle = 'rgba(121, 227, 213, 0.52)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 23, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  print(ctx, foes[e.kind] || foes.raider);
+
+  // Hit flash overlay
+  if (e.flash > 0) {
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(255, 244, 216, 0.55)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, TAU);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Weapon charge core
+  const charge = e.fireIn < 0.6 && e.fireIn >= 0 && e.kind !== 'courier';
+  const coreColor =
+    e.kind === 'courier'
+      ? '#b8fff3'
+      : e.kind === 'prism'
+        ? '#e9d6ff'
+        : e.flash > 0 || charge
+          ? paper
+          : '#ffab69';
+  ctx.fillStyle = coreColor;
+  ctx.beginPath();
+  ctx.arc(0, 2, charge ? 2.6 + (1 - e.fireIn / 0.6) * 2.8 : 2.3, 0, TAU);
+  ctx.fill();
+
+  if (charge) {
+    ctx.strokeStyle = e.kind === 'prism' ? '#dec6ff' : '#ffd1a4';
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.arc(0, 2, 6 + e.fireIn * 9.5, 0, TAU);
     ctx.stroke();
   }
+
+  ctx.restore();
+
+  // Compact diegetic armor bar for damaged multi-HP craft
+  if (e.maxHp > 1 && e.hp < e.maxHp && e.hp > 0) {
+    const bw = Math.max(24, e.r * 1.45);
+    const bx = e.x - bw / 2;
+    const by = e.y - e.r - 9;
+    ctx.fillStyle = 'rgba(13, 20, 34, 0.78)';
+    ctx.fillRect(bx - 1, by - 1, bw + 2, 4.5);
+    ctx.fillStyle = e.kind === 'courier' ? teal : amber;
+    ctx.fillRect(bx, by, bw * (e.hp / e.maxHp), 2.5);
+  }
+}
+
+export function drawMine(ctx, m) {
+  ctx.save();
+  ctx.translate(m.x, m.y);
+  const pulse = 0.5 + 0.5 * Math.sin(m.age * (m.fuse < 1.2 ? 22 : 8));
+  ctx.strokeStyle = `rgba(255, 134, 88, ${0.22 + pulse * 0.45})`;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(0, 0, m.r + 5 + pulse * 4, 0, TAU);
+  ctx.stroke();
+
+  ctx.rotate(m.age * 1.3);
+  ctx.fillStyle = ink;
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const a = (i * TAU) / 8;
+    const rad = i % 2 === 0 ? m.r + 2 : m.r * 0.62;
+    ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = m.flash > 0 ? paper : '#5d4759';
+  ctx.beginPath();
+  ctx.arc(0, 0, m.r * 0.68, 0, TAU);
+  ctx.fill();
+
+  ctx.fillStyle = m.fuse < 1.2 ? '#fff0c7' : '#ff7b52';
+  ctx.beginPath();
+  ctx.arc(0, 0, m.r * (0.28 + pulse * 0.14), 0, TAU);
+  ctx.fill();
   ctx.restore();
 }
 
 export function outlineRock() {
   return Array.from({ length: 10 }, (_, i) => {
-    const a = (i * tau) / 10,
-      r = 0.74 + Math.random() * 0.26;
+    const a = (i * TAU) / 10;
+    const r = 0.72 + Math.random() * 0.28;
     return [Math.cos(a) * r, Math.sin(a) * r];
   });
 }
+
 export function drawRock(ctx, e) {
   ctx.save();
   ctx.translate(e.x, e.y);
   ctx.rotate(e.angle);
   ctx.scale(e.r, e.r);
-  const shades = [
-    '#6f7080',
-    '#55566b',
-    '#42475d',
-    '#333c51',
-    '#555568',
-    '#8a858a',
-    '#aaa09b',
-    '#888591',
-    '#a6a0a0',
-    '#858392',
-  ];
+  const shades = e.flash > 0
+    ? Array(10).fill('#e6dccd')
+    : [
+        '#6f7182',
+        '#55576c',
+        '#41475d',
+        '#30384d',
+        '#535568',
+        '#89858d',
+        '#aba099',
+        '#888592',
+        '#a59f9f',
+        '#848292',
+      ];
   e.shape.forEach(([x, y], i) => {
     const [nx, ny] = e.shape[(i + 1) % e.shape.length];
     ctx.fillStyle = shades[i];
     ctx.beginPath();
-    ctx.moveTo(-0.24, -0.26);
+    ctx.moveTo(-0.22, -0.24);
     ctx.lineTo(x, y);
     ctx.lineTo(nx, ny);
     ctx.fill();
   });
-  ctx.strokeStyle = '#c6b9ae';
-  ctx.lineWidth = 0.035;
+  // Crisp sunlit rim
+  ctx.strokeStyle = '#d3c5b8';
+  ctx.lineWidth = 0.04;
   ctx.beginPath();
   ctx.moveTo(...e.shape[6]);
   ctx.lineTo(...e.shape[7]);
   ctx.lineTo(...e.shape[8]);
   ctx.stroke();
+
+  // Crack lines on damaged large rocks
+  if (e.maxHp > 1 && e.hp < e.maxHp) {
+    ctx.strokeStyle = '#ffbe78cc';
+    ctx.lineWidth = 0.06;
+    ctx.beginPath();
+    ctx.moveTo(-0.35, -0.15);
+    ctx.lineTo(0.05, 0.08);
+    ctx.lineTo(0.42, -0.22);
+    ctx.moveTo(0.05, 0.08);
+    ctx.lineTo(-0.08, 0.55);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
-// The same paintings are used at two exposures: a bright cover and subdued scenery behind combat.
-const worlds = [
-  { file: 'pelagic', lane: 0.71, width: 0.46 },
-  { file: 'caldera', lane: 0.2, width: 0.28 },
-  { file: 'opal', lane: 0.67, width: 0.59 },
+export function drawPickup(ctx, p) {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  const bob = Math.sin(p.age * 7) * 0.12;
+  if (p.kind === 'shard') {
+    ctx.rotate(p.age * 3.4 + p.seed);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = p.nova ? 'rgba(255, 225, 140, 0.25)' : 'rgba(121, 227, 213, 0.22)';
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r * 1.9, 0, TAU);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = p.nova ? gold : teal;
+    ctx.beginPath();
+    ctx.moveTo(0, -p.r);
+    ctx.lineTo(p.r * 0.72, 0);
+    ctx.lineTo(0, p.r);
+    ctx.lineTo(-p.r * 0.72, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff9e8';
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r * 0.34, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  // Major tactical drop (weapon / shield / nova)
+  const palette = {
+    weapon: { rim: '#88f0de', core: '#16343d', label: 'W+' },
+    shield: { rim: '#99dcff', core: '#172d44', label: '+S' },
+    nova: { rim: '#ffd485', core: '#3c2918', label: 'NV' },
+  }[p.kind] || { rim: teal, core: '#16343d', label: '+' };
+
+  const scale = 1 + bob;
+  ctx.scale(scale, scale);
+
+  // Outer rotating brackets
+  ctx.save();
+  ctx.rotate(p.age * 1.4);
+  ctx.strokeStyle = palette.rim;
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 4; i++) {
+    ctx.rotate(Math.PI / 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, 15, -0.35, 0.35);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // Octagonal badge
+  ctx.fillStyle = palette.core;
+  ctx.strokeStyle = palette.rim;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const a = (i * TAU) / 6 - Math.PI / 6;
+    const rx = Math.cos(a) * 11;
+    const ry = Math.sin(a) * 11;
+    if (i === 0) ctx.moveTo(rx, ry);
+    else ctx.lineTo(rx, ry);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = paper;
+  ctx.font = '700 9px ui-monospace, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(palette.label, 0, 0.5);
+  ctx.restore();
+}
+
+// --- PROCEDURAL GRAPHIC-NOVEL PLANETS (replaces generic AI-slop clipart globes) ---
+
+const SECTOR_WORLDS = [
+  {
+    name: 'PELAGIC RIM',
+    lane: 0.72,
+    width: 0.5,
+    base: ['#10263a', '#1d4c63', '#49a6a6', '#b8f2de'],
+    rim: '#8ceee0',
+    bands: 6,
+    ring: false,
+    eclipse: false,
+    seed: 17,
+  },
+  {
+    name: 'CALDERA BELT',
+    lane: 0.22,
+    width: 0.36,
+    base: ['#26141b', '#5d2629', '#b85038', '#f5b076'],
+    rim: '#ff9d6b',
+    bands: 4,
+    ring: false,
+    eclipse: false,
+    fissures: true,
+    seed: 43,
+  },
+  {
+    name: 'OPAL RING',
+    lane: 0.68,
+    width: 0.62,
+    base: ['#191830', '#383666', '#7265a3', '#d4c3f5'],
+    rim: '#c8b8ff',
+    bands: 9,
+    ring: true,
+    eclipse: false,
+    seed: 79,
+  },
+  {
+    name: 'ECLIPSE CORONA',
+    lane: 0.32,
+    width: 0.46,
+    base: ['#0a0d16', '#141928', '#25283d', '#ffb474'],
+    rim: '#ffbe7d',
+    bands: 0,
+    ring: false,
+    eclipse: true,
+    seed: 109,
+  },
 ];
 
-export function loadPlanets(inFlight, redraw) {
-  for (const world of inFlight ? worlds : worlds.slice(0, 1)) {
-    if (world.image) continue;
-    const image = new Image();
-    world.image = image;
-    image.onload = () => {
-      const plate = document.createElement('canvas');
-      plate.width = Math.min(640, image.naturalWidth);
-      plate.height = Math.round((plate.width * image.naturalHeight) / image.naturalWidth);
-      const c = plate.getContext('2d');
-      c.drawImage(image, 0, 0, plate.width, plate.height);
-      c.globalCompositeOperation = 'source-atop';
-      c.fillStyle = '#10192e52';
-      c.fillRect(0, 0, plate.width, plate.height);
-      world.distant = plate;
-      redraw();
-    };
-    image.src = new URL('./planets/' + world.file + '.webp', import.meta.url).href;
+function seededRandom(seed) {
+  let s = seed * 9301 + 49297;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
+}
+
+function buildWorldPlate(spec, isCover = false) {
+  const size = isCover ? 520 : 380;
+  const pad = spec.ring ? size * 0.38 : size * 0.16;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(size + pad * 2);
+  canvas.height = Math.round(size + pad * 2);
+  const c = canvas.getContext('2d');
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = size * 0.46;
+  const rand = seededRandom(spec.seed);
+
+  // Back half of planetary rings
+  const drawRings = (front) => {
+    if (!spec.ring) return;
+    c.save();
+    c.translate(cx, cy);
+    c.rotate(-0.34);
+    c.beginPath();
+    if (front) c.rect(-canvas.width, 0, canvas.width * 2, canvas.height);
+    else c.rect(-canvas.width, -canvas.height, canvas.width * 2, canvas.height);
+    c.clip();
+
+    for (let i = 0; i < 16; i++) {
+      const t = i / 15;
+      const rx = r * (1.28 + t * 0.62);
+      const ry = rx * 0.25;
+      c.strokeStyle =
+        i % 4 === 0
+          ? `rgba(246, 232, 206, ${0.06 + (1 - t) * 0.18})`
+          : `rgba(176, 165, 224, ${0.05 + Math.sin(t * Math.PI) * 0.16})`;
+      c.lineWidth = 1.5 + rand() * 3.5;
+      c.beginPath();
+      c.ellipse(0, 0, rx, ry, 0, 0, TAU);
+      c.stroke();
+    }
+    c.restore();
+  };
+
+  drawRings(false);
+
+  // Atmospheric outer bloom
+  const halo = c.createRadialGradient(cx - r * 0.22, cy - r * 0.22, r * 0.72, cx, cy, r * 1.28);
+  halo.addColorStop(0, spec.eclipse ? 'rgba(255, 174, 102, 0.42)' : spec.rim + '38');
+  halo.addColorStop(0.58, spec.eclipse ? 'rgba(250, 117, 77, 0.14)' : spec.rim + '12');
+  halo.addColorStop(1, 'rgba(8, 12, 22, 0)');
+  c.fillStyle = halo;
+  c.beginPath();
+  c.arc(cx, cy, r * 1.28, 0, TAU);
+  c.fill();
+
+  // Clip sphere interior
+  c.save();
+  c.beginPath();
+  c.arc(cx, cy, r, 0, TAU);
+  c.clip();
+
+  // Primary directional sphere gradient (crisp graphic sunlight top-left)
+  const lit = c.createRadialGradient(
+    cx - r * 0.44,
+    cy - r * 0.44,
+    r * 0.08,
+    cx - r * 0.08,
+    cy - r * 0.08,
+    r * 1.25,
+  );
+  lit.addColorStop(0, spec.base[3]);
+  lit.addColorStop(0.28, spec.base[2]);
+  lit.addColorStop(0.64, spec.base[1]);
+  lit.addColorStop(1, spec.base[0]);
+  c.fillStyle = lit;
+  c.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // Graphic contour bands / cloud strata
+  if (spec.bands > 0) {
+    c.save();
+    c.translate(cx, cy);
+    c.rotate(-0.32);
+    for (let i = 0; i < spec.bands; i++) {
+      const y = -r * 0.85 + (i / spec.bands) * r * 1.7;
+      const bandH = r * (0.07 + rand() * 0.11);
+      c.fillStyle = i % 2 === 0 ? spec.base[3] + '38' : spec.base[0] + '34';
+      c.beginPath();
+      c.moveTo(-r * 1.2, y);
+      for (let x = -r; x <= r; x += r * 0.25) {
+        c.quadraticCurveTo(x - r * 0.12, y + (rand() - 0.5) * 14, x, y + Math.sin(x * 0.03 + i) * 7);
+      }
+      c.lineTo(r * 1.2, y + bandH);
+      c.lineTo(-r * 1.2, y + bandH);
+      c.closePath();
+      c.fill();
+    }
+    c.restore();
   }
+
+  // Volcanic fissures or graphic surface landmasses/craters
+  if (spec.fissures) {
+    c.strokeStyle = 'rgba(255, 174, 102, 0.52)';
+    c.lineWidth = 2;
+    for (let i = 0; i < 10; i++) {
+      let x = cx + (rand() - 0.4) * r * 1.1;
+      let y = cy + (rand() - 0.4) * r * 1.1;
+      c.beginPath();
+      c.moveTo(x, y);
+      for (let s = 0; s < 5; s++) {
+        x += (rand() - 0.35) * r * 0.24;
+        y += (rand() - 0.4) * r * 0.22;
+        c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+  } else if (!spec.eclipse) {
+    for (let i = 0; i < 7; i++) {
+      const angle = rand() * TAU;
+      const dist = rand() * r * 0.65;
+      const cr = r * (0.05 + rand() * 0.1);
+      c.fillStyle = i % 2 === 0 ? spec.base[3] + '24' : spec.base[0] + '2c';
+      c.beginPath();
+      c.ellipse(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, cr * 1.35, cr * 0.8, -0.35, 0, TAU);
+      c.fill();
+    }
+  }
+
+  // Dramatic directional terminator shadow (leaves sunlit crescent bright and graphic!)
+  const term = c.createLinearGradient(cx - r * 0.72, cy - r * 0.72, cx + r * 0.68, cy + r * 0.68);
+  if (spec.eclipse) {
+    term.addColorStop(0, 'rgba(10, 14, 24, 0.38)');
+    term.addColorStop(0.28, 'rgba(8, 11, 20, 0.92)');
+    term.addColorStop(1, 'rgba(6, 9, 17, 0.98)');
+  } else {
+    term.addColorStop(0, 'rgba(8, 12, 22, 0)');
+    term.addColorStop(0.46, 'rgba(8, 12, 22, 0.14)');
+    term.addColorStop(0.72, 'rgba(7, 11, 21, 0.74)');
+    term.addColorStop(1, 'rgba(6, 9, 17, 0.94)');
+  }
+  c.fillStyle = term;
+  c.fillRect(cx - r, cy - r, r * 2, r * 2);
+
+  // Subtle orbital longitude/latitude cartography arc (editorial aerospace touch)
+  c.strokeStyle = spec.rim + (isCover ? '34' : '1c');
+  c.lineWidth = 1;
+  c.beginPath();
+  c.ellipse(cx, cy, r * 0.99, r * 0.36, -0.34, 0, TAU);
+  c.stroke();
+
+  // Crisp sunlit atmospheric crescent rim
+  c.strokeStyle = spec.rim + (spec.eclipse ? 'e0' : 'b8');
+  c.lineWidth = spec.eclipse ? 4 : 2.6;
+  c.beginPath();
+  c.arc(cx, cy, r - 1.2, Math.PI * 0.72, Math.PI * 1.72);
+  c.stroke();
+
+  // Subdue distant combat plates so gameplay bullets pop with 100% clarity
+  if (!isCover) {
+    c.fillStyle = 'rgba(8, 12, 22, 0.32)';
+    c.fillRect(cx - r, cy - r, r * 2, r * 2);
+  }
+  c.restore();
+
+  drawRings(true);
+  return canvas;
+}
+
+const worldCache = SECTOR_WORLDS.map((spec) => ({
+  ...spec,
+  cover: null,
+  distant: null,
+}));
+
+export function loadPlanets(_inFlight, redraw) {
+  for (const world of worldCache) {
+    if (!world.cover) world.cover = buildWorldPlate(world, true);
+    if (!world.distant) world.distant = buildWorldPlate(world, false);
+  }
+  redraw?.();
+}
+
+export function getSectorName(wave) {
+  const index = Math.floor((wave - 1) / 2) % SECTOR_WORLDS.length;
+  return SECTOR_WORLDS[index].name;
 }
 
 function paintGlobe(ctx, image, x, y, width) {
@@ -190,29 +709,29 @@ function paintGlobe(ctx, image, x, y, width) {
 
 export function drawPlanets(ctx, w, h, distance, pan, intro) {
   if (intro) {
-    const world = worlds[0];
-    if (world.distant) {
+    const world = worldCache[0];
+    if (world.cover) {
       const portrait = w < h;
       paintGlobe(
         ctx,
-        world.image,
-        w * (portrait ? 0.59 : 0.74),
-        h * (portrait ? 0.28 : 0.35),
-        Math.min(w * (portrait ? 0.79 : 0.41), h * 0.57),
+        world.cover,
+        w * (portrait ? 0.62 : 0.73),
+        h * (portrait ? 0.22 : 0.36),
+        Math.min(w * (portrait ? 0.8 : 0.5), h * (portrait ? 0.44 : 0.72)),
       );
     }
     return;
   }
-  // Two overlapping passes allow the next world to rise while the last one recedes out of view.
-  const route = distance / 2200 + 0.43;
+
+  const route = distance / 2400 + 0.38;
   const current = Math.floor(route);
   for (let i = Math.max(0, current - 1); i <= current; i++) {
-    const world = worlds[i % worlds.length];
+    const world = worldCache[i % worldCache.length];
     if (!world.distant) continue;
     const t = route - i;
-    const width = Math.min(w, h) * world.width * (0.9 + t * 0.18);
-    const x = w * world.lane + (t - 0.5) * width * 0.23 - pan * width * 0.12;
-    const y = h * (-0.24 + t * 1.08);
+    const width = Math.min(w, h) * world.width * (0.94 + t * 0.16);
+    const x = w * world.lane + (t - 0.5) * width * 0.18 - pan * width * 0.11;
+    const y = h * (-0.28 + t * 1.15);
     if (y - width / 2 < h && y + width / 2 > 0) paintGlobe(ctx, world.distant, x, y, width);
   }
 }
@@ -236,42 +755,41 @@ export function backdrop(w, h) {
     focusX: 0.5,
     focusY: 0.5,
   });
-  // Lift the portfolio's dust lanes into the indigo, copper and sea-green flight palette.
   const data = pixels.data;
   for (let i = 0; i < data.length; i += 4) {
-    const r = data[i],
-      g = data[i + 1],
-      b = data[i + 2];
-    data[i] = 5 + r * 1.36 + g * 0.08;
-    data[i + 1] = 6 + g * 1.24;
-    data[i + 2] = 11 + b * 1.17 + r * 0.15;
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    data[i] = 4 + r * 1.28 + g * 0.08;
+    data[i + 1] = 6 + g * 1.18;
+    data[i + 2] = 10 + b * 1.15 + r * 0.14;
     data[i + 3] = 255;
   }
   c.putImageData(pixels, 0, 0);
+
   let seed = 229;
   const roll = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  // Small associations of stars trace the gas, baked once at this aspect ratio.
-  for (let cluster = 0; cluster < 16; cluster++) {
-    const cx = roll() * plate.width,
-      cy = roll() * plate.height;
-    const spread = 5 + roll() * 24;
-    const warm = roll() < 0.33;
-    for (let i = 0; i < 30; i++) {
+  for (let cluster = 0; cluster < 18; cluster++) {
+    const cx = roll() * plate.width;
+    const cy = roll() * plate.height;
+    const spread = 6 + roll() * 26;
+    const warm = roll() < 0.34;
+    for (let i = 0; i < 32; i++) {
       const x = cx + (roll() - roll()) * spread;
-      const y = cy + (roll() - roll()) * spread * 0.48 + (x - cx) * 0.36;
-      c.globalAlpha = 0.14 + roll() * 0.46;
+      const y = cy + (roll() - roll()) * spread * 0.48 + (x - cx) * 0.34;
+      c.globalAlpha = 0.14 + roll() * 0.48;
       c.fillStyle = warm ? '#ffcdb0' : '#b6deed';
-      const size = 0.35 + roll() ** 4 * 0.9;
+      const size = 0.35 + roll() ** 4 * 0.95;
       c.fillRect(x, y, size, size);
     }
     if (cluster % 4 === 0) {
       c.globalAlpha = 1;
-      const halo = c.createRadialGradient(cx, cy, 0, cx, cy, 5);
-      halo.addColorStop(0, '#fff1cc');
-      halo.addColorStop(0.17, warm ? '#f4ba8d99' : '#b0dce399');
+      const halo = c.createRadialGradient(cx, cy, 0, cx, cy, 5.5);
+      halo.addColorStop(0, '#fff2cc');
+      halo.addColorStop(0.2, warm ? '#f4ba8d88' : '#b0dce388');
       halo.addColorStop(1, '#adc7d200');
       c.fillStyle = halo;
-      c.fillRect(cx - 5, cy - 5, 10, 10);
+      c.fillRect(cx - 5.5, cy - 5.5, 11, 11);
     }
   }
   return plate;
