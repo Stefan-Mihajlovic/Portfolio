@@ -103,8 +103,96 @@ const shipModels = {
   aegis: aegisPlates,
 };
 
+// Elevated canopy + spine detail drawn with parallax offset during 2.5D Chicken Invaders roll
+const shipCanopies = {
+  kestrel: plates([
+    [ink, 'M0 -24 Q6 -16 6 -4 L4 8 0 13 -5 8 -6 -3 Q-5 -17 0 -24Z'],
+    [teal, 'M0 -19 Q3.2 -13 4 -5 L3 1.5 -3 -2 Q-3.2 -12 0 -19Z'],
+    ['#e8fff7', 'M0 -17 1.2 -12 -2 -4Z'],
+  ]),
+  falcon: plates([
+    [ink, 'M0 -25 Q5.5 -16 5.5 -2 L3.5 10 0 15.5 -3.5 10 -5.5 -2 Q-5.5 -16 0 -25Z'],
+    ['#ffd18a', 'M0 -21 Q3.2 -13 3.2 -4 L2 4 -2 1 Q-3.2 -12 0 -21Z'],
+    ['#fff9e4', 'M0 -18.5 1.2 -13 -1.2 -5Z'],
+  ]),
+  aegis: plates([
+    [ink, 'M0 -25 Q8 -16 8 -2 L6 10 0 14.5 -6 10 -8 -2 Q-8 -16 0 -25Z'],
+    ['#9be9ff', 'M0 -21 Q5 -13 5 -4 L3 3.5 -4 1 Q-5 -12 0 -21Z'],
+    ['#f0fdff', 'M-1 -17.5 2 -11 -2 -5Z'],
+  ]),
+};
+
 export function drawInterceptor(ctx, variant = 'kestrel') {
   print(ctx, shipModels[variant] || kestrelPlates);
+}
+
+// 2.5D Chicken Invaders-style longitudinal roll:
+// Nose stays locked straight up while wings foreshorten, vertically skew, and the fuselage/canopy shifts in depth.
+export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, accent = teal) {
+  const r = Math.max(-1, Math.min(1, roll));
+  const absR = Math.abs(r);
+  const scaleX = Math.cos(r * 0.72); // crisp horizontal foreshortening
+  const skewY = r * 0.24; // raised outer wing, dipped inner wing (Chicken Invaders roll!)
+
+  ctx.save();
+  // Apply 2.5D roll shear + horizontal compression around nose-to-tail axis
+  ctx.transform(scaleX, skewY, 0, 1, 0, 0);
+
+  // Subtle underside hull thickness rim exposed on the lifted wing side when banking
+  if (absR > 0.06) {
+    ctx.save();
+    ctx.translate(-r * 7.5, 2.5);
+    ctx.globalAlpha = absR * 0.6;
+    ctx.fillStyle = '#25354b';
+    ctx.beginPath();
+    ctx.ellipse(0, 6, 30, 34, 0, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Visual wing weapon pods for upgraded MK II+ tiers
+  if (tier >= 2) {
+    ctx.fillStyle = ink;
+    ctx.fillRect(-35, 1, 7, 17);
+    ctx.fillRect(28, 1, 7, 17);
+    ctx.fillStyle = tier >= 4 ? gold : accent;
+    ctx.fillRect(-33.5, 3, 4, 12);
+    ctx.fillRect(29.5, 3, 4, 12);
+  }
+
+  print(ctx, shipModels[variant] || kestrelPlates);
+
+  // Directional 3D roll shading: shadow dips on the turning-in wing, highlight catches the lifted wing
+  if (absR > 0.06) {
+    const shade = ctx.createLinearGradient(-44, 0, 44, 0);
+    if (r > 0) {
+      shade.addColorStop(0, `rgba(255, 250, 232, ${absR * 0.22})`);
+      shade.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+      shade.addColorStop(1, `rgba(6, 12, 24, ${absR * 0.34})`);
+    } else {
+      shade.addColorStop(0, `rgba(6, 12, 24, ${absR * 0.34})`);
+      shade.addColorStop(0.5, 'rgba(0, 0, 0, 0)');
+      shade.addColorStop(1, `rgba(255, 250, 232, ${absR * 0.22})`);
+    }
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(0, -52);
+    ctx.lineTo(47, 30);
+    ctx.lineTo(0, 44);
+    ctx.lineTo(-47, 30);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Elevated cockpit canopy shifts subtly in X for genuine 3D depth parallax!
+  if (absR > 0.04) {
+    ctx.save();
+    ctx.translate(r * 5.2, 0);
+    ctx.scale(Math.max(0.76, scaleX), 1);
+    print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
+    ctx.restore();
+  }
 }
 
 // --- ENEMY SILHOUETTES ---
@@ -400,19 +488,62 @@ export function drawPickup(ctx, p) {
     return;
   }
 
+  // Spinning golden Credit Coin pickup
+  if (p.kind === 'coin') {
+    const spinW = 0.45 + 0.55 * Math.abs(Math.cos(p.age * 6 + p.seed));
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = 'rgba(255, 212, 102, 0.22)';
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r * 1.85, 0, TAU);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.scale(spinW, 1);
+    ctx.fillStyle = '#33220d';
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r + 1.4, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = '#ffd566';
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = '#fff5cc';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, p.r * 0.65, 0, TAU);
+    ctx.stroke();
+    ctx.fillStyle = '#fff7d4';
+    ctx.fillRect(-1.2, -p.r * 0.42, 2.4, p.r * 0.84);
+    ctx.restore();
+    return;
+  }
+
   const palette = {
     weapon: { rim: '#88f0de', core: '#16343d', label: 'W+' },
     shield: { rim: '#99dcff', core: '#172d44', label: '+S' },
     nova: { rim: '#ffd485', core: '#3c2918', label: 'NV' },
+    overshield: { rim: '#ffe27a', core: '#3a224d', label: 'OS' },
   }[p.kind] || { rim: teal, core: '#16343d', label: '+' };
 
   const scale = 1 + bob;
   ctx.scale(scale, scale);
 
+  if (p.kind === 'overshield') {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+    g.addColorStop(0, 'rgba(255, 230, 130, 0.48)');
+    g.addColorStop(1, 'rgba(180, 120, 255, 0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 22, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
   ctx.save();
-  ctx.rotate(p.age * 1.4);
+  ctx.rotate(p.age * (p.kind === 'overshield' ? 2.4 : 1.4));
   ctx.strokeStyle = palette.rim;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = p.kind === 'overshield' ? 2 : 1.5;
   for (let i = 0; i < 4; i++) {
     ctx.rotate(Math.PI / 2);
     ctx.beginPath();

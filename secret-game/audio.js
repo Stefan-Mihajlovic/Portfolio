@@ -732,6 +732,29 @@ export function createFlightAudio() {
           sfxVoice(t + i * 0.03, 0.44, 'triangle', hz(n), hz(n + 12), 0.13, 0.006, 3800, (i - 1.5) * 0.3, 0.45),
         );
         break;
+      case 'coin':
+        sfxVoice(t, 0.08, 'sine', 1320 * jitter, 1760, 0.13, 0.002, 5200, (Math.random() - 0.5) * 0.25, 0.25);
+        sfxVoice(t + 0.045, 0.12, 'triangle', 1760 * jitter, 2093, 0.1, 0.002, 5600, 0, 0.3);
+        break;
+      case 'overshield':
+        [69, 73, 76, 81, 88].forEach((n, i) =>
+          sfxVoice(t + i * 0.04, 0.42, 'triangle', hz(n), hz(n * 1.005), 0.17, 0.006, 4600, (i - 2) * 0.25, 0.48),
+        );
+        sfxVoice(t, 0.38, 'sine', 220, 660, 0.22, 0.02, 2400, 0, 0.4);
+        break;
+      case 'buy':
+        if (!ctx || !volume) return;
+        init();
+        ctx.resume().catch(() => {});
+        {
+          const b = ctx.createGain();
+          b.connect(compressor);
+          [69, 76, 81].forEach((n, i) =>
+            sfxVoice(ctx.currentTime + i * 0.05, 0.22, 'triangle', hz(n), hz(n), 0.16, 0.004, 4000, 0, 0, b),
+          );
+          setTimeout(() => b.disconnect(), 500);
+        }
+        break;
       case 'shard': {
         const note = comboScale[Math.min(comboScale.length - 1, Math.max(0, Math.floor(detail)))];
         const f = hz(note);
@@ -797,21 +820,45 @@ export function createFlightAudio() {
         sfxVoice(t + 0.08, 0.24, 'triangle', 640, 980, 0.16, 0.01, 2400, 0.22, 0.4);
         break;
       case 'shield': {
-        // Unmistakable visceral player-hit impact: music duck + heavy hull thud + shield shatter + cockpit warning chirp
+        // Shield hit: music duck + energy shatter + warning chirp (extra drop when shield hits 0!)
+        const broke = detail <= 0;
+        duckMusic(0.32, 0.3);
+        sfxVoice(t, 0.28, 'sine', 185, 42, 0.66, 0.002, 1100, 0, 0.2);
+        sfxVoice(t, 0.22, 'noise', 0, 0, 0.48, 0.002, 3200, 0, 0.3);
+        sfxVoice(t, 0.28, 'plasma', 860, 140, 0.44, 0.002, 4600, 0, 0.35);
+        sfxVoice(t + 0.03, 0.16, 'triangle', 580, broke ? 190 : 320, 0.26, 0.004, 2600, -0.22, 0.25);
+        if (broke) {
+          sfxVoice(t + 0.14, 0.26, 'sawtooth', 390, 140, 0.28, 0.004, 2200, 0.22, 0.35);
+        }
+        break;
+      }
+      case 'hull': {
+        // Direct red hull hit: heavy metallic crunch + deep sub thud + urgent red-alert alarm!
         const critical = detail <= 1;
-        duckMusic(0.35, 0.28);
-        sfxVoice(t, 0.32, 'sine', 195, 34, 0.72, 0.002, 900, 0, 0.2);
-        sfxVoice(t, 0.24, 'noise', 0, 0, 0.56, 0.002, 2600, 0, 0.3);
-        sfxVoice(t, 0.26, 'plasma', 760, 110, 0.42, 0.002, 4200, 0, 0.35);
-        // Urgent descending cockpit damage klaxon (double beep on 1 shield left!)
-        sfxVoice(t + 0.03, 0.16, 'sawtooth', 520, 260, 0.26, 0.004, 2400, -0.25, 0.25);
-        sfxVoice(t + 0.16, 0.2, 'sawtooth', critical ? 660 : 390, critical ? 440 : 195, 0.28, 0.004, 2800, 0.25, 0.3);
+        duckMusic(0.42, 0.22);
+        sfxVoice(t, 0.38, 'sine', 165, 28, 0.82, 0.002, 800, 0, 0.2);
+        sfxVoice(t, 0.3, 'noise', 0, 0, 0.68, 0.002, 1850, 0, 0.3);
+        sfxVoice(t, 0.24, 'square', 220, 68, 0.38, 0.002, 1400, 0, 0.25);
+        sfxVoice(t + 0.04, 0.16, 'sawtooth', 620, 310, 0.3, 0.004, 2800, -0.25, 0.25);
+        sfxVoice(t + 0.18, 0.18, 'sawtooth', critical ? 740 : 480, critical ? 480 : 240, 0.32, 0.004, 3000, 0.25, 0.3);
         if (critical) {
-          sfxVoice(t + 0.32, 0.18, 'square', 660, 440, 0.22, 0.004, 2600, 0, 0.2);
+          sfxVoice(t + 0.33, 0.2, 'square', 740, 480, 0.28, 0.004, 2800, 0, 0.25);
         }
         break;
       }
     }
+  }
+
+  function uiBuy() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    [69, 76, 81, 88].forEach((n, i) =>
+      sfxVoice(t + i * 0.045, 0.24, 'triangle', hz(n), hz(n), 0.16, 0.004, 4200, (i - 1.5) * 0.2, 0, b),
+    );
+    setTimeout(() => b.disconnect(), 600);
   }
 
   return {
@@ -819,6 +866,7 @@ export function createFlightAudio() {
     stop,
     death,
     effect,
+    uiBuy,
     setWave(value) {
       wave = value;
     },
@@ -829,7 +877,16 @@ export function createFlightAudio() {
       const playing = Boolean(session);
       if (playing) stop();
       bossRank = rank || 0;
-      bossSpec = rank ? BOSS_SCORES[(rank - 1) % BOSS_SCORES.length] : null;
+      if (rank) {
+        const base = BOSS_SCORES[(rank - 1) % BOSS_SCORES.length];
+        // Higher procedural boss ranks escalate tempo and transpose key slightly for fresh intensity
+        bossSpec = {
+          ...base,
+          bpm: Math.min(168, base.bpm + Math.floor((rank - 1) / 3) * 6),
+        };
+      } else {
+        bossSpec = null;
+      }
       beat = 0;
       if (playing) start();
     },

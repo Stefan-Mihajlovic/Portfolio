@@ -19,7 +19,7 @@
     <main id="arena" aria-label="Low Orbit arcade game">
       <canvas aria-label="Spaceflight playfield" tabindex="-1"></canvas>
       <header>
-        <a href="/" class="back"><span aria-hidden="true">←</span> Portfolio</a>
+        <a href="/" class="back pill-control"><span aria-hidden="true">←</span> Portfolio</a>
         <div id="hud" hidden>
           <span class="metric score-metric">
             <span class="metric-label">Score</span>
@@ -33,6 +33,9 @@
             <b id="combo-mult">×1.0</b>
             <i class="combo-track" aria-hidden="true"></i>
           </div>
+          <span class="hud-coins" aria-label="Run coins">
+            <i class="coin-dot" aria-hidden="true"></i><b id="run-coins-hud">0</b>
+          </span>
           <div id="boss-hud" hidden>
             <label for="boss-armor">
               <b id="boss-name"></b>
@@ -53,11 +56,14 @@
           </div>
 
           <div class="hud-bottom-center" id="shield-hud">
-            <div class="shield-head">
-              <span class="metric-label">Shields</span>
-              <b id="shield-count">3/3</b>
+            <div id="overshield-badge" class="overshield-badge" hidden>
+              OVERSHIELD <b id="overshield-time">6.0s</b>
             </div>
-            <span id="shield" class="shield" aria-label="3 shields"></span>
+            <div class="shield-head">
+              <span class="hull-stat">HULL <b id="hull-count">3/3</b></span>
+              <span class="shield-stat">SHIELD <b id="shield-count">3/3</b></span>
+            </div>
+            <div id="vitals" class="vitals" aria-label="3 hull, 3 shields"></div>
           </div>
 
           <div class="hud-bottom-right">
@@ -80,17 +86,25 @@
         </div>
 
         <div class="systems">
-          <div class="record">High score <b id="best">000000</b></div>
-          <details id="mixer">
+          <button id="coin-bank-btn" class="pill-control coin-pill" type="button" title="Open ship upgrades">
+            <i class="coin-dot" aria-hidden="true"></i>
+            <span class="pill-label">Coins</span>
+            <b id="coin-bank">0</b>
+          </button>
+          <div class="record pill-control">
+            <span class="pill-label">Best</span>
+            <b id="best">000000</b>
+          </div>
+          <details id="mixer" class="pill-control">
             <summary aria-label="Sound volume">
               <svg
                 aria-hidden="true"
-                width="16"
-                height="16"
+                width="15"
+                height="15"
                 viewBox="0 0 20 20"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.6"
               >
                 <path d="M3 8h3l4-4v12l-4-4H3zM13 7q3 3 0 6m2-9q6 6 0 12" />
               </svg>
@@ -98,11 +112,11 @@
             </summary>
             <label>Volume <input id="volume" type="range" min="0" max="100" value="35" /></label>
           </details>
-          <button id="fullscreen" type="button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden>
+          <button id="fullscreen" class="pill-icon" type="button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden>
             <svg
               aria-hidden="true"
-              width="20"
-              height="20"
+              width="17"
+              height="17"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -113,8 +127,8 @@
               <path class="contract" d="M9 3v6H3m12-6v6h6m0 6h-6v6m-6 0v-6H3" />
             </svg>
           </button>
-          <button id="pause" type="button" aria-label="Pause game" title="Pause game" hidden>
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <button id="pause" class="pill-icon" type="button" aria-label="Pause game" title="Pause game" hidden>
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
               <rect x="5" y="3" width="5" height="18" rx="1" />
               <rect x="14" y="3" width="5" height="18" rx="1" />
             </svg>
@@ -137,6 +151,10 @@
               <dd id="run-score">0</dd>
             </div>
             <div>
+              <dt>Coins</dt>
+              <dd id="run-coins" class="coin-grade">+0</dd>
+            </div>
+            <div>
               <dt>Wave</dt>
               <dd id="run-wave">01</dd>
             </div>
@@ -157,7 +175,7 @@
               <span class="rig-meta">
                 <strong>Kestrel</strong>
                 <small>Rail-Lance</small>
-                <span class="rig-pips" aria-label="3 shields"><i></i><i></i><i></i></span>
+                <span class="rig-pips" data-pips="kestrel"></span>
               </span>
             </button>
             <button type="button" class="rig-option" data-rig="falcon" aria-pressed="false">
@@ -165,7 +183,7 @@
               <span class="rig-meta">
                 <strong>Falcon</strong>
                 <small>Seekers</small>
-                <span class="rig-pips" aria-label="2 shields"><i></i><i></i></span>
+                <span class="rig-pips" data-pips="falcon"></span>
               </span>
             </button>
             <button type="button" class="rig-option" data-rig="aegis" aria-pressed="false">
@@ -173,7 +191,7 @@
               <span class="rig-meta">
                 <strong>Aegis</strong>
                 <small>Tri-Plasma</small>
-                <span class="rig-pips" aria-label="4 shields"><i></i><i></i><i></i><i></i></span>
+                <span class="rig-pips" data-pips="aegis"></span>
               </span>
             </button>
           </fieldset>
@@ -181,6 +199,10 @@
           <div class="launch-row">
             <button id="action" type="button">
               <span aria-hidden="true">▶</span><span id="action-text">Play</span>
+            </button>
+            <button id="hangar-open" class="secondary-btn upgrade-btn" type="button">
+              <i class="coin-dot" aria-hidden="true"></i>Upgrades
+              <span id="upgrade-dot" class="upgrade-dot" hidden aria-label="Upgrade available"></span>
             </button>
             <button id="restart-menu" class="secondary-btn" type="button" hidden>Restart</button>
           </div>
@@ -191,8 +213,8 @@
             <button class="guide-open" id="guide-open" type="button">
               <svg
                 aria-hidden="true"
-                width="18"
-                height="18"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -206,21 +228,39 @@
           </div>
           <footer aria-label="Flight controls">
             <div class="keyboard">
-              <span class="binding"><span>Steer</span><kbd>WASD</kbd></span>
-              <span class="binding"><span>Fire</span><kbd>Space</kbd><small>or F auto</small></span>
-              <span class="binding"><span>Focus</span><kbd>Shift</kbd></span>
-              <span class="binding"><span>Dash</span><kbd>C</kbd><small>or RMB</small></span>
-              <span class="binding"><span>Nova</span><kbd>E</kbd></span>
+              <span class="key-chip"><kbd>WASD</kbd><span>Move</span></span>
+              <span class="key-chip"><kbd>Space</kbd><span>Fire</span></span>
+              <span class="key-chip"><kbd>Shift</kbd><span>Focus</span></span>
+              <span class="key-chip"><kbd>C</kbd><span>Dash</span></span>
+              <span class="key-chip"><kbd>E</kbd><span>Nova</span></span>
+              <span class="key-chip"><kbd>F</kbd><span>Auto</span></span>
             </div>
             <span class="touch">Drag to steer &amp; fire <i aria-hidden="true"></i> Tap Dash / Nova</span>
           </footer>
         </div>
       </section>
 
-      <dialog id="manual" closedby="any" aria-labelledby="manual-title">
-        <form method="dialog">
+      <dialog id="hangar" class="modal-sheet" closedby="any" aria-labelledby="hangar-title">
+        <form method="dialog" class="modal-head">
+          <div>
+            <h2 id="hangar-title">Upgrades</h2>
+            <p class="modal-sub">Spend coins collected on runs to start every flight stronger.</p>
+          </div>
+          <div class="hangar-head-right">
+            <span class="hangar-balance"><i class="coin-dot" aria-hidden="true"></i><b id="hangar-coins">0</b></span>
+            <button type="submit" class="modal-close" aria-label="Close upgrades">×</button>
+          </div>
+        </form>
+        <div id="upgrade-list" class="upgrade-list"></div>
+        <div class="hangar-footer">
+          <button id="refund-upgrades" type="button" class="refund-btn">Reset &amp; refund coins</button>
+        </div>
+      </dialog>
+
+      <dialog id="manual" class="modal-sheet" closedby="any" aria-labelledby="manual-title">
+        <form method="dialog" class="modal-head">
           <h2 id="manual-title">Field guide</h2>
-          <button type="submit" aria-label="Close field guide">×</button>
+          <button type="submit" class="modal-close" aria-label="Close field guide">×</button>
         </form>
 
         <div class="manual-systems">
@@ -230,15 +270,15 @@
           </div>
           <div>
             <strong>Phase Dash <kbd>C</kbd> / <kbd>RMB</kbd></strong>
-            <p>Short invulnerable burst that slips through fire and pulls in nearby shards.</p>
+            <p>Short invulnerable burst that slips through fire and pulls in nearby loot.</p>
           </div>
           <div>
             <strong>Nova Pulse <kbd>E</kbd></strong>
             <p>At 50%+ charge, turns enemy bullets into golden shards and activates Overdrive.</p>
           </div>
           <div>
-            <strong>Upgrades &amp; Flagships</strong>
-            <p>Down golden Couriers for weapon tiers. Break flagship wings and pylons to expose cores.</p>
+            <strong>Overshield &amp; Coins</strong>
+            <p>Grab golden <b>OS</b> cells for 6.5s of indestructible ramming armor. Spend coins in Upgrades.</p>
           </div>
         </div>
 
@@ -262,7 +302,7 @@
           <div>
             <canvas data-craft="gunship" aria-hidden="true" width="88" height="88"></canvas>
             <dt>Gunship</dt>
-            <dd>Armored frigate firing five-round fans.</dd>
+            <dd>Armored frigate firing wide fans.</dd>
           </div>
           <div>
             <canvas data-craft="prism" aria-hidden="true" width="88" height="88"></canvas>
@@ -272,12 +312,12 @@
           <div>
             <canvas data-craft="minelayer" aria-hidden="true" width="88" height="88"></canvas>
             <dt>Minelayer</dt>
-            <dd>Drops proximity mines — shoot them before they burst.</dd>
+            <dd>Heavy barge laying proximity mines — focus it down.</dd>
           </div>
           <div>
             <canvas data-craft="courier" aria-hidden="true" width="88" height="88"></canvas>
             <dt>Supply Courier</dt>
-            <dd>Drops Weapon, Shield, or Nova cells when destroyed.</dd>
+            <dd>Drops Weapon, Shield, Overshield, or Nova cells plus bonus coins.</dd>
           </div>
         </dl>
       </dialog>

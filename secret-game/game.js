@@ -12,11 +12,13 @@ import {
   drawMine,
   drawPickup,
   drawInterceptor,
+  drawBankedShip,
 } from './art.js';
 import { createEnemy, spawnFormation, flyEnemy, waveLength, waveNames } from './encounters.js';
 import {
   advanceArmor,
   aliveBossParts,
+  hasActivePylons,
   createBoss,
   drawBoss,
   drawEntry,
@@ -38,6 +40,7 @@ const TAU = Math.PI * 2;
 const RIGS = {
   kestrel: {
     name: 'Kestrel',
+    hull: 3,
     shields: 3,
     speed: 355,
     focusSpeed: 152,
@@ -49,6 +52,7 @@ const RIGS = {
   },
   falcon: {
     name: 'Falcon',
+    hull: 3,
     shields: 2,
     speed: 420,
     focusSpeed: 176,
@@ -60,6 +64,7 @@ const RIGS = {
   },
   aegis: {
     name: 'Aegis',
+    hull: 4,
     shields: 4,
     speed: 305,
     focusSpeed: 138,
@@ -70,6 +75,76 @@ const RIGS = {
     accent: '#9be9ff',
   },
 };
+
+// Persistent Coin Bank & Fleet Upgrades
+const UPGRADE_DEFS = [
+  {
+    id: 'weapon',
+    name: 'Starting Firepower',
+    desc: 'Begin every run with a higher weapon tier (MK II → MK IV).',
+    costs: [80, 180, 340],
+  },
+  {
+    id: 'hull',
+    name: 'Reinforced Hull',
+    desc: '+1 permanent red Hull armor block per level across all ships.',
+    costs: [70, 150, 280],
+  },
+  {
+    id: 'shield',
+    name: 'Shield Capacitors',
+    desc: '+1 rechargeable Shield block per level across all ships.',
+    costs: [60, 140, 260],
+  },
+  {
+    id: 'thruster',
+    name: 'Thruster & Dash',
+    desc: '+9% cruise speed and -14% Phase Dash cooldown per level.',
+    costs: [50, 120, 230],
+  },
+  {
+    id: 'nova',
+    name: 'Nova & Magnet Core',
+    desc: '+20% starting Nova charge and +35% wider loot magnet per level.',
+    costs: [55, 130, 240],
+  },
+];
+
+let meta = {
+  coins: 0,
+  upgrades: { weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0 },
+};
+try {
+  const raw = JSON.parse(localStorage.getItem('low-orbit-meta') || 'null');
+  if (raw && typeof raw === 'object') {
+    meta.coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
+    for (const def of UPGRADE_DEFS) {
+      meta.upgrades[def.id] = Math.max(0, Math.min(def.costs.length, Math.floor(Number(raw.upgrades?.[def.id]) || 0)));
+    }
+  }
+} catch {}
+
+function saveMeta() {
+  try {
+    localStorage.setItem('low-orbit-meta', JSON.stringify(meta));
+  } catch {}
+}
+
+function getEffectiveRig(key = selectedRig) {
+  const base = RIGS[key] || RIGS.kestrel;
+  const u = meta.upgrades;
+  return {
+    ...base,
+    hull: base.hull + u.hull,
+    shields: base.shields + u.shield,
+    speed: Math.round(base.speed * (1 + u.thruster * 0.09)),
+    focusSpeed: Math.round(base.focusSpeed * (1 + u.thruster * 0.06)),
+    dashCd: +(base.dashCd * Math.pow(0.86, u.thruster)).toFixed(2),
+    startWeapon: 1 + u.weapon,
+    startNova: Math.min(100, 25 + u.nova * 20),
+    magnetScale: 1 + u.nova * 0.35,
+  };
+}
 
 let selectedRig = 'kestrel';
 try {
@@ -110,12 +185,20 @@ const panel = document.querySelector('#panel');
 const title = document.querySelector('#title');
 const message = document.querySelector('#message');
 const action = document.querySelector('#action');
+const hangarOpenBtn = document.querySelector('#hangar-open');
+const upgradeDot = document.querySelector('#upgrade-dot');
+const coinBankBtn = document.querySelector('#coin-bank-btn');
+const coinBankEl = document.querySelector('#coin-bank');
+const runCoinsHud = document.querySelector('#run-coins-hud');
 const restartMenu = document.querySelector('#restart-menu');
 const hud = document.querySelector('#hud');
 const scoreLabel = document.querySelector('#score');
 const bestLabel = document.querySelector('#best');
-const shield = document.querySelector('#shield');
+const vitalsEl = document.querySelector('#vitals');
 const shieldHud = document.querySelector('#shield-hud');
+const overshieldBadge = document.querySelector('#overshield-badge');
+const overshieldTimeEl = document.querySelector('#overshield-time');
+const hullCountEl = document.querySelector('#hull-count');
 const shieldCount = document.querySelector('#shield-count');
 const comboHud = document.querySelector('#combo-hud');
 const comboMultEl = document.querySelector('#combo-mult');
@@ -183,6 +266,7 @@ let popups = [];
 
 let boss = null;
 let nextBossRank = 1;
+let runSeed = 1;
 let nextBossAtSpawn = 12; // 2 full waves per sector before each flagship!
 let sectorIndex = 0;
 let warp = null; // { phase: 'collect'|'depart'|'tunnel'|'arrive', t, nextSector, switched }
@@ -192,8 +276,10 @@ let kills = 0;
 let grazes = 0;
 let score = 0;
 let displayScore = 0;
-let lives = 3;
-let maxLives = 3;
+let hull = 3;
+let maxHull = 3;
+let shields = 3;
+let maxShields = 3;
 let best = 0;
 let weaponLevel = 1;
 let autoFire = false;
@@ -202,6 +288,8 @@ let comboTimer = 0;
 let peakMultiplier = 1;
 let novaCharge = 0;
 let overdriveTime = 0;
+let overshieldTime = 0;
+let runCoins = 0;
 let missileTimer = 0;
 
 let distance = 0;
@@ -303,15 +391,13 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   if (angle) ctx.rotate(angle);
 
   const height = width;
-  // Chicken Invaders-style banking: nose stays locked straight up while wings foreshorten slightly on roll
-  ctx.scale(mode === 'intro' ? 1 : 1 - Math.abs(roll) * 0.24, 1);
 
-  // Thruster plume
+  // Thruster plume (tracks slight horizontal roll shift cleanly behind the tail)
   const tail = height * 0.42;
   const boost = opts.dashing ? 2.1 : opts.overdrive ? 1.45 : 1;
   const plume =
     height * (0.22 + 0.25 * thrust) * boost * (1 + 0.1 * Math.sin((introTime + time) * 34));
-  const sway = mode === 'intro' ? 0 : -roll * width * 0.16;
+  const sway = mode === 'intro' ? 0 : -roll * width * 0.14;
   const flame = ctx.createLinearGradient(0, tail, sway, tail + plume);
   flame.addColorStop(0, '#fff7d4');
   flame.addColorStop(0.3, opts.overdrive ? '#ffba73e0' : rig.accent + 'dc');
@@ -339,17 +425,20 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
 
   ctx.scale(width / 94, width / 94);
 
-  // Visual wing weapon pods for upgraded MK II+ tiers
-  if (opts.tier >= 2) {
-    ctx.fillStyle = PALETTE.ink;
-    ctx.fillRect(-35, 1, 7, 17);
-    ctx.fillRect(28, 1, 7, 17);
-    ctx.fillStyle = opts.tier >= 4 ? PALETTE.gold : rig.accent;
-    ctx.fillRect(-33.5, 3, 4, 12);
-    ctx.fillRect(29.5, 3, 4, 12);
+  if (mode === 'intro') {
+    if (opts.tier >= 2) {
+      ctx.fillStyle = PALETTE.ink;
+      ctx.fillRect(-35, 1, 7, 17);
+      ctx.fillRect(28, 1, 7, 17);
+      ctx.fillStyle = opts.tier >= 4 ? PALETTE.gold : rig.accent;
+      ctx.fillRect(-33.5, 3, 4, 12);
+      ctx.fillRect(29.5, 3, 4, 12);
+    }
+    drawInterceptor(ctx, variant);
+  } else {
+    // 2.5D Chicken Invaders-style longitudinal roll around the nose-to-tail axis!
+    drawBankedShip(ctx, variant, roll, opts.tier || 1, rig.accent);
   }
-
-  drawInterceptor(ctx, variant);
 
   // Muzzle flash
   if (opts.muzzle > 0) {
@@ -670,7 +759,7 @@ function draw() {
 
   // Player ship — nose always straight ahead like Chicken Invaders, subtle roll foreshortening
   const hideForTunnel = warp && warp.phase === 'tunnel';
-  if (lives > 0 && !hideForTunnel) {
+  if (hull > 0 && !hideForTunnel) {
     const rig = RIGS[selectedRig];
     for (const trail of player.trails) {
       if (trail.length < 2) continue;
@@ -714,12 +803,57 @@ function draw() {
 
     // Diegetic dash cooldown arc directly beneath ship when recharging
     if (player.dashCd > 0) {
-      const frac = 1 - player.dashCd / rig.dashCd;
+      const frac = 1 - player.dashCd / getEffectiveRig().dashCd;
       ctx.strokeStyle = 'rgba(121, 227, 213, 0.48)';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       ctx.arc(player.x, player.y, 24, Math.PI * 0.72, Math.PI * 0.72 + frac * Math.PI * 1.56);
       ctx.stroke();
+    }
+
+    // Indestructible Overshield hexagonal golden-prismatic barrier
+    if (overshieldTime > 0) {
+      const warnBlink = overshieldTime < 1.5 ? 0.55 + 0.45 * Math.sin(time * 24) : 1;
+      const frac = clamp(overshieldTime / 6.5, 0, 1);
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.globalAlpha = warnBlink;
+
+      ctx.globalCompositeOperation = 'lighter';
+      const field = ctx.createRadialGradient(0, 0, 10, 0, 0, 32);
+      field.addColorStop(0, 'rgba(255, 226, 128, 0.08)');
+      field.addColorStop(0.75, 'rgba(255, 212, 102, 0.24)');
+      field.addColorStop(1, 'rgba(182, 134, 255, 0)');
+      ctx.fillStyle = field;
+      ctx.beginPath();
+      ctx.arc(0, 0, 32, 0, TAU);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Rotating hexagonal forcefield
+      ctx.save();
+      ctx.rotate(time * 1.8);
+      ctx.strokeStyle = '#ffe58f';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = (i * TAU) / 6;
+        const rx = Math.cos(a) * 26;
+        const ry = Math.sin(a) * 26;
+        if (i === 0) ctx.moveTo(rx, ry);
+        else ctx.lineTo(rx, ry);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+
+      // Remaining duration outer progress ring
+      ctx.strokeStyle = '#c89eff';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.arc(0, 0, 30, -Math.PI / 2, -Math.PI / 2 + frac * TAU);
+      ctx.stroke();
+      ctx.restore();
     }
 
     // Focus hitbox core & graze ring
@@ -871,12 +1005,32 @@ function dropShards(x, y, count, nova = false) {
   }
 }
 
+function dropCoins(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const a = between(0, TAU);
+    const spd = between(35, 115);
+    pickups.push({
+      kind: 'coin',
+      x,
+      y,
+      vx: Math.cos(a) * spd,
+      vy: Math.sin(a) * spd - 24,
+      r: 5.5,
+      age: 0,
+      seed: Math.random() * TAU,
+      magnet: false,
+    });
+  }
+}
+
 function dropTacticalCell(x, y, forcedKind = null) {
   let kind = forcedKind;
   if (!kind) {
-    if (weaponLevel < 4) kind = 'weapon';
-    else if (lives < maxLives) kind = 'shield';
-    else kind = 'nova';
+    const roll = Math.random();
+    if (roll < 0.28) kind = 'overshield';
+    else if (weaponLevel < 4) kind = 'weapon';
+    else if (shields < maxShields) kind = 'shield';
+    else kind = roll < 0.65 ? 'overshield' : 'nova';
   }
   pickups.push({
     kind,
@@ -893,7 +1047,7 @@ function dropTacticalCell(x, y, forcedKind = null) {
 
 function triggerPhaseDash() {
   if (mode !== 'playing' || (warp && warp.phase !== 'collect') || player.dashCd > 0 || player.dashTime > 0) return;
-  const rig = RIGS[selectedRig];
+  const rig = getEffectiveRig();
   let dx =
     Number(keys.has('ArrowRight') || keys.has('KeyD')) -
     Number(keys.has('ArrowLeft') || keys.has('KeyA'));
@@ -982,7 +1136,7 @@ function triggerNovaPulse() {
 }
 
 function beginBoss() {
-  boss = createBoss(nextBossRank++, w);
+  boss = createBoss(nextBossRank++, w, runSeed);
   enemies = [boss, ...enemies.filter((e) => e.kind === 'rock')];
   for (const s of shots) if (s.hostile) s.dead = true;
   document.querySelector('#boss-name').textContent =
@@ -1020,6 +1174,7 @@ function damageBossPart(b, part, dmg) {
   part.dead = true;
   burst({ x: part.x, y: part.y, r: part.r * 1.4 }, '#ffbe78', true);
   dropShards(part.x, part.y, 6, true);
+  dropCoins(part.x, part.y, 4);
   addScore(180, part.x, part.y, true, PALETTE.gold);
   bumpCombo(3);
   addShake(9);
@@ -1053,8 +1208,7 @@ function damageBossPart(b, part, dmg) {
 }
 
 function damageBossCore(b, dmg) {
-  const live = aliveBossParts(b);
-  const armorScale = b.exposedFor > 0 ? 2 : b.design === 1 && live.length > 0 ? 0.65 : 1;
+  const armorScale = b.exposedFor > 0 ? 2 : hasActivePylons(b) ? 0.65 : 1;
   b.hp = Math.max(0, b.hp - dmg * armorScale);
   b.flash = 0.12;
   if (advanceArmor(b)) {
@@ -1091,8 +1245,9 @@ function finishBossCollapse(b) {
   burst({ x: b.x, y: b.y, r: b.r * 1.8 }, '#ffd28f', true);
   shockwaves.push({ x: b.x, y: b.y, radius: 280, color: '#ffe5a3', life: 0.6, maxLife: 0.6 });
   dropShards(b.x, b.y, 14, true);
-  dropTacticalCell(b.x - 24, b.y, weaponLevel < 4 ? 'weapon' : 'nova');
-  if (lives < maxLives) dropTacticalCell(b.x + 24, b.y, 'shield');
+  dropCoins(b.x, b.y, 14 + b.rank * 4);
+  dropTacticalCell(b.x - 26, b.y, weaponLevel < 4 ? 'weapon' : 'overshield');
+  if (shields < maxShields) dropTacticalCell(b.x + 26, b.y, 'shield');
   addScore(b.points, b.x, b.y, true, PALETTE.gold);
   kills++;
   bumpCombo(6);
@@ -1132,24 +1287,30 @@ function killEnemy(e) {
     addShake(2.2);
   }
   dropShards(e.x, e.y, e.shards || 2);
+  if (!isRock && e.kind !== 'mine') {
+    const coinCount =
+      e.kind === 'courier' ? 6 : ['gunship', 'prism', 'minelayer'].includes(e.kind) ? 3 : Math.random() < 0.55 ? 1 : 0;
+    if (coinCount > 0) dropCoins(e.x, e.y, coinCount);
+  }
 
-  // Supply courier always drops a tactical upgrade cell
+  // Supply courier always drops a tactical upgrade cell (including Overshield!)
   if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
-  } else if (heavy && Math.random() < 0.24) {
+  } else if (heavy && Math.random() < 0.28) {
     dropTacticalCell(e.x, e.y);
   }
 
-  // Large asteroids fracture into 2 fast rubble shards
+  // Large asteroids fracture into 2 (or 3 from Sector 3+) fast rubble shards
   if (isRock && e.split) {
-    for (const dir of [-1, 1]) {
+    const dirs = sectorIndex >= 2 ? [-1, 0, 1] : [-1, 1];
+    for (const dir of dirs) {
       const child = createEnemy('rock', e.x + dir * 10, e.y, currentWave, {
         r: Math.max(10, e.r * 0.54),
         hp: 1,
         maxHp: 1,
         split: false,
-        vx: dir * between(45, 95),
-        vy: between(95, 145),
+        vx: dir * between(48, 98),
+        vy: between(100, 155),
         points: 10,
         shards: 1,
       });
@@ -1159,23 +1320,41 @@ function killEnemy(e) {
   }
 }
 
-function renderShieldPips() {
-  shield.innerHTML = '';
-  for (let i = 0; i < maxLives; i++) {
+function renderVitals() {
+  vitalsEl.innerHTML = '';
+  // Red Hull health blocks (permanent, cannot be regenerated)
+  for (let i = 0; i < maxHull; i++) {
     const pip = document.createElement('i');
-    if (i >= lives) pip.classList.add('spent');
-    shield.append(pip);
+    pip.className = 'hull-pip' + (i >= hull ? ' spent' : '');
+    vitalsEl.append(pip);
   }
-  shield.setAttribute('aria-label', `${lives} of ${maxLives} shields`);
-  shield.classList.toggle('critical', lives === 1);
-  shieldCount.textContent = `${lives}/${maxLives}`;
-  shieldHud.classList.toggle('is-critical', lives === 1);
+  // Subtle tactical divider between Hull and Shield layers
+  const sep = document.createElement('span');
+  sep.className = 'vitals-sep';
+  sep.setAttribute('aria-hidden', 'true');
+  vitalsEl.append(sep);
+  // Cyan Shield blocks (absorb hits first, rechargeable with +S cells)
+  for (let i = 0; i < maxShields; i++) {
+    const pip = document.createElement('i');
+    pip.className = 'shield-pip' + (i >= shields ? ' spent' : '');
+    vitalsEl.append(pip);
+  }
+  const critical = shields === 0 && hull <= 1;
+  vitalsEl.setAttribute('aria-label', `${hull} of ${maxHull} hull, ${shields} of ${maxShields} shields`);
+  vitalsEl.classList.toggle('critical', critical);
+  hullCountEl.textContent = `${hull}/${maxHull}`;
+  shieldCount.textContent = `${shields}/${maxShields}`;
+  shieldHud.classList.toggle('is-critical', critical);
   shieldHud.classList.toggle('is-hit', hitFlash > 0.08);
+  shieldHud.classList.toggle('is-overshield', overshieldTime > 0);
+  overshieldBadge.hidden = overshieldTime <= 0;
+  if (overshieldTime > 0) overshieldTimeEl.textContent = `${overshieldTime.toFixed(1)}s`;
 }
 
 function updateHud() {
   scoreLabel.textContent = formatScore(displayScore);
-  renderShieldPips();
+  runCoinsHud.textContent = runCoins.toLocaleString();
+  renderVitals();
 
   // Combo indicator
   const mult = getMultiplier();
@@ -1239,11 +1418,13 @@ function setMode(next) {
     warp = null;
     sectorIndex = 0;
     hitFlash = 0;
+    overshieldTime = 0;
     bossHud.hidden = true;
     title.textContent = 'Low Orbit';
     message.hidden = false;
     document.querySelector('#debrief').hidden = true;
     document.querySelector('#action-text').textContent = 'Play';
+    syncMetaUi();
     action.focus({ preventScroll: true });
     startIntro();
   } else {
@@ -1255,17 +1436,19 @@ function setMode(next) {
     document.querySelector('#debrief').hidden = false;
     document.querySelector('#run-rank').textContent = computeRank();
     document.querySelector('#run-score').textContent = Math.floor(score).toLocaleString();
+    document.querySelector('#run-coins').textContent = '+' + runCoins.toLocaleString();
     document.querySelector('#run-wave').textContent = waveLabel.textContent;
     document.querySelector('#run-kills').textContent = kills;
     document.querySelector('#run-combo').textContent = `×${peakMultiplier.toFixed(1)}`;
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
+    syncMetaUi();
     action.focus({ preventScroll: true });
   }
   draw();
 }
 
 function launch() {
-  const rig = RIGS[selectedRig];
+  const rig = getEffectiveRig();
   time = 0;
   distance = 0;
   player.vx = player.vy = player.bank = 0;
@@ -1277,16 +1460,20 @@ function launch() {
   player.ghosts = [];
   score = 0;
   displayScore = 0;
+  runCoins = 0;
   kills = 0;
   grazes = 0;
   combo = 0;
   comboTimer = 0;
   peakMultiplier = 1;
-  novaCharge = 25;
+  novaCharge = rig.startNova;
   overdriveTime = 0;
-  weaponLevel = 1;
-  maxLives = rig.shields;
-  lives = rig.shields;
+  overshieldTime = 0;
+  weaponLevel = rig.startWeapon;
+  maxHull = rig.hull;
+  hull = rig.hull;
+  maxShields = rig.shields;
+  shields = rig.shields;
   immune = 1.1;
   currentWave = 1;
   spawnIn = 0.45;
@@ -1297,6 +1484,7 @@ function launch() {
   sound.setIntensity(0);
   boss = null;
   nextBossRank = 1;
+  runSeed = Math.floor(Math.random() * 99999) + 1;
   nextBossAtSpawn = 12;
   sectorIndex = 0;
   warp = null;
@@ -1324,22 +1512,58 @@ function launch() {
 }
 
 function hitPlayer() {
-  if (immune > 0 || player.dashTime > 0 || warp) return;
-  lives--;
-  hitFlash = 0.52;
+  if (immune > 0 || player.dashTime > 0 || overshieldTime > 0 || warp) return;
   combo = Math.floor(combo * 0.35);
-  if (weaponLevel > 1) weaponLevel--;
-  if (lives > 0) sound.effect('shield', lives);
   immune = 1.65;
-  addShake(15);
-  triggerHitstop(0.075);
-  burst(player, '#ff8f6b', true);
-  shockwaves.push({ x: player.x, y: player.y, radius: 135, color: '#ff8a66', life: 0.34, maxLife: 0.34 });
+
+  if (shields > 0) {
+    // Shield absorbs the impact first (keeps weapon tier intact!)
+    shields--;
+    hitFlash = 0.42;
+    sound.effect('shield', shields);
+    addShake(13);
+    triggerHitstop(0.065);
+    burst(player, '#8ef0e8', true);
+    shockwaves.push({ x: player.x, y: player.y, radius: 135, color: '#8ef0e8', life: 0.34, maxLife: 0.34 });
+    if (shields === 0) {
+      popups.push({
+        x: player.x,
+        y: player.y - 26,
+        text: 'SHIELD DOWN',
+        color: PALETTE.vermilion,
+        life: 0.95,
+        maxLife: 0.95,
+        size: 13,
+      });
+    }
+  } else {
+    // Direct Hull damage — permanent, heavier crunch, drops 1 weapon tier
+    hull--;
+    hitFlash = 0.62;
+    if (weaponLevel > 1) weaponLevel--;
+    if (hull > 0) sound.effect('hull', hull);
+    addShake(16);
+    triggerHitstop(0.08);
+    burst(player, '#ff5c4d', true);
+    shockwaves.push({ x: player.x, y: player.y, radius: 150, color: '#ff5c4d', life: 0.38, maxLife: 0.38 });
+    if (hull > 0) {
+      popups.push({
+        x: player.x,
+        y: player.y - 26,
+        text: 'HULL BREACH',
+        color: '#ff7d6b',
+        life: 0.95,
+        maxLife: 0.95,
+        size: 13,
+      });
+    }
+  }
+
   for (const s of shots) {
     if (s.hostile && Math.hypot(s.x - player.x, s.y - player.y) < 145) s.dead = true;
   }
   updateHud();
-  if (lives <= 0) {
+  if (hull <= 0) {
     if (score > best) {
       best = Math.floor(score);
       bestLabel.textContent = formatScore(best);
@@ -1486,6 +1710,9 @@ function update(dt) {
   if (overdriveTime > 0) {
     overdriveTime = Math.max(0, overdriveTime - dt);
   }
+  if (overshieldTime > 0) {
+    overshieldTime = Math.max(0, overshieldTime - dt);
+  }
   if (comboTimer > 0 && !warp) {
     comboTimer -= dt;
     if (comboTimer <= 0) combo = 0;
@@ -1571,7 +1798,7 @@ function update(dt) {
   }
 
   // Steering / Phase Dash (locked cleanly during depart/tunnel/arrive warp phases)
-  const rig = RIGS[selectedRig];
+  const rig = getEffectiveRig();
   const focused = preciseSteering();
   const controlsLocked = warp && warp.phase !== 'collect';
 
@@ -1614,7 +1841,9 @@ function update(dt) {
   }
 
   if (!controlsLocked) {
-    player.bank += (clamp(player.vx / rig.speed, -1, 1) * 0.36 - player.bank) * (1 - Math.exp(-dt * 12));
+    // Full [-1, 1] roll signal for crisp 2.5D Chicken Invaders banking around the center axis
+    const targetRoll = clamp(player.vx / (rig.speed * 0.85), -1, 1);
+    player.bank += (targetRoll - player.bank) * (1 - Math.exp(-dt * 14));
     distance +=
       dt *
       clamp(128 - player.vy * 0.16, 70, 210) *
@@ -1694,13 +1923,27 @@ function update(dt) {
           if (enemy.kind === 'rock') enemy.shape = outlineRock();
         }
         spawnCount++;
-        const cadence = 1 + 0.16 * Math.log2(wave);
-        spawnIn += (beat === 5 ? waveLength / 6 + 1.2 : waveLength / 6 - 0.15) / cadence;
+        const cadence = 1 + Math.min(1.15, (wave - 1) * 0.14);
+        spawnIn += (beat === 5 ? waveLength / 6 + 1.05 : waveLength / 6 - 0.18) / cadence;
       }
     }
   }
 
-  // Update enemies & boss chain death
+  // Subtle hull smoke when shields are down and hull is damaged
+  if (shields === 0 && hull < maxHull && !controlsLocked && Math.random() < dt * 11) {
+    smoke.push({
+      x: player.x + between(-7, 7),
+      y: player.y + between(2, 10),
+      vx: between(-18, 18),
+      vy: between(25, 65),
+      r: between(2.5, 5.5),
+      color: hull === 1 ? '#ff7d6b' : '#7b8796',
+      life: 0.4,
+      maxLife: 0.4,
+    });
+  }
+
+  // Active thermal beam collision check (Prism & Vesper)
   for (const enemy of enemies) {
     if (enemy === boss) {
       if (boss.dying > 0) {
@@ -1745,12 +1988,16 @@ function update(dt) {
       });
     }
 
-    // Active thermal beam collision check (Prism & Vesper)
+    // Active thermal beam collision check (Prism single beam & Boss single/twin scissor beams!)
     if (!enemy.dead && enemy.beamActive > 0) {
       const halfWidth = enemy === boss ? 14 : 10;
-      if (pointHitsBeam(player.x, player.y, enemy.x, enemy.y, enemy.beamAngle || 0, halfWidth + player.r)) {
-        hitPlayer();
-        if (lives <= 0) return;
+      const offsets = enemy === boss && enemy.twinBeam ? [-0.26, 0.26] : [0];
+      for (const off of offsets) {
+        if (pointHitsBeam(player.x, player.y, enemy.x, enemy.y, (enemy.beamAngle || 0) + off, halfWidth + player.r)) {
+          hitPlayer();
+          if (hull <= 0) return;
+          break;
+        }
       }
     }
   }
@@ -1812,11 +2059,25 @@ function update(dt) {
     s.y += s.vy * dt;
 
     if (s.hostile) {
+      // Indestructible Overshield vaporizes bullets on contact!
+      if (overshieldTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 30 + s.r) {
+        s.dead = true;
+        addScore(10);
+        sparks.push({
+          x: s.x,
+          y: s.y,
+          vx: (s.x - player.x) * 4,
+          vy: (s.y - player.y) * 4,
+          life: 0.2,
+          color: '#ffe58f',
+        });
+        continue;
+      }
       if (collides(s, player)) {
         if (player.dashTime <= 0) {
           s.dead = true;
           hitPlayer();
-          if (lives <= 0) return;
+          if (hull <= 0) return;
         }
       } else if (!s.grazed && (immune <= 0 || player.dashTime > 0)) {
         const dx = s.x - player.x;
@@ -1874,31 +2135,43 @@ function update(dt) {
     }
   }
 
-  // Enemy hull collision with player
+  // Enemy hull collision with player (Overshield rams enemies for heavy damage!)
   for (const e of enemies) {
     if (e.dead || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
-    if (collides(player, e) && player.dashTime <= 0) {
+    const hitDist = overshieldTime > 0 ? 28 + e.r : player.r + e.r;
+    if (Math.hypot(player.x - e.x, player.y - e.y) < hitDist && player.dashTime <= 0) {
+      if (overshieldTime > 0) {
+        if (e === boss) {
+          damageBossCore(e, 4);
+        } else {
+          e.hp -= 10;
+          e.flash = 0.16;
+          if (e.hp <= 0) killEnemy(e);
+        }
+        addShake(5);
+        continue;
+      }
       if (e !== boss) {
         e.hp = 0;
         killEnemy(e);
       }
       hitPlayer();
-      if (lives <= 0) return;
+      if (hull <= 0) return;
     }
   }
 
-  // Salvage & Pickup physics + smart magnet vacuum
+  // Salvage, Coin & Pickup physics + smart magnet vacuum
   const magnetRadius =
-    overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 220 : 115;
+    (overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 225 : 120) * rig.magnetScale;
   for (const p of pickups) {
     p.age += dt;
     const dx = player.x - p.x;
     const dy = player.y - p.y;
     const dist = Math.hypot(dx, dy);
 
-    if (p.kind === 'shard' && (p.magnet || dist < magnetRadius)) {
+    if ((p.kind === 'shard' || p.kind === 'coin') && (p.magnet || dist < magnetRadius)) {
       p.magnet = true;
-      const pull = Math.min(720, 320 + p.age * 420);
+      const pull = Math.min(760, 340 + p.age * 440);
       p.vx += ((dx / (dist || 1)) * pull - p.vx) * (1 - Math.exp(-dt * 12));
       p.vy += ((dy / (dist || 1)) * pull - p.vy) * (1 - Math.exp(-dt * 12));
     } else {
@@ -1908,13 +2181,32 @@ function update(dt) {
     p.x += p.vx * dt;
     p.y += p.vy * dt;
 
-    if (dist < p.r + 18) {
+    if (dist < p.r + 20) {
       p.dead = true;
       if (p.kind === 'shard') {
         bumpCombo(1);
         novaCharge = Math.min(100, novaCharge + (p.nova ? 3.0 : 2.2));
         addScore(p.nova ? 20 : 12);
         sound.effect('shard', Math.min(10, Math.floor(combo / 2)));
+      } else if (p.kind === 'coin') {
+        const value = 2 + sectorIndex;
+        runCoins += value;
+        meta.coins += value;
+        saveMeta();
+        sound.effect('coin');
+      } else if (p.kind === 'overshield') {
+        overshieldTime = 6.5;
+        shockwaves.push({ x: player.x, y: player.y, radius: 130, color: '#ffe58f', life: 0.36, maxLife: 0.36 });
+        popups.push({
+          x: player.x,
+          y: player.y - 26,
+          text: 'OVERSHIELD 6.5s',
+          color: '#ffe58f',
+          life: 1.1,
+          maxLife: 1.1,
+          size: 14,
+        });
+        sound.effect('overshield');
       } else if (p.kind === 'weapon') {
         if (weaponLevel < 4) {
           weaponLevel++;
@@ -1933,8 +2225,9 @@ function update(dt) {
         }
         sound.effect('upgrade');
       } else if (p.kind === 'shield') {
-        if (lives < maxLives) {
-          lives++;
+        // Only Shields regenerate; red Hull health is permanent!
+        if (shields < maxShields) {
+          shields++;
           popups.push({
             x: player.x,
             y: player.y - 24,
@@ -2100,7 +2393,7 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (manual.open) return;
+  if (manual.open || hangar.open) return;
   if (e.target.closest?.('input, summary, button, a') && !['Escape', 'KeyP'].includes(e.code)) return;
 
   if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused')) {
@@ -2195,8 +2488,13 @@ reducedMotion.addEventListener('change', () => {
 
 connectFlightPassage(document.querySelector('.back'));
 
-// --- FIELD GUIDE DIALOG (with closedby + top-layer exit fallbacks) ---
+// --- MODAL DIALOGS (Field Guide + Hangar Upgrades with closedby & top-layer exit fallbacks) ---
 const manual = document.querySelector('#manual');
+const hangar = document.querySelector('#hangar');
+const hangarCoinsEl = document.querySelector('#hangar-coins');
+const upgradeListEl = document.querySelector('#upgrade-list');
+const refundBtn = document.querySelector('#refund-upgrades');
+
 let supportsDisplayTransition;
 function canTransitionDisplay() {
   if (supportsDisplayTransition !== undefined) return supportsDisplayTransition;
@@ -2231,30 +2529,145 @@ async function closeTopLayer(element) {
   element.close();
 }
 
-document.querySelector('#guide-open').addEventListener('click', () => manual.showModal());
-manual.addEventListener('cancel', (event) => {
-  event.preventDefault();
-  closeTopLayer(manual);
-});
-manual.querySelector('form').addEventListener('submit', (event) => {
-  if (!supportsTopLayerExit()) {
+function wireModal(dialog) {
+  dialog.addEventListener('cancel', (event) => {
     event.preventDefault();
-    closeTopLayer(manual);
+    closeTopLayer(dialog);
+  });
+  dialog.querySelector('form')?.addEventListener('submit', (event) => {
+    if (!supportsTopLayerExit()) {
+      event.preventDefault();
+      closeTopLayer(dialog);
+    }
+  });
+  if (!('closedBy' in HTMLDialogElement.prototype)) {
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      const isContent =
+        rect.top <= event.clientY &&
+        event.clientY <= rect.top + rect.height &&
+        rect.left <= event.clientX &&
+        event.clientX <= rect.left + rect.width;
+      if (!isContent) closeTopLayer(dialog);
+    });
   }
-});
-// Fallback for browsers without <dialog closedby="any"> support (Safari)
-if (!('closedBy' in HTMLDialogElement.prototype)) {
-  manual.addEventListener('click', (event) => {
-    if (event.target !== manual) return;
-    const rect = manual.getBoundingClientRect();
-    const isContent =
-      rect.top <= event.clientY &&
-      event.clientY <= rect.top + rect.height &&
-      rect.left <= event.clientX &&
-      event.clientX <= rect.left + rect.width;
-    if (!isContent) closeTopLayer(manual);
+}
+wireModal(manual);
+wireModal(hangar);
+
+function renderRigPips() {
+  for (const container of document.querySelectorAll('[data-pips]')) {
+    const key = container.dataset.pips;
+    const eff = getEffectiveRig(key);
+    container.innerHTML = '';
+    for (let i = 0; i < eff.hull; i++) {
+      const pip = document.createElement('i');
+      pip.className = 'hp';
+      container.append(pip);
+    }
+    const sep = document.createElement('em');
+    sep.setAttribute('aria-hidden', 'true');
+    container.append(sep);
+    for (let i = 0; i < eff.shields; i++) {
+      const pip = document.createElement('i');
+      pip.className = 'sp';
+      container.append(pip);
+    }
+    container.setAttribute('aria-label', `${eff.hull} hull, ${eff.shields} shields`);
+  }
+}
+
+function canAffordAnyUpgrade() {
+  return UPGRADE_DEFS.some((def) => {
+    const lvl = meta.upgrades[def.id] || 0;
+    return lvl < def.costs.length && meta.coins >= def.costs[lvl];
   });
 }
+
+function renderUpgrades() {
+  hangarCoinsEl.textContent = meta.coins.toLocaleString();
+  upgradeListEl.innerHTML = '';
+  let totalSpent = 0;
+
+  for (const def of UPGRADE_DEFS) {
+    const lvl = meta.upgrades[def.id] || 0;
+    for (let i = 0; i < lvl; i++) totalSpent += def.costs[i];
+    const maxed = lvl >= def.costs.length;
+    const cost = maxed ? 0 : def.costs[lvl];
+    const affordable = !maxed && meta.coins >= cost;
+
+    const row = document.createElement('div');
+    row.className = 'upgrade-row';
+
+    const info = document.createElement('div');
+    info.className = 'upgrade-info';
+    info.innerHTML = `<strong>${def.name}</strong><p>${def.desc}</p>`;
+
+    const pips = document.createElement('div');
+    pips.className = 'upgrade-pips';
+    for (let i = 0; i < def.costs.length; i++) {
+      const pip = document.createElement('i');
+      if (i < lvl) pip.classList.add('filled');
+      pips.append(pip);
+    }
+    info.append(pips);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'buy-btn' + (maxed ? ' maxed' : '');
+    btn.disabled = maxed || !affordable;
+    btn.innerHTML = maxed ? 'MAXED' : `<i class="coin-dot" aria-hidden="true"></i>${cost}`;
+    if (!maxed) {
+      btn.addEventListener('click', () => {
+        if (meta.coins < cost) return;
+        meta.coins -= cost;
+        meta.upgrades[def.id] = lvl + 1;
+        saveMeta();
+        sound.uiBuy();
+        syncMetaUi();
+        renderUpgrades();
+      });
+    }
+
+    row.append(info, btn);
+    upgradeListEl.append(row);
+  }
+  refundBtn.disabled = totalSpent === 0;
+}
+
+function syncMetaUi() {
+  coinBankEl.textContent = meta.coins.toLocaleString();
+  upgradeDot.hidden = !canAffordAnyUpgrade();
+  renderRigPips();
+}
+
+function openHangar() {
+  renderUpgrades();
+  hangar.showModal();
+}
+
+refundBtn.addEventListener('click', () => {
+  let refund = 0;
+  for (const def of UPGRADE_DEFS) {
+    const lvl = meta.upgrades[def.id] || 0;
+    for (let i = 0; i < lvl; i++) refund += def.costs[i];
+    meta.upgrades[def.id] = 0;
+  }
+  if (!refund) return;
+  meta.coins += refund;
+  saveMeta();
+  sound.uiBuy();
+  syncMetaUi();
+  renderUpgrades();
+});
+
+document.querySelector('#guide-open').addEventListener('click', () => manual.showModal());
+hangarOpenBtn.addEventListener('click', openHangar);
+coinBankBtn.addEventListener('click', () => {
+  if (mode !== 'playing') openHangar();
+});
+syncMetaUi();
 
 for (const preview of manual.querySelectorAll('[data-craft]')) {
   drawFoe(preview.getContext('2d'), { kind: preview.dataset.craft, x: 44, y: 44, r: 30, fireIn: 2, age: 0 });
