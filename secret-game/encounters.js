@@ -23,12 +23,12 @@ export const waveNames = [
   'DEEP VOID GAUNTLET',
 ];
 
-// Clean, readable choreographed encounters (never overlapping random soup)
+// Clean, readable choreographed encounters (including Laser-Tethered Link Gates!)
 const phrases = [
-  ['echelon', 'crossWeave', 'rocks', 'sniperRun', 'courier', 'anchorBattery'],
-  ['crossWeave', 'prismCorridor', 'mineSweep', 'sniperRun', 'courier', 'anchorBattery'],
-  ['echelon', 'prismCorridor', 'mineSweep', 'pincerStrike', 'courier', 'shieldWall'],
-  ['pincerStrike', 'prismCorridor', 'mineSweep', 'sniperRun', 'courier', 'shieldWall'],
+  ['echelon', 'laserLink', 'rocks', 'sniperRun', 'courier', 'anchorBattery'],
+  ['crossWeave', 'laserLink', 'mineSweep', 'prismCorridor', 'courier', 'anchorBattery'],
+  ['laserLink', 'prismCorridor', 'mineSweep', 'pincerStrike', 'courier', 'shieldWall'],
+  ['pincerStrike', 'laserLink', 'mineSweep', 'sniperRun', 'courier', 'shieldWall'],
 ];
 
 export const waveLength = 15.5;
@@ -139,18 +139,49 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
     const r = extra.r ?? { rock: 22, raider: 16, kite: 14, lancer: 15, gunship: 24, prism: 18, minelayer: 22, courier: 20 }[type] ?? 16;
     const x = Math.max(r + 12, Math.min(w - r - 12, lane * w));
     const y = -r - 10 - delay * 95;
-    enemies.push(
-      createEnemy(type, x, y, wave, {
-        dir,
-        overclock,
-        sectorIndex,
-        molten: type === 'rock' && sectorIndex % 4 === 1,
-        ...extra,
-      }),
-    );
+    const foe = createEnemy(type, x, y, wave, {
+      dir,
+      overclock,
+      sectorIndex,
+      molten: type === 'rock' && sectorIndex % 4 === 1,
+      ...extra,
+    });
+    enemies.push(foe);
+    return foe;
   }
 
-  if (kind === 'echelon') {
+  if (kind === 'laserLink') {
+    // Synchronized laser-tethered drone gate! Shoot either anchor node to snap the live plasma beam!
+    const span = Math.min(0.32, Math.max(0.22, 230 / Math.max(360, w)));
+    const mid = Math.max(0.26, Math.min(0.74, center));
+    const leftNode = add('prism', Math.max(0.12, mid - span * 0.55), 0, side, {
+      tethered: true,
+      tetherWarmup: 1.05,
+      cruise: 70,
+      fireIn: 99,
+    });
+    const rightNode = add('prism', Math.min(0.88, mid + span * 0.55), 0, side, {
+      tethered: true,
+      tetherWarmup: 1.05,
+      cruise: 70,
+      fireIn: 99,
+    });
+    leftNode.linkPartner = rightNode;
+    rightNode.linkedBy = leftNode;
+    // On Wave 5+, add a third linked node forming an angled dual-beam chevron!
+    if (wave >= 5) {
+      const topNode = add('raider', mid, 0.42, side, {
+        tethered: true,
+        tetherWarmup: 1.15,
+        cruise: 70,
+        fireIn: 2.0,
+      });
+      rightNode.linkPartner = topNode;
+      topNode.linkedBy = rightNode;
+    } else {
+      add('raider', mid > 0.5 ? 0.2 : 0.8, 0.55, -side, { fireIn: 1.6 });
+    }
+  } else if (kind === 'echelon') {
     // Synchronized V-chevron with staggered firing cadence so shots arrive in a readable rhythm
     add('raider', center, 0, side, { fireIn: 1.15 });
     add('raider', center - 0.14, 0.35, 1, { fireIn: 1.55 });
@@ -212,6 +243,17 @@ export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0
   e.age += dt;
   e.flash = Math.max(0, e.flash - dt);
   const wv = e.wave || 1;
+
+  if (e.tethered) {
+    // Laser-linked tether anchor drones descend in tight formation with gentle synchronized sway
+    if (e.y > 0 && e.tetherWarmup > 0) e.tetherWarmup = Math.max(0, e.tetherWarmup - dt);
+    e.vx = e.dir * Math.sin(e.age * 1.15) * Math.min(62, w * 0.1);
+    e.vy = e.cruise;
+    e.x = Math.max(e.r + 12, Math.min(w - e.r - 12, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, 220) * 0.3;
+    return;
+  }
 
   if (e.kind === 'mine') {
     e.y += e.vy * dt;

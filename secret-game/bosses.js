@@ -472,7 +472,13 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
 
   if (b.beamActive > 0) {
     b.beamActive = Math.max(0, b.beamActive - dt);
-    b.beamAngle += (b.beamSweep || 0) * dt;
+    if (b.twinBeam) {
+      // Counter-rotating twin scissor beams opening/closing all the way to horizontal!
+      b.beamSpread = Math.max(0.14, Math.min(Math.PI * 0.48, (b.beamSpread || 0.35) + (b.beamSweep || 0) * dt));
+    } else {
+      // Full horizontal-to-horizontal sweeping laser (-86 deg to +86 deg!)
+      b.beamAngle = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, (b.beamAngle || 0) + (b.beamSweep || 0) * dt));
+    }
     b.x += (goalX - b.x) * (1 - Math.exp(-dt * 0.85));
     syncBossParts(b);
     return;
@@ -482,7 +488,7 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     b.x += (goalX - b.x) * (1 - Math.exp(-dt * 1.2));
     syncBossParts(b);
     if (b.beamWarn <= 0) {
-      b.beamActive = 0.95;
+      b.beamActive = b.twinBeam ? 1.55 : 1.75;
       sound.effect('beam');
     }
     return;
@@ -533,11 +539,21 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
       return;
     }
     if (spec === 'beam') {
-      b.twinBeam = b.phase === 3 && b.rank >= 3;
-      b.beamAngle = Math.max(-0.34, Math.min(0.34, b.aim)) - (b.volley % 2 ? 0.28 : -0.28);
-      b.beamSweep = (b.volley % 2 ? 0.52 : -0.52);
-      b.beamWarn = 0.95;
-      b.fireIn = 1.65;
+      b.twinBeam = b.phase >= 2 && (b.rank >= 2 || b.volley % 2 === 0);
+      if (b.twinBeam) {
+        // Twin scissor beams: either sweep inward from full horizontal flanks or outward to horizontal!
+        const inward = b.volley % 2 === 0;
+        b.beamAngle = 0;
+        b.beamSpread = inward ? Math.PI * 0.47 : 0.24;
+        b.beamSweep = inward ? -0.78 : 0.78;
+      } else {
+        // Dramatic single full-horizon sweep (-84 deg -> +84 deg or reverse!)
+        const leftToRight = b.volley % 2 === 0;
+        b.beamAngle = leftToRight ? -Math.PI * 0.47 : Math.PI * 0.47;
+        b.beamSweep = leftToRight ? 1.62 : -1.62;
+      }
+      b.beamWarn = 1.05;
+      b.fireIn = 1.85;
       return;
     }
     if (spec === 'minefield') {
@@ -949,32 +965,60 @@ export function drawBoss(ctx, b, w, h) {
     ctx.restore();
   }
 
-  // Sweeping thermal beams
+  // Full-horizon sweeping thermal beams (reach all the way past horizontal viewport corners!)
   if (b.beamWarn > 0 || b.beamActive > 0) {
-    const offsets = b.twinBeam ? [-0.26, 0.26] : [0];
-    for (const off of offsets) {
+    const beamLen = Math.hypot(w, h) + 140;
+    const angles = b.twinBeam
+      ? [-(b.beamSpread || 0.35), b.beamSpread || 0.35]
+      : [b.beamAngle || 0];
+    for (const ang of angles) {
       ctx.save();
-      ctx.rotate((b.beamAngle || 0) + off);
+      ctx.rotate(ang);
       if (b.beamActive > 0) {
-        const pulse = 0.82 + 0.18 * Math.sin(b.age * 48);
+        const pulse = 0.84 + 0.16 * Math.sin(b.age * 48);
         ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = 'rgba(220, 146, 255, 0.25)';
-        ctx.fillRect(-18 * pulse, 18, 36 * pulse, 820);
-        ctx.fillStyle = 'rgba(246, 210, 255, 0.74)';
-        ctx.fillRect(-7 * pulse, 18, 14 * pulse, 820);
+        ctx.fillStyle = 'rgba(220, 146, 255, 0.26)';
+        ctx.fillRect(-19 * pulse, 18, 38 * pulse, beamLen);
+        ctx.fillStyle = 'rgba(246, 210, 255, 0.76)';
+        ctx.fillRect(-7.5 * pulse, 18, 15 * pulse, beamLen);
         ctx.fillStyle = '#fff9f2';
-        ctx.fillRect(-2.5, 18, 5, 820);
+        ctx.fillRect(-2.6, 18, 5.2, beamLen);
         ctx.globalCompositeOperation = 'source-over';
       } else {
-        const p = 1 - b.beamWarn / 0.9;
-        ctx.strokeStyle = `rgba(232, 180, 255, ${0.28 + p * 0.65})`;
-        ctx.lineWidth = 1 + p * 2.6;
-        ctx.setLineDash([8, 8]);
+        const p = 1 - b.beamWarn / 1.05;
+        ctx.strokeStyle = `rgba(232, 180, 255, ${0.3 + p * 0.65})`;
+        ctx.lineWidth = 1.2 + p * 2.6;
+        ctx.setLineDash([10, 8]);
         ctx.beginPath();
         ctx.moveTo(0, 18);
-        ctx.lineTo(0, 820);
+        ctx.lineTo(0, beamLen);
         ctx.stroke();
         ctx.setLineDash([]);
+      }
+      ctx.restore();
+    }
+    // Curved sweep-direction telegraph arc so player clearly reads horizontal sweep direction!
+    if (b.beamWarn > 0) {
+      const p = 1 - b.beamWarn / 1.05;
+      ctx.save();
+      ctx.strokeStyle = `rgba(255, 210, 140, ${0.3 + p * 0.55})`;
+      ctx.lineWidth = 2;
+      if (b.twinBeam) {
+        const sp = b.beamSpread || 0.35;
+        const dir = Math.sign(b.beamSweep || 1);
+        for (const s of [-1, 1]) {
+          const a0 = Math.PI / 2 - s * sp;
+          const a1 = a0 - s * dir * 0.42;
+          ctx.beginPath();
+          ctx.arc(0, 0, b.r + 24, Math.min(a0, a1), Math.max(a0, a1));
+          ctx.stroke();
+        }
+      } else {
+        const a0 = Math.PI / 2 - (b.beamAngle || 0);
+        const a1 = a0 - Math.sign(b.beamSweep || 1) * 0.55;
+        ctx.beginPath();
+        ctx.arc(0, 0, b.r + 26, Math.min(a0, a1), Math.max(a0, a1));
+        ctx.stroke();
       }
       ctx.restore();
     }

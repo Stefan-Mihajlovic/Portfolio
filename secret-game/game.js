@@ -311,6 +311,10 @@ const bossArmor = document.querySelector('#boss-armor');
 const bossPartsEl = document.querySelector('#boss-parts');
 const weaponTierEl = document.querySelector('#weapon-tier');
 const fireModeEl = document.querySelector('#fire-mode');
+const heatLabelEl = document.querySelector('#heat-label');
+const heatBlockEl = document.querySelector('#heat-block');
+const heatFillEl = document.querySelector('#heat-fill');
+const heatPctEl = document.querySelector('#heat-pct');
 const focusChip = document.querySelector('#focus-chip');
 const autofireBtn = document.querySelector('#autofire');
 const novaBlock = document.querySelector('#nova-block');
@@ -405,6 +409,9 @@ let ionWind = 0;
 let meteorTimer = 4.5;
 let runCoins = 0;
 let missileTimer = 0;
+let weaponHeat = 0;
+let weaponOverheated = false;
+let heatCoolDelay = 0;
 
 let distance = 0;
 let introTime = 0;
@@ -765,6 +772,67 @@ function draw() {
   // Salvage & tactical pickups
   for (const p of pickups) drawPickup(ctx, p);
 
+  // Laser-tethered enemy plasma links (connecting synchronized gate drones!)
+  for (const e of enemies) {
+    const p = e.linkPartner;
+    if (!p || e.dead || p.dead || e.y < -12 || p.y < -12) continue;
+    const armed = (e.tetherWarmup || 0) <= 0;
+    ctx.save();
+    if (!armed) {
+      const prog = 1 - clamp((e.tetherWarmup || 0) / 1.05, 0, 1);
+      ctx.strokeStyle = `rgba(255, 130, 175, ${0.25 + prog * 0.55})`;
+      ctx.lineWidth = 1.2 + prog * 1.8;
+      ctx.setLineDash([7, 7]);
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      const pulse = 0.8 + 0.2 * Math.sin(time * 42);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = 'rgba(255, 76, 138, 0.34)';
+      ctx.lineWidth = 14 * pulse;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 140, 195, 0.85)';
+      ctx.lineWidth = 5 * pulse;
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+
+      // Crackling electric filament along the tether
+      ctx.strokeStyle = '#fff5fa';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      const segs = 7;
+      for (let i = 1; i < segs; i++) {
+        const t = i / segs;
+        const jx = (Math.sin(time * 38 + i * 2.7) * 4.5);
+        const jy = (Math.cos(time * 34 + i * 3.1) * 4.5);
+        ctx.lineTo(e.x + (p.x - e.x) * t + jx, e.y + (p.y - e.y) * t + jy);
+      }
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+
+      // Emitter rings on both nodes
+      ctx.strokeStyle = '#ff99be';
+      ctx.lineWidth = 1.6;
+      for (const node of [e, p]) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r * 0.55, 0, TAU);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
   // Lancer afterimages + all enemies
   for (const enemy of enemies) {
     if (enemy.trail?.length) {
@@ -972,6 +1040,20 @@ function draw() {
       ctx.beginPath();
       ctx.arc(player.x, player.y, 24, Math.PI * 0.72, Math.PI * 0.72 + frac * Math.PI * 1.56);
       ctx.stroke();
+    }
+
+    // Diegetic weapon thermal gauge arc directly around ship when running hot or overheated!
+    if (weaponOverheated || weaponHeat >= 62) {
+      const hFrac = clamp(weaponHeat / 100, 0, 1);
+      const blink = weaponOverheated ? 0.55 + 0.45 * Math.sin(time * 22) : 0.85;
+      ctx.save();
+      ctx.globalAlpha = blink;
+      ctx.strokeStyle = weaponOverheated ? '#ff4642' : weaponHeat >= 84 ? '#ff7d47' : '#ffbe78';
+      ctx.lineWidth = weaponOverheated ? 2.6 : 2.0;
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 28, -Math.PI * 0.84, -Math.PI * 0.84 + hFrac * Math.PI * 0.68);
+      ctx.stroke();
+      ctx.restore();
     }
 
     // Indestructible Overshield hexagonal golden-prismatic barrier
@@ -1595,6 +1677,24 @@ function killEnemy(e) {
     if (coinCount > 0) dropCoins(e.x, e.y, coinCount);
   }
 
+  if (e.linkPartner && !e.linkPartner.dead) {
+    const p = e.linkPartner;
+    const mx = (e.x + p.x) * 0.5;
+    const my = (e.y + p.y) * 0.5;
+    burst({ x: mx, y: my, r: 16 }, '#ff7aa8', false);
+    addScore(110, mx, my, true, '#ff9cc0');
+    popups.push({ x: mx, y: my - 18, text: 'LINK SEVERED', color: '#ff9cc0', life: 0.9, maxLife: 0.9, size: 12 });
+    e.linkPartner = null;
+  }
+  if (e.linkedBy && !e.linkedBy.dead) {
+    const p = e.linkedBy;
+    const mx = (e.x + p.x) * 0.5;
+    const my = (e.y + p.y) * 0.5;
+    burst({ x: mx, y: my, r: 16 }, '#ff7aa8', false);
+    addScore(110, mx, my, true, '#ff9cc0');
+    p.linkPartner = null;
+  }
+
   // Supply courier always drops a tactical upgrade cell (including Overshield!)
   if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
@@ -1667,15 +1767,23 @@ function updateHud() {
     comboHud.style.setProperty('--combo-life', `${Math.max(0, (comboTimer / 4.2) * 100)}%`);
   }
 
-  // Weapon & mode dock (supports MK I through MK VII!)
+  // Weapon & mode dock (supports MK I through MK VII + Chicken Invaders thermal gauge!)
   const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][clamp(weaponLevel - 1, 0, 6)];
   weaponTierEl.textContent = `MK ${roman}`;
   const focused = preciseSteering();
-  fireModeEl.textContent = overdriveTime > 0 ? 'OVERDRIVE' : focused ? 'LANCE' : 'WIDE';
-  fireModeEl.classList.toggle('focus-on', focused && overdriveTime <= 0);
-  fireModeEl.classList.toggle('overdrive-on', overdriveTime > 0);
+  fireModeEl.textContent = weaponOverheated ? 'LOCKED' : overdriveTime > 0 ? 'OVERDRIVE' : focused ? 'LANCE' : 'WIDE';
+  fireModeEl.classList.toggle('focus-on', focused && overdriveTime <= 0 && !weaponOverheated);
+  fireModeEl.classList.toggle('overdrive-on', overdriveTime > 0 && !weaponOverheated);
   focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
+
+  const heatState = weaponOverheated ? 'overheat' : weaponHeat >= 70 ? 'warm' : 'cool';
+  heatBlockEl.dataset.state = heatState;
+  heatFillEl.style.width = `${clamp(weaponHeat, 0, 100).toFixed(1)}%`;
+  heatPctEl.textContent = `${Math.round(weaponHeat)}%`;
+  heatLabelEl.textContent = weaponOverheated ? 'OVERHEAT' : overdriveTime > 0 ? 'NO HEAT' : 'HEAT';
+  heatLabelEl.classList.toggle('is-overheat', weaponOverheated);
+  heatLabelEl.classList.toggle('is-warm', !weaponOverheated && weaponHeat >= 70);
 
   // Nova / Overdrive dock
   const pct = overdriveTime > 0 ? Math.min(100, (overdriveTime / 4.8) * 100) : Math.min(100, novaCharge);
@@ -1818,6 +1926,9 @@ function launch() {
   sound.rewind();
   nextShot = 0;
   missileTimer = 0;
+  weaponHeat = 0;
+  weaponOverheated = false;
+  heatCoolDelay = 0;
   hitstop = 0;
   shake = 0;
   player.x = w / 2;
@@ -2008,9 +2119,47 @@ function firePlayerWeapons(focused) {
   player.recoil = 2.4;
   sound.effect(focused ? 'focusFire' : 'fire');
   nextShot = rig.fireRate * (od ? 0.74 : 1);
+
+  // Chicken Invaders Weapon Heat accumulation (Overdrive fires heat-free!)
+  if (!od) {
+    const baseHeat = selectedRig === 'aegis' ? 3.2 : selectedRig === 'falcon' ? 2.25 : 2.6;
+    const tierHeat = (weaponLevel - 1) * (selectedRig === 'aegis' ? 0.26 : selectedRig === 'falcon' ? 0.19 : 0.22);
+    const touchEase = pointer?.isTouch ? 0.85 : 1;
+    weaponHeat = Math.min(100, weaponHeat + (baseHeat + tierHeat) * touchEase);
+    heatCoolDelay = 0.12;
+
+    if (weaponHeat >= 100) {
+      weaponOverheated = true;
+      sound.effect('overheat');
+      addShake(5);
+      popups.push({
+        x: player.x,
+        y: player.y - 26,
+        text: 'OVERHEATED!',
+        color: '#ff6e62',
+        life: 1.05,
+        maxLife: 1.05,
+        size: 13,
+      });
+      for (let i = 0; i < 8; i++) {
+        smoke.push({
+          x: player.x + between(-14, 14),
+          y: player.y - 8,
+          vx: between(-45, 45),
+          vy: between(-65, -15),
+          r: between(4, 9),
+          color: i % 2 ? '#c4cdd6' : '#ff9866',
+          life: 0.55,
+          maxLife: 0.55,
+        });
+      }
+    } else if (weaponHeat >= 78) {
+      sound.effect('heatWarn', (weaponHeat - 78) / 22);
+    }
+  }
 }
 
-function pointHitsBeam(px, py, bx, by, angle, halfWidth) {
+function pointHitsBeam(px, py, bx, by, angle, halfWidth, maxLen = 1800) {
   const dx = px - bx;
   const dy = py - by;
   const sin = Math.sin(angle);
@@ -2018,7 +2167,16 @@ function pointHitsBeam(px, py, bx, by, angle, halfWidth) {
   // Rotate point into beam-local coordinates (beam runs along +Y in rotated space)
   const localX = dx * cos + dy * sin;
   const localY = -dx * sin + dy * cos;
-  return localY > 14 && localY < 780 && Math.abs(localX) < halfWidth;
+  return localY > 14 && localY < maxLen && Math.abs(localX) < halfWidth;
+}
+
+function pointToSegmentDist(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-4) return Math.hypot(px - x1, py - y1);
+  const t = clamp(((px - x1) * dx + (py - y1) * dy) / lenSq, 0, 1);
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
 }
 
 function update(dt) {
@@ -2316,8 +2474,61 @@ function update(dt) {
   for (const g of player.ghosts) g.life -= dt;
   player.ghosts = player.ghosts.filter((g) => g.life > 0);
 
-  // Firing logic
-  const isFiring = !controlsLocked && (keys.has('Space') || Boolean(pointer) || autoFire);
+  // Firing logic + Chicken Invaders Thermal Cooling & Overheat Lockout!
+  const wantsFire = !controlsLocked && (keys.has('Space') || Boolean(pointer) || autoFire);
+  const isFiring = wantsFire && !weaponOverheated;
+
+  if (overdriveTime > 0) {
+    // Nova Overdrive instantly clears overheat and keeps barrels ice-cool!
+    weaponOverheated = false;
+    weaponHeat = Math.max(0, weaponHeat - dt * 140);
+  } else if (weaponOverheated) {
+    weaponHeat = Math.max(0, weaponHeat - dt * 54);
+    if (Math.random() < dt * 22) {
+      smoke.push({
+        x: player.x + (Math.random() < 0.5 ? -10 : 10),
+        y: player.y - 10,
+        vx: between(-24, 24),
+        vy: between(-48, -12),
+        r: between(3, 6.5),
+        color: '#c8d2dc',
+        life: 0.42,
+        maxLife: 0.42,
+      });
+    }
+    if (weaponHeat <= 0) {
+      weaponOverheated = false;
+      sound.effect('coolReady');
+      popups.push({
+        x: player.x,
+        y: player.y - 24,
+        text: 'WEAPONS COOL',
+        color: PALETTE.teal,
+        life: 0.75,
+        maxLife: 0.75,
+        size: 11,
+      });
+    }
+  } else {
+    if (heatCoolDelay > 0) {
+      heatCoolDelay = Math.max(0, heatCoolDelay - dt);
+    } else if (weaponHeat > 0) {
+      // Feathering/pausing fire cools rapidly so skilled trigger control stays ice-cool!
+      const coolRate = isFiring ? 10 : 64;
+      weaponHeat = Math.max(0, weaponHeat - dt * coolRate);
+    }
+    if (weaponHeat >= 78 && Math.random() < dt * 14) {
+      sparks.push({
+        x: player.x + (Math.random() < 0.5 ? -9 : 9),
+        y: player.y - 12,
+        vx: between(-28, 28),
+        vy: between(-40, 10),
+        life: 0.2,
+        color: '#ff9c57',
+      });
+    }
+  }
+
   if (isFiring && nextShot <= 0) {
     firePlayerWeapons(focused);
   }
@@ -2493,15 +2704,38 @@ function update(dt) {
       });
     }
 
-    // Active thermal beam collision check (Prism single beam & Boss single/twin scissor beams!)
+    // Active thermal beam collision check (Prism single beam & Full-Horizon Boss single/twin scissor beams!)
     if (!enemy.dead && enemy.beamActive > 0) {
       const halfWidth = enemy === boss ? 14 : 10;
-      const offsets = enemy === boss && enemy.twinBeam ? [-0.26, 0.26] : [0];
-      for (const off of offsets) {
-        if (pointHitsBeam(player.x, player.y, enemy.x, enemy.y, (enemy.beamAngle || 0) + off, halfWidth + player.r)) {
+      const beamReach = Math.hypot(w, h) + 140;
+      const angles =
+        enemy === boss && enemy.twinBeam
+          ? [-(enemy.beamSpread || 0.35), enemy.beamSpread || 0.35]
+          : [enemy.beamAngle || 0];
+      for (const ang of angles) {
+        if (pointHitsBeam(player.x, player.y, enemy.x, enemy.y, ang, halfWidth + player.r, beamReach)) {
           hitPlayer();
           if (hull <= 0) return;
           break;
+        }
+      }
+    }
+
+    // Active Laser-Tether collision between linked gate drones!
+    if (!enemy.dead && enemy.linkPartner && !enemy.linkPartner.dead && (enemy.tetherWarmup || 0) <= 0) {
+      const d = pointToSegmentDist(player.x, player.y, enemy.x, enemy.y, enemy.linkPartner.x, enemy.linkPartner.y);
+      if (d < player.r + 5) {
+        if (player.dashTime > 0 || overshieldTime > 0) {
+          if (!enemy.tetherGrazed) {
+            enemy.tetherGrazed = true;
+            bumpCombo(2);
+            novaCharge = Math.min(100, novaCharge + 6);
+            addScore(60, player.x, player.y - 16, true, '#ff9cc0');
+            sound.effect('graze', 7);
+          }
+        } else {
+          hitPlayer();
+          if (hull <= 0) return;
         }
       }
     }
@@ -3151,7 +3385,15 @@ canvas.addEventListener('pointerdown', (e) => {
       }
     }
   }
-  pointer = { id: e.pointerId, x: e.clientX, y: e.clientY, goalX: player.x, goalY: player.y, lift };
+  pointer = {
+    id: e.pointerId,
+    x: e.clientX,
+    y: e.clientY,
+    goalX: player.x,
+    goalY: player.y,
+    lift,
+    isTouch: e.pointerType === 'touch',
+  };
 });
 window.addEventListener('pointermove', (e) => {
   if (mode !== 'intro') return;

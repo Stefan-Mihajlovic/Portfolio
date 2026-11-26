@@ -819,6 +819,19 @@ export function createFlightAudio() {
         sfxVoice(t, 0.42, 'plasma', 142, 40, 0.44, 0.004, 1900, 0, 0.3);
         sfxVoice(t + 0.08, 0.24, 'triangle', 640, 980, 0.16, 0.01, 2400, 0.22, 0.4);
         break;
+      case 'overheat':
+        // Chicken Invaders-style thermal lockout: sharp steam hiss + power-down whine + warning chirp!
+        sfxVoice(t, 0.52, 'noise', 0, 0, 0.36, 0.004, 3600, 0, 0.25);
+        sfxVoice(t, 0.36, 'sawtooth', 540, 130, 0.2, 0.005, 1900, 0, 0.2);
+        sfxVoice(t + 0.02, 0.09, 'square', 820, 620, 0.14, 0.002, 2600, -0.2, 0.15);
+        sfxVoice(t + 0.13, 0.1, 'square', 720, 520, 0.14, 0.002, 2400, 0.2, 0.15);
+        break;
+      case 'heatWarn':
+        sfxVoice(t, 0.045, 'triangle', 920 + detail * 240, 760 + detail * 180, 0.08, 0.002, 3400, 0, 0.08);
+        break;
+      case 'coolReady':
+        sfxVoice(t, 0.085, 'triangle', 540, 860, 0.13, 0.003, 3800, 0, 0.15);
+        break;
       case 'shield': {
         // Shield hit: music duck + energy shatter + warning chirp (extra drop when shield hits 0!)
         const broke = detail <= 0;
