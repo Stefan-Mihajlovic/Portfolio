@@ -9,6 +9,10 @@ const scores = {
   prism: 165,
   minelayer: 220,
   courier: 210,
+  vanguard: 230,
+  swarmpod: 200,
+  swarmer: 30,
+  sniper: 175,
   mine: 25,
 };
 
@@ -23,12 +27,12 @@ export const waveNames = [
   'DEEP VOID GAUNTLET',
 ];
 
-// Clean, readable choreographed encounters (including Laser-Tethered Link Gates!)
+// Clean, readable choreographed encounters (including Laser-Linked Gates, Shielded Vanguards, Swarm Pods & Rail Snipers!)
 const phrases = [
   ['echelon', 'laserLink', 'rocks', 'sniperRun', 'courier', 'anchorBattery'],
-  ['crossWeave', 'laserLink', 'mineSweep', 'prismCorridor', 'courier', 'anchorBattery'],
-  ['laserLink', 'prismCorridor', 'mineSweep', 'pincerStrike', 'courier', 'shieldWall'],
-  ['pincerStrike', 'laserLink', 'mineSweep', 'sniperRun', 'courier', 'shieldWall'],
+  ['vanguardWall', 'laserLink', 'swarmDrop', 'railSniper', 'courier', 'anchorBattery'],
+  ['laserLink', 'vanguardWall', 'mineSweep', 'swarmDrop', 'courier', 'railSniper'],
+  ['pincerStrike', 'vanguardWall', 'laserLink', 'swarmDrop', 'courier', 'railSniper'],
 ];
 
 export const waveLength = 15.5;
@@ -51,6 +55,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 18,
     minelayer: 22,
     courier: 20,
+    vanguard: 23,
+    swarmpod: 20,
+    swarmer: 10,
+    sniper: 17,
     mine: 10,
   };
   const cruiseMap = {
@@ -62,6 +70,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 74,
     minelayer: 62,
     courier: 72,
+    vanguard: 58,
+    swarmpod: 64,
+    swarmer: 175,
+    sniper: 82,
     mine: 36,
   };
   const baseHp = {
@@ -73,6 +85,10 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 5,
     minelayer: 12,
     courier: 6,
+    vanguard: 8,
+    swarmpod: 6.5,
+    swarmer: 1,
+    sniper: 4.5,
     mine: 2,
   };
   const shardMap = {
@@ -84,12 +100,16 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 5,
     minelayer: 6,
     courier: 6,
+    vanguard: 6,
+    swarmpod: 5,
+    swarmer: 1,
+    sniper: 4,
     mine: 1,
   };
   const r = overrides.r ?? rMap[kind] ?? 16;
   const computedHp =
-    kind === 'mine'
-      ? baseHp.mine
+    kind === 'mine' || kind === 'swarmer'
+      ? baseHp[kind]
       : kind === 'rock'
         ? Math.max(2, Math.round(baseHp.rock * (1 + tier * 0.12)))
         : Math.max(1, Math.round((baseHp[kind] || 1) * hpMult));
@@ -108,9 +128,14 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     threat: speed,
     wave,
     age: 0,
-    fireIn: overrides.fireIn ?? (kind === 'kite' ? 1.15 : kind === 'prism' ? 1.35 : kind === 'minelayer' ? 0.7 : 1.3),
+    fireIn: overrides.fireIn ?? (kind === 'kite' ? 1.15 : kind === 'prism' ? 1.35 : kind === 'minelayer' ? 0.7 : kind === 'sniper' ? 1.4 : 1.3),
     aim: 0,
+    aimAngle: 0,
+    aimLock: 0,
     locked: false,
+    frontShield: kind === 'vanguard',
+    shieldFlash: 0,
+    hatchIn: kind === 'swarmpod' ? 3.4 : 0,
     flash: 0,
     hp,
     maxHp: hp,
@@ -181,6 +206,21 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
     } else {
       add('raider', mid > 0.5 ? 0.2 : 0.8, 0.55, -side, { fireIn: 1.6 });
     }
+  } else if (kind === 'vanguardWall') {
+    // Shielded Vanguard heavy + flanking Raiders (pierce through front shield or flank from sides!)
+    add('vanguard', center, 0, side, { fireIn: 1.35 });
+    add('raider', Math.max(0.14, center - 0.24), 0.35, 1, { fireIn: 1.65 });
+    add('raider', Math.min(0.86, center + 0.24), 0.35, -1, { fireIn: 2.05 });
+  } else if (kind === 'swarmDrop') {
+    // Armored Swarm Pod(s) — focus them down before their countdown cracks open!
+    add('swarmpod', Math.max(0.24, Math.min(0.76, center)), 0, side);
+    if (wave >= 5) add('swarmpod', 1 - center, 0.55, -side);
+    add('kite', side > 0 ? 0.18 : 0.82, 0.3, side, { fireIn: 1.4 });
+  } else if (kind === 'railSniper') {
+    // Precision Rail Snipers locking red targeting beams from the upper flanks!
+    add('sniper', 0.2, 0, 1, { holdY: 0.16, fireIn: 1.25 });
+    add('sniper', 0.8, 0.25, -1, { holdY: 0.19, fireIn: 2.05 });
+    add('raider', 0.5, 0.65, side, { fireIn: 1.6 });
   } else if (kind === 'echelon') {
     // Synchronized V-chevron with staggered firing cadence so shots arrive in a readable rhythm
     add('raider', center, 0, side, { fireIn: 1.15 });
@@ -242,7 +282,114 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
 export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0) {
   e.age += dt;
   e.flash = Math.max(0, e.flash - dt);
+  if (e.shieldFlash > 0) e.shieldFlash = Math.max(0, e.shieldFlash - dt);
   const wv = e.wave || 1;
+
+  if (e.kind === 'vanguard') {
+    // Advances slowly behind its frontal energy barrier, firing twin side plasma bolts
+    e.vx = e.dir * Math.sin(e.age * 0.9) * 32;
+    e.vy = e.cruise * (e.y < h * 0.28 ? 1 : 0.72);
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = 0; // Keeps frontal shield pointed straight down!
+    if (e.y > 16 && e.y < player.y - 70) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        for (const ox of [-15, 15]) {
+          const aim = Math.atan2(player.x - (e.x + ox), Math.max(80, player.y - e.y)) * 0.45;
+          shots.push({
+            x: e.x + ox,
+            y: e.y + 12,
+            r: 4.3,
+            vx: Math.sin(aim) * Math.min(210, 156 * e.threat),
+            vy: Math.cos(aim) * Math.min(210, 156 * e.threat),
+            hostile: true,
+            color: '#7ef2e6',
+          });
+        }
+        sound.effect('raider');
+        e.fireIn = Math.max(1.3, 1.9 / e.threat);
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'swarmpod') {
+    e.vx = e.dir * Math.sin(e.age * 1.4) * 38;
+    e.vy = e.cruise * (e.y < h * 0.25 ? 0.95 : 0.45);
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = Math.sin(e.age * 2.6) * 0.14;
+    if (e.y > 24 && e.hatchIn > 0) {
+      e.hatchIn -= dt;
+      if (e.hatchIn <= 0) {
+        e.dead = true;
+        sound.effect('volley');
+        for (let i = 0; i < 4; i++) {
+          const ang = ((i - 1.5) / 1.5) * 0.8;
+          enemies.push(
+            createEnemy('swarmer', e.x + Math.sin(ang) * 14, e.y + Math.cos(ang) * 10, wv, {
+              dir: i % 2 ? 1 : -1,
+              vx: Math.sin(ang) * 140,
+              vy: 145,
+            }),
+          );
+        }
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'swarmer') {
+    const chase = Math.max(-135, Math.min(135, (player.x - e.x) * 1.15)) + Math.sin(e.age * 8 + e.dir) * 58;
+    e.vx += (chase - e.vx) * (1 - Math.exp(-dt * 4));
+    e.vy = e.cruise;
+    e.x = Math.max(e.r + 8, Math.min(w - e.r - 8, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, e.vy) * 0.7;
+    return;
+  }
+
+  if (e.kind === 'sniper') {
+    const holdY = h * (e.holdY || 0.17);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.5));
+    e.vy += ((e.age < 7.2 ? arrival : e.cruise * 1.5) - e.vy) * (1 - Math.exp(-dt * 4.5));
+    e.vx = e.aimLock > 0 ? e.vx * Math.exp(-dt * 9) : e.dir * Math.sin(e.age * 1.1) * 34;
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+
+    if (e.aimLock > 0) {
+      e.aimLock -= dt;
+      e.tilt = -e.aimAngle;
+      if (e.aimLock <= 0) {
+        const spd = Math.min(470, 390 * e.threat);
+        shots.push({
+          x: e.x,
+          y: e.y + 12,
+          r: 4.4,
+          vx: Math.sin(e.aimAngle) * spd,
+          vy: Math.cos(e.aimAngle) * spd,
+          hostile: true,
+          color: '#ff4d5e',
+        });
+        sound.effect('dash');
+        e.fireIn = Math.max(1.85, 2.5 / e.threat);
+      }
+      return;
+    }
+
+    const desired = Math.max(-0.85, Math.min(0.85, Math.atan2(player.x - e.x, Math.max(70, player.y - e.y))));
+    e.aimAngle = (e.aimAngle || 0) + (desired - (e.aimAngle || 0)) * (1 - Math.exp(-dt * 6));
+    e.tilt = -e.aimAngle;
+    if (e.y > 20 && e.age < 6.4) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        e.aimLock = 0.55;
+        sound.effect('sniperLock');
+      }
+    }
+    return;
+  }
 
   if (e.tethered) {
     // Laser-linked tether anchor drones descend in tight formation with gentle synchronized sway

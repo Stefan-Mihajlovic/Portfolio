@@ -832,6 +832,39 @@ export function createFlightAudio() {
       case 'coolReady':
         sfxVoice(t, 0.085, 'triangle', 540, 860, 0.13, 0.003, 3800, 0, 0.15);
         break;
+      case 'perfectVent':
+        // Crisp active-cooling flush: airy frost hiss + triumphant rising harmonic chime!
+        sfxVoice(t, 0.24, 'noise', 0, 0, 0.26, 0.003, 5200, 0, 0.25);
+        [74, 81, 86, 93].forEach((n, i) =>
+          sfxVoice(t + i * 0.032, 0.22, 'triangle', hz(n), hz(n) * 1.02, 0.17, 0.003, 4600, (i - 1.5) * 0.2, 0.35),
+        );
+        break;
+      case 'ventFail':
+        sfxVoice(t, 0.16, 'sawtooth', 165, 92, 0.22, 0.003, 920, 0, 0.1);
+        sfxVoice(t + 0.06, 0.14, 'square', 130, 82, 0.16, 0.003, 780, 0, 0.1);
+        break;
+      case 'sniperLock':
+        sfxVoice(t, 0.075, 'sine', 1320, 1760, 0.13, 0.002, 4800, 0, 0.15);
+        break;
+      case 'victory':
+        // Triumphant heroic brass fanfare when a Flagship collapses!
+        duckMusic(0.32, 0.7);
+        [
+          [0, 0.16, 62],
+          [0.11, 0.16, 69],
+          [0.22, 0.18, 74],
+          [0.34, 0.45, 78],
+          [0.34, 0.45, 81],
+        ].forEach(([off, dur, note], i) => {
+          sfxVoice(t + off, dur, 'sawtooth', hz(note), hz(note), 0.14, 0.008, 3200, (i % 2 ? 0.22 : -0.22), 0.45);
+          sfxVoice(t + off, dur, 'triangle', hz(note + 12), hz(note + 12), 0.09, 0.01, 4200, 0, 0.35);
+        });
+        break;
+      case 'warpExit':
+        // Deep cinematic hyperspace arrival bass boom
+        sfxVoice(t, 0.55, 'sine', 120, 32, 0.58, 0.005, 600, 0, 0.25);
+        sfxVoice(t, 0.35, 'noise', 0, 0, 0.28, 0.01, 1600, 0, 0.35);
+        break;
       case 'shield': {
         // Shield hit: music duck + energy shatter + warning chirp (extra drop when shield hits 0!)
         const broke = detail <= 0;
@@ -1026,9 +1059,76 @@ export function createFlightAudio() {
     setTimeout(() => b.disconnect(), 480);
   }
 
+  // Subtle, lush orbital synth-pad ambient drone for Main Menu (starts softly after first user gesture!)
+  let ambientTimer = 0;
+  let ambientBus = null;
+  let ambientStep = 0;
+  const AMBIENT_CHORDS = [
+    [50, 57, 62, 64, 69], // Dm9
+    [46, 53, 58, 62, 69], // Bbmaj7
+    [48, 55, 60, 62, 67], // Csus2
+    [45, 52, 57, 60, 67], // Am7
+  ];
+
+  function stopAmbient() {
+    clearInterval(ambientTimer);
+    ambientTimer = 0;
+    if (ambientBus && ctx) {
+      const bus = ambientBus;
+      ambientBus = null;
+      const now = ctx.currentTime;
+      bus.gain.cancelScheduledValues(now);
+      bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), now);
+      bus.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+      setTimeout(() => bus.disconnect(), 450);
+    }
+  }
+
+  function playAmbientBar() {
+    if (!ambientBus || !ctx || session || !volume) return;
+    const chord = AMBIENT_CHORDS[ambientStep++ % AMBIENT_CHORDS.length];
+    const t = ctx.currentTime + 0.05;
+    chord.forEach((n, i) => {
+      sfxVoice(
+        t + i * 0.08,
+        4.6,
+        i === 0 ? 'sine' : 'triangle',
+        hz(n),
+        hz(n) * (i % 2 ? 1.003 : 0.997),
+        i === 0 ? 0.16 : 0.065,
+        1.1,
+        920 + i * 180,
+        (i - 2) * 0.28,
+        0,
+        ambientBus,
+      );
+    });
+  }
+
+  function startAmbient() {
+    if (ambientTimer || session || !volume || !init()) return;
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        if (!session && !ambientTimer) startAmbient();
+      }).catch(() => {});
+      return;
+    }
+    ambientBus = ctx.createGain();
+    ambientBus.gain.setValueAtTime(0.0001, ctx.currentTime);
+    ambientBus.gain.exponentialRampToValueAtTime(0.32, ctx.currentTime + 1.2);
+    ambientBus.connect(compressor);
+    playAmbientBar();
+    ambientTimer = setInterval(playAmbientBar, 4400);
+  }
+
   return {
-    start,
+    start() {
+      stopAmbient();
+      start();
+    },
     stop,
+    startAmbient,
+    stopAmbient,
     death,
     effect,
     uiBuy,

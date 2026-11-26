@@ -936,6 +936,31 @@ function drawChassisBody(ctx, b, charging) {
       ctx.fill();
     }
   }
+  if (b.phase === 3) {
+    // Phase 3 Enraged Visual: glowing reactor cracks + pulsing heat aura across stripped hull!
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const pulse = 0.65 + 0.35 * Math.sin(b.age * 24);
+    const glow = ctx.createRadialGradient(0, 0, 6, 0, 0, 44);
+    glow.addColorStop(0, `rgba(255, 196, 120, ${0.42 * pulse})`);
+    glow.addColorStop(0.55, `rgba(255, 76, 56, ${0.22 * pulse})`);
+    glow.addColorStop(1, 'rgba(255, 48, 48, 0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, 44, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255, 232, 168, ${0.72 * pulse})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-22, -12);
+    ctx.lineTo(-6, -2);
+    ctx.lineTo(-16, 16);
+    ctx.moveTo(22, -12);
+    ctx.lineTo(6, -2);
+    ctx.lineTo(18, 14);
+    ctx.stroke();
+    ctx.restore();
+  }
 }
 
 export function drawBoss(ctx, b, w, h) {
@@ -1064,6 +1089,28 @@ export function drawBoss(ctx, b, w, h) {
   }
   ctx.restore();
   ctx.restore();
+
+  // Boss Wing Pod Laser Tether (connects symmetric live wing pods in Phase 2+!)
+  const leftPod = liveParts.find((p) => p.side === -1 && p.ox < -20);
+  const rightPod = liveParts.find((p) => p.side === 1 && p.ox > 20);
+  if (b.phase >= 2 && leftPod && rightPod && b.entering <= 0 && b.dying <= 0) {
+    ctx.save();
+    const pulse = 0.78 + 0.22 * Math.sin(b.age * 36);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = 'rgba(255, 92, 148, 0.36)';
+    ctx.lineWidth = 10 * pulse;
+    ctx.beginPath();
+    ctx.moveTo(leftPod.x, leftPod.y);
+    ctx.lineTo(rightPod.x, rightPod.y);
+    ctx.stroke();
+    ctx.strokeStyle = '#ffbbe0';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(leftPod.x, leftPod.y);
+    ctx.lineTo(rightPod.x, rightPod.y);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // Destructible subsystems
   for (const p of liveParts) {

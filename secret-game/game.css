@@ -453,12 +453,34 @@ summary {
     monospace;
 }
 .heat-track {
+  position: relative;
   flex: 1;
   height: 7px;
   transform: skew(-16deg);
   background: rgb(28 40 58 / 0.82);
   border: 1px solid rgb(146 188 202 / 0.28);
   overflow: hidden;
+}
+.heat-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 34%;
+  width: 20%;
+  background: rgb(152 255 220 / 0.42);
+  border-inline: 1.5px solid #c6fff0;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+.heat-block[data-state='overheat'][data-vent='true'] .heat-zone {
+  opacity: 1;
+}
+.heat-block[data-state='vent'] #heat-fill {
+  background: linear-gradient(to right, #98ffdc, #ffffff);
+}
+.heat-block[data-state='vent'] .heat-track {
+  border-color: #98ffdc;
+  box-shadow: 0 0 14px rgb(152 255 220 / 0.55);
 }
 #heat-fill {
   display: block;

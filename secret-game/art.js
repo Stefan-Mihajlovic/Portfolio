@@ -318,6 +318,30 @@ const foes = {
     [teal, 'M0 -11 6 -2 0 7 -6 -2Z'],
     [paper, 'M-14 -7 -9 -9 -10 -3Z M14 -7 9 -9 10 -3Z'],
   ]),
+  vanguard: plates([
+    [ink, 'M-24 -8 -14 -18 14 -18 24 -8 22 14 10 20 -10 20 -22 14Z'],
+    ['#54789c', 'M-20 -6 -12 -14 12 -14 20 -6 18 11 8 16 -8 16 -18 11Z'],
+    ['#2b3d57', 'M-14 -5 14 -5 12 11 -12 11Z'],
+    [teal, 'M-17 10 -8 15 -10 17 -19 12Z M17 10 8 15 10 17 19 12Z'],
+    [paper, 'M-8 -11 8 -11 5 -6 -5 -6Z'],
+  ]),
+  swarmpod: plates([
+    [ink, 'M0 -21 19 -10 19 10 0 21 -19 10 -19 -10Z'],
+    ['#7f5c8a', 'M0 -17 15 -8 15 8 0 17 -15 8 -15 -8Z'],
+    ['#3c2a4d', 'M0 -11 10 -5 10 5 0 11 -10 5 -10 -5Z'],
+    ['#ff9866', 'M0 -6 5 0 0 6 -5 0Z'],
+  ]),
+  swarmer: plates([
+    [ink, 'M0 14 -11 -4 0 -13 11 -4Z'],
+    ['#ff8b66', 'M0 10 -8 -3 0 -9 8 -3Z'],
+    ['#612c3c', 'M0 5 -4 -2 0 -5 4 -2Z'],
+  ]),
+  sniper: plates([
+    [ink, 'M0 24 -7 12 -18 -8 -12 -18 -4 -10 0 -22 4 -10 12 -18 18 -8 7 12Z'],
+    ['#c94b5a', 'M0 19 -5 9 -14 -7 -10 -14 -3 -6 0 -17 3 -6 10 -14 14 -7 5 9Z'],
+    ['#4f2030', 'M0 14 -3 5 0 -10 3 5Z'],
+    ['#ffd8c2', 'M-12 -8 -8 -12 -8 -5Z M12 -8 8 -12 8 -5Z'],
+  ]),
 };
 
 const SECTOR_FOE_TINTS = [
@@ -330,6 +354,24 @@ const SECTOR_FOE_TINTS = [
 export function drawFoe(ctx, e, sectorIndex = 0) {
   ctx.save();
   ctx.translate(e.x, e.y);
+
+  if (e.kind === 'sniper' && (e.aimLock > 0 || e.fireIn < 1.2)) {
+    ctx.save();
+    ctx.rotate(e.aimAngle || 0);
+    const locked = (e.aimLock || 0) > 0;
+    const p = locked ? 1 - e.aimLock / 0.55 : 0.35;
+    ctx.strokeStyle = locked
+      ? `rgba(255, 76, 86, ${0.55 + p * 0.45})`
+      : 'rgba(255, 118, 108, 0.28)';
+    ctx.lineWidth = locked ? 1.5 + p * 1.4 : 1;
+    if (!locked) ctx.setLineDash([6, 8]);
+    ctx.beginPath();
+    ctx.moveTo(0, 14);
+    ctx.lineTo(0, 1400);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
 
   if (e.kind === 'lancer' && e.locked && e.fireIn > 0) {
     ctx.save();
@@ -385,6 +427,35 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.lineTo(0, -21 - flick * (e.kind === 'lancer' && e.fireIn <= 0 ? 18 : 6));
     ctx.lineTo(4, -14);
     ctx.fill();
+  }
+
+  if (e.kind === 'vanguard' && e.frontShield) {
+    // Curved cyan frontal armor shield (blocks normal frontal shots; pierce or flank to counter!)
+    ctx.save();
+    const glow = e.shieldFlash > 0 ? '#ffffff' : '#8ef5eb';
+    ctx.strokeStyle = glow;
+    ctx.lineWidth = e.shieldFlash > 0 ? 4.2 : 2.8;
+    ctx.beginPath();
+    ctx.arc(0, 4, 24, Math.PI * 0.14, Math.PI * 0.86);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(121, 227, 213, 0.26)';
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.arc(0, 4, 24, Math.PI * 0.16, Math.PI * 0.84);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (e.kind === 'swarmpod' && e.hatchIn > 0) {
+    // Pulsing bio-hatch countdown ring
+    const frac = Math.max(0, 1 - e.hatchIn / 3.4);
+    ctx.save();
+    ctx.strokeStyle = frac > 0.72 ? '#ff6c5c' : '#ffad73';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 22, -Math.PI / 2, -Math.PI / 2 + frac * TAU);
+    ctx.stroke();
+    ctx.restore();
   }
 
   if (e.kind === 'courier') {
@@ -1009,6 +1080,60 @@ export function drawSpaceBackdrop(ctx, w, h, travel, pan, sectorIndex, warpFacto
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.restore();
+
+  // Ultra-distant deep-space megastructure & carrier silhouettes in deep parallax (pure atmospheric depth!)
+  if (warpFactor < 0.6) {
+    const megaAlpha = (1 - warpFactor * 1.6) * 0.34;
+    const my1 = ((travel * 0.065 + idx * 230) % (h + 440)) - 220;
+    const mx1 = w * (idx % 2 === 0 ? 0.18 : 0.82) - pan * 14;
+    ctx.save();
+    ctx.globalAlpha = megaAlpha;
+    ctx.translate(mx1, my1);
+    ctx.rotate(idx % 2 === 0 ? 0.26 : -0.24);
+    // Distant orbital ring relay station silhouette
+    ctx.fillStyle = '#0c1628';
+    ctx.strokeStyle = spec.rim + '30';
+    ctx.lineWidth = 1;
+    ctx.fillRect(-72, -3, 144, 6);
+    ctx.fillRect(-16, -28, 32, 56);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 52, 16, 0, 0, TAU);
+    ctx.stroke();
+    // Tiny blinking distant nav beacon
+    if (Math.sin(travel * 0.04 + idx) > 0.25) {
+      ctx.fillStyle = spec.rim;
+      ctx.globalAlpha = megaAlpha * 1.6;
+      ctx.fillRect(-70, -1.5, 3, 3);
+      ctx.fillRect(67, -1.5, 3, 3);
+    }
+    ctx.restore();
+
+    const my2 = ((travel * 0.048 + h * 0.55 + idx * 170) % (h + 500)) - 250;
+    const mx2 = w * (idx % 2 === 0 ? 0.78 : 0.24) - pan * 10;
+    ctx.save();
+    ctx.globalAlpha = megaAlpha * 0.75;
+    ctx.translate(mx2, my2);
+    ctx.rotate(idx % 2 === 0 ? -0.18 : 0.22);
+    // Distant friendly dreadnought cruiser silhouette
+    ctx.fillStyle = '#0b1424';
+    ctx.beginPath();
+    ctx.moveTo(0, -64);
+    ctx.lineTo(18, -20);
+    ctx.lineTo(42, 18);
+    ctx.lineTo(24, 52);
+    ctx.lineTo(10, 44);
+    ctx.lineTo(0, 56);
+    ctx.lineTo(-10, 44);
+    ctx.lineTo(-24, 52);
+    ctx.lineTo(-42, 18);
+    ctx.lineTo(-18, -20);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = spec.arcColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // Crisp distant star clusters (subtle depth, fades cleanly during warp)
   if (warpFactor < 0.7) {

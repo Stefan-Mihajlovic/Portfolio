@@ -52,8 +52,11 @@
               <span id="fire-mode" class="mode-tag">WIDE</span>
               <span id="heat-label" class="heat-label">HEAT</span>
             </div>
-            <div id="heat-block" class="heat-block" data-state="cool">
-              <div class="heat-track" aria-hidden="true"><i id="heat-fill"></i></div>
+            <div id="heat-block" class="heat-block" data-state="cool" data-vent="false">
+              <div class="heat-track" aria-hidden="true">
+                <i id="heat-fill"></i>
+                <span class="heat-zone"></span>
+              </div>
               <b id="heat-pct">0%</b>
             </div>
             <div class="dock-keys">
@@ -342,8 +345,8 @@
             <p><b>Kestrel:</b> Nova fires a full-screen Rail-Beam. <b>Falcon:</b> Dash triggers Bullet-Time + seekers. <b>Aegis:</b> Nova reflects enemy fire.</p>
           </div>
           <div>
-            <strong>Weapon Heat &amp; Tiers (MK I–VII)</strong>
-            <p>Continuous fire heats your barrels. Feather the trigger to stay cool — overheating locks weapons until vented. <b>Overdrive</b> runs heat-free.</p>
+            <strong>Weapon Heat &amp; Perfect Vent</strong>
+            <p>Graze bullets to cool barrels (-8%). If overheated, tap <b>Space</b> inside the glowing cyan zone for an instant <b>Perfect Vent</b> boost.</p>
           </div>
           <div>
             <strong>Flawless Boss Reward</strong>
@@ -386,6 +389,21 @@
             <canvas data-craft="minelayer" aria-hidden="true" width="88" height="88"></canvas>
             <dt>Minelayer</dt>
             <dd>Heavy barge laying proximity mines — focus it down.</dd>
+          </div>
+          <div>
+            <canvas data-craft="vanguard" aria-hidden="true" width="88" height="88"></canvas>
+            <dt>Vanguard</dt>
+            <dd>Frontal energy shield blocks standard shots — pierce, flank, or use seekers.</dd>
+          </div>
+          <div>
+            <canvas data-craft="swarmpod" aria-hidden="true" width="88" height="88"></canvas>
+            <dt>Swarm Pod</dt>
+            <dd>Cracks open after countdown into fast swarmers — destroy early.</dd>
+          </div>
+          <div>
+            <canvas data-craft="sniper" aria-hidden="true" width="88" height="88"></canvas>
+            <dt>Rail Sniper</dt>
+            <dd>Locks a red sightline before firing a high-velocity rail slug.</dd>
           </div>
           <div>
             <canvas data-craft="courier" aria-hidden="true" width="88" height="88"></canvas>

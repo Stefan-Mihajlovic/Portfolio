@@ -412,6 +412,8 @@ let missileTimer = 0;
 let weaponHeat = 0;
 let weaponOverheated = false;
 let heatCoolDelay = 0;
+let ventAttempted = false;
+let ventBoostTime = 0;
 
 let distance = 0;
 let introTime = 0;
@@ -580,9 +582,7 @@ function draw() {
   if (!w || !h) return;
   const intro = mode === 'intro';
   const travel = intro ? introTime * 14 : distance;
-  const pan = intro
-    ? Math.sin(introTime * 0.14) * 0.12 + (introCursorX - 0.5) * 0.26
-    : player.x / w - 0.5;
+  const pan = intro ? Math.sin(introTime * 0.14) * 0.12 : player.x / w - 0.5;
   const warpFactor = getWarpIntensity();
   const sector = getSector(intro ? 0 : sectorIndex);
 
@@ -1045,14 +1045,23 @@ function draw() {
     // Diegetic weapon thermal gauge arc directly around ship when running hot or overheated!
     if (weaponOverheated || weaponHeat >= 62) {
       const hFrac = clamp(weaponHeat / 100, 0, 1);
-      const blink = weaponOverheated ? 0.55 + 0.45 * Math.sin(time * 22) : 0.85;
+      const inSweet = weaponOverheated && !ventAttempted && weaponHeat >= 34 && weaponHeat <= 54;
+      const blink = weaponOverheated ? 0.65 + 0.35 * Math.sin(time * 22) : 0.85;
       ctx.save();
       ctx.globalAlpha = blink;
-      ctx.strokeStyle = weaponOverheated ? '#ff4642' : weaponHeat >= 84 ? '#ff7d47' : '#ffbe78';
-      ctx.lineWidth = weaponOverheated ? 2.6 : 2.0;
+      ctx.strokeStyle = inSweet ? '#98ffdc' : weaponOverheated ? '#ff4642' : weaponHeat >= 84 ? '#ff7d47' : '#ffbe78';
+      ctx.lineWidth = inSweet ? 3.2 : weaponOverheated ? 2.6 : 2.0;
       ctx.beginPath();
       ctx.arc(player.x, player.y, 28, -Math.PI * 0.84, -Math.PI * 0.84 + hFrac * Math.PI * 0.68);
       ctx.stroke();
+      // Sweet-spot bracket on diegetic arc during Perfect Vent window
+      if (weaponOverheated && !ventAttempted) {
+        ctx.strokeStyle = inSweet ? '#ffffff' : 'rgba(121, 227, 213, 0.72)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, 32, -Math.PI * 0.84 + 0.34 * Math.PI * 0.68, -Math.PI * 0.84 + 0.54 * Math.PI * 0.68);
+        ctx.stroke();
+      }
       ctx.restore();
     }
 
@@ -1563,6 +1572,34 @@ function damageBossCore(b, dmg) {
     }
     burst({ x: b.x, y: b.y, r: b.r * 1.2 }, '#ffcd8a', true);
     shockwaves.push({ x: b.x, y: b.y, radius: 190, color: '#ffbe78', life: 0.45, maxLife: 0.45 });
+    // Phase 3 Armor Shedding: physically eject 10 tumbling armor hull plates into space!
+    if (b.phase === 3) {
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * TAU + between(-0.2, 0.2);
+        const spd = between(110, 220);
+        debris.push({
+          x: b.x + Math.cos(a) * b.r * 0.5,
+          y: b.y + Math.sin(a) * b.r * 0.5,
+          vx: Math.cos(a) * spd,
+          vy: Math.sin(a) * spd,
+          angle: a,
+          spin: between(-7, 7),
+          s: between(8, 13),
+          color: i % 2 === 0 ? b.palette.armor : b.palette.secondary,
+          life: 1.05,
+          maxLife: 1.05,
+        });
+      }
+      popups.push({
+        x: b.x,
+        y: b.y - b.r - 12,
+        text: 'ARMOR SHED — ENRAGED',
+        color: '#ff9668',
+        life: 1.3,
+        maxLife: 1.3,
+        size: 13,
+      });
+    }
     addShake(10);
     triggerHitstop(0.06);
     sound.effect('breach');
@@ -1596,6 +1633,7 @@ function finishBossCollapse(b) {
   bumpCombo(6);
   addShake(16);
   sound.effect('nova');
+  sound.effect('victory');
   sound.setBoss(0);
 
   // Track persistent boss & flawless records + skill-based +1 Hull reward!
@@ -1656,7 +1694,7 @@ function killEnemy(e) {
   if (e.dead) return;
   e.dead = true;
   const isRock = e.kind === 'rock';
-  const heavy = ['gunship', 'prism', 'minelayer', 'courier'].includes(e.kind);
+  const heavy = ['gunship', 'prism', 'minelayer', 'courier', 'vanguard', 'swarmpod', 'sniper'].includes(e.kind);
   sound.effect(isRock ? 'rock' : 'ship');
   addScore(e.points, e.x, e.y, true, e.kind === 'courier' ? PALETTE.gold : PALETTE.paper);
   if (!isRock) {
@@ -1777,11 +1815,21 @@ function updateHud() {
   focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
 
-  const heatState = weaponOverheated ? 'overheat' : weaponHeat >= 70 ? 'warm' : 'cool';
+  const heatState = weaponOverheated ? 'overheat' : ventBoostTime > 0 ? 'vent' : weaponHeat >= 70 ? 'warm' : 'cool';
   heatBlockEl.dataset.state = heatState;
+  heatBlockEl.dataset.vent = String(weaponOverheated && !ventAttempted);
   heatFillEl.style.width = `${clamp(weaponHeat, 0, 100).toFixed(1)}%`;
   heatPctEl.textContent = `${Math.round(weaponHeat)}%`;
-  heatLabelEl.textContent = weaponOverheated ? 'OVERHEAT' : overdriveTime > 0 ? 'NO HEAT' : 'HEAT';
+  heatLabelEl.textContent =
+    weaponOverheated && !ventAttempted
+      ? 'VENT [SPACE]'
+      : weaponOverheated
+        ? 'OVERHEAT'
+        : ventBoostTime > 0
+          ? 'VENT BOOST'
+          : overdriveTime > 0
+            ? 'NO HEAT'
+            : 'HEAT';
   heatLabelEl.classList.toggle('is-overheat', weaponOverheated);
   heatLabelEl.classList.toggle('is-warm', !weaponOverheated && weaponHeat >= 70);
 
@@ -1929,6 +1977,8 @@ function launch() {
   weaponHeat = 0;
   weaponOverheated = false;
   heatCoolDelay = 0;
+  ventAttempted = false;
+  ventBoostTime = 0;
   hitstop = 0;
   shake = 0;
   player.x = w / 2;
@@ -2023,12 +2073,50 @@ function preciseSteering() {
   return keys.has('ShiftLeft') || keys.has('ShiftRight');
 }
 
+function attemptPerfectVent() {
+  if (mode !== 'playing' || !weaponOverheated || ventAttempted || weaponHeat >= 86) return false;
+  ventAttempted = true;
+  if (weaponHeat >= 34 && weaponHeat <= 54) {
+    // PERFECT VENT! Instant cool + 1.9s cryo overdrive burst!
+    weaponHeat = 0;
+    weaponOverheated = false;
+    ventBoostTime = 1.9;
+    shockwaves.push({ x: player.x, y: player.y, radius: 110, color: '#98ffdc', life: 0.34, maxLife: 0.34 });
+    popups.push({
+      x: player.x,
+      y: player.y - 26,
+      text: 'PERFECT VENT!',
+      color: '#98ffdc',
+      life: 0.95,
+      maxLife: 0.95,
+      size: 13,
+    });
+    sound.effect('perfectVent');
+    updateHud();
+    return true;
+  }
+  weaponHeat = Math.min(100, weaponHeat + 18);
+  popups.push({
+    x: player.x,
+    y: player.y - 24,
+    text: 'JAMMED',
+    color: '#ff7d6b',
+    life: 0.75,
+    maxLife: 0.75,
+    size: 12,
+  });
+  sound.effect('ventFail');
+  updateHud();
+  return true;
+}
+
 function firePlayerWeapons(focused) {
   const rig = getEffectiveRig();
   const od = overdriveTime > 0;
+  const vb = ventBoostTime > 0;
   // Clean, measured damage scaling across MK I–VII (evolves bolts instead of flooding the screen!)
   const tierScale = 1 + (weaponLevel - 1) * 0.08;
-  const dmgBoost = (focused ? 1.24 : 1) * (od ? 1.2 : 1) * tierScale;
+  const dmgBoost = (focused ? 1.24 : 1) * (od ? 1.2 : 1) * (vb ? 1.2 : 1) * tierScale;
 
   function shoot(ox, oy, angle, speed, dmg, opts = {}) {
     shots.push({
@@ -2118,10 +2206,10 @@ function firePlayerWeapons(focused) {
   player.muzzle = 0.08;
   player.recoil = 2.4;
   sound.effect(focused ? 'focusFire' : 'fire');
-  nextShot = rig.fireRate * (od ? 0.74 : 1);
+  nextShot = rig.fireRate * (od ? 0.74 : vb ? 0.8 : 1);
 
-  // Chicken Invaders Weapon Heat accumulation (Overdrive fires heat-free!)
-  if (!od) {
+  // Chicken Invaders Weapon Heat accumulation (Overdrive & Perfect Vent Boost fire heat-free!)
+  if (!od && !vb) {
     const baseHeat = selectedRig === 'aegis' ? 3.2 : selectedRig === 'falcon' ? 2.25 : 2.6;
     const tierHeat = (weaponLevel - 1) * (selectedRig === 'aegis' ? 0.26 : selectedRig === 'falcon' ? 0.19 : 0.22);
     const touchEase = pointer?.isTouch ? 0.85 : 1;
@@ -2130,6 +2218,7 @@ function firePlayerWeapons(focused) {
 
     if (weaponHeat >= 100) {
       weaponOverheated = true;
+      ventAttempted = false;
       sound.effect('overheat');
       addShake(5);
       popups.push({
@@ -2274,6 +2363,9 @@ function update(dt) {
   if (bulletTime > 0) {
     bulletTime = Math.max(0, bulletTime - dt);
   }
+  if (ventBoostTime > 0) {
+    ventBoostTime = Math.max(0, ventBoostTime - dt);
+  }
   const worldDt = bulletTime > 0 ? dt * 0.36 : dt;
 
   // Sector-specific environmental effects!
@@ -2362,6 +2454,7 @@ function update(dt) {
         player.x = w * 0.5;
         player.y = h + 86;
         player.vy = -320;
+        sound.effect('warpExit');
       }
     } else if (warp.phase === 'arrive') {
       // Ship flies smoothly in from bottom of the brand-new colored sector!
@@ -2730,6 +2823,7 @@ function update(dt) {
             enemy.tetherGrazed = true;
             bumpCombo(2);
             novaCharge = Math.min(100, novaCharge + 6);
+            weaponHeat = Math.max(0, weaponHeat - 10);
             addScore(60, player.x, player.y - 16, true, '#ff9cc0');
             sound.effect('graze', 7);
           }
@@ -2842,6 +2936,8 @@ function update(dt) {
           s.grazed = true;
           grazes++;
           novaCharge = Math.min(100, novaCharge + 3.2);
+          // Graze cools weapon barrels (-8% heat) for high-skill risk/reward!
+          weaponHeat = Math.max(0, weaponHeat - 8);
           bumpCombo(1);
           addScore(15, player.x, player.y - 12, false);
           impacts.push({ x: player.x, y: player.y, radius: 10, color: '#9df4df', life: 0.3, maxLife: 0.3 });
@@ -2872,6 +2968,33 @@ function update(dt) {
         (cand) => cand !== boss && !cand.dead && cand.y > -4 && !s.hitIds?.has(cand) && collides(s, cand),
       );
       if (e) {
+        // Shielded Vanguard deflects non-piercing frontal shots (pierce, flank, or use homing seekers!)
+        const blockedByFrontShield =
+          e.kind === 'vanguard' &&
+          e.frontShield &&
+          !(s.pierce > 0) &&
+          !s.homing &&
+          !s.reflected &&
+          s.y > e.y + 3 &&
+          Math.abs(s.x - e.x) < e.r * 0.92;
+        if (blockedByFrontShield) {
+          s.dead = true;
+          e.shieldFlash = 0.14;
+          e.hp = Math.max(0, e.hp - (s.dmg || 1) * 0.18);
+          sound.effect('impact');
+          for (let k = 0; k < 3; k++) {
+            sparks.push({
+              x: s.x,
+              y: s.y,
+              vx: between(-130, 130),
+              vy: between(55, 145),
+              life: 0.18,
+              color: '#9bf3f7',
+            });
+          }
+          if (e.hp <= 0) killEnemy(e);
+          continue;
+        }
         if (s.pierce > 0) {
           s.pierce--;
           s.hitIds?.add(e);
@@ -3109,38 +3232,20 @@ function updateIntroFlight(dt) {
     introShip.y = h * (portrait ? 0.16 : 0.22);
     introShip.ready = true;
   }
-  // Scenic outer orbit around the planet & flanks, steering smoothly around the centered Low Orbit UI!
-  const orbitA = introTime * 0.52;
-  const patrolX = w * (0.5 + Math.cos(orbitA) * (portrait ? 0.36 : 0.39));
-  const patrolY = portrait
-    ? h * (0.17 + Math.sin(orbitA * 2) * 0.06)
-    : h * (0.21 + Math.sin(orbitA) * 0.14);
-  const mouseX = introCursorX * w;
-  const mouseY = clamp(introCursorY * h, h * 0.09, h * 0.76);
-  let targetX = patrolX * 0.68 + mouseX * 0.32;
-  let targetY = patrolY * 0.68 + mouseY * 0.32;
-
-  // Soft elliptical avoidance zone around center title & ship cards so ship never slices over the letters!
-  const cx = w * 0.5;
-  const cy = h * (portrait ? 0.5 : 0.5);
-  const rx = w * (portrait ? 0.45 : 0.29);
-  const ry = h * (portrait ? 0.24 : 0.24);
-  const nx = (targetX - cx) / rx;
-  const ny = (targetY - cy) / ry;
-  const distNorm = Math.hypot(nx, ny);
-  if (distNorm < 1.05) {
-    const pushAngle = Math.atan2(ny || -1, nx || 0.2);
-    targetX = cx + Math.cos(pushAngle) * rx * 1.1;
-    targetY = clamp(cy + Math.sin(pushAngle) * ry * 1.1, h * 0.09, h * 0.82);
-  }
+  // Calm, smooth autonomous outer orbit around planet & flanks — zero jittery mouse chasing!
+  const orbitA = introTime * 0.44;
+  const targetX = w * (0.5 + Math.cos(orbitA) * (portrait ? 0.35 : 0.39));
+  const targetY = portrait
+    ? h * (0.17 + Math.sin(orbitA * 2) * 0.055)
+    : h * (0.2 + Math.sin(orbitA * 2) * 0.08);
 
   const dx = targetX - introShip.x;
   const dy = targetY - introShip.y;
-  const desiredVx = clamp(dx * 2.2, -310, 310);
-  const desiredVy = clamp(dy * 2.2, -230, 230);
+  const desiredVx = clamp(dx * 2.0, -240, 240);
+  const desiredVy = clamp(dy * 2.0, -180, 180);
   const prevVx = introShip.vx;
-  introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * 3.4));
-  introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * 3.4));
+  introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * 3.0));
+  introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * 3.0));
   introShip.x = clamp(introShip.x + introShip.vx * dt, 24, w - 24);
   introShip.y = clamp(introShip.y + introShip.vy * dt, 30, h - 46);
 
@@ -3332,6 +3437,9 @@ window.addEventListener('keydown', (e) => {
 
   if (controls.has(e.code)) {
     e.preventDefault();
+    if (!e.repeat && e.code === 'Space' && weaponOverheated) {
+      attemptPerfectVent();
+    }
     keys.add(e.code);
   } else if (!e.repeat && (e.code === 'KeyC' || e.code === 'KeyK')) {
     e.preventDefault();
@@ -3341,6 +3449,7 @@ window.addEventListener('keydown', (e) => {
     triggerNovaPulse();
   } else if (!e.repeat && e.code === 'KeyF') {
     e.preventDefault();
+    if (weaponOverheated && attemptPerfectVent()) return;
     autoFire = !autoFire;
     updateHud();
   }
@@ -3372,6 +3481,7 @@ canvas.addEventListener('pointerdown', (e) => {
     return;
   }
   if (pointer || e.button !== 0) return;
+  if (weaponOverheated) attemptPerfectVent();
   canvas.setPointerCapture(e.pointerId);
   let lift = 0;
   // Hybrid Touch Finger Offset: if tapping on/near the ship on a phone, smoothly lift ship ~46px above thumb!
@@ -3416,7 +3526,17 @@ canvas.addEventListener('lostpointercapture', (e) => {
   if (pointer?.id === e.pointerId) pointer = null;
 });
 
+// Unlock subtle Main Menu orbital ambient music on first interaction
+window.addEventListener(
+  'pointerdown',
+  () => {
+    if (mode === 'intro') sound.startAmbient();
+  },
+  { passive: true },
+);
+
 function autoPause() {
+  sound.stopAmbient();
   if (mode === 'playing' && playerDying <= 0) setMode('paused');
   else if (mode === 'over') sound.stop();
 }
@@ -3737,7 +3857,17 @@ coinBankBtn.addEventListener('click', () => {
 syncMetaUi();
 
 for (const preview of manual.querySelectorAll('[data-craft]')) {
-  drawFoe(preview.getContext('2d'), { kind: preview.dataset.craft, x: 44, y: 44, r: 30, fireIn: 2, age: 0 });
+  const craft = preview.dataset.craft;
+  drawFoe(preview.getContext('2d'), {
+    kind: craft,
+    x: 44,
+    y: 44,
+    r: 30,
+    fireIn: 2,
+    age: 0,
+    frontShield: craft === 'vanguard',
+    hatchIn: craft === 'swarmpod' ? 1.8 : 0,
+  });
 }
 
 // Instant launch into live orbital canvas — zero artificial delay!
