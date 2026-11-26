@@ -29,9 +29,9 @@ function print(ctx, layers) {
   }
 }
 
-// --- PLAYER SHIPS (3 distinct silhouettes sharing the graphic novel enamel language) ---
+// --- PLAYER SHIPS (Hull layers separated from Canopy so 2.5D roll NEVER draws a double cockpit!) ---
 
-const kestrelPlates = plates([
+const kestrelHull = plates([
   [
     ink,
     'M0 -52 Q5 -49 9 -26 L15 -7 22 0 26 -21 30 -19 31 8 47 26 47 36 30 31 27 41 18 39 15 26 8 26 6 44 -6 44 -8 26 -15 26 -18 39 -27 41 -30 31 -47 36 -47 26 -31 8 -30 -19 -26 -21 -22 0 -15 -7 -9 -26 Q-5 -49 0 -52Z',
@@ -50,16 +50,13 @@ const kestrelPlates = plates([
   [steel, 'M0 -49 Q6 -41 9 -20 L13 8 6 32 5 41 -5 41 -6 32 -13 8 -9 -20 Q-5 -42 0 -49Z'],
   [paper, 'M0 -48 -2 -17 -7 1 -7 14 -11 8 -8 -19 Q-5 -40 0 -48Z M2 -42 8 -18 10 -1 5 -15Z'],
   [shadow, 'M0 -34 6 -18 10 9 5 27 0 35 -5 27 -6 11Z'],
-  [ink, 'M0 -22 Q6 -15 6 -4 L4 7 0 12 -5 7 -6 -3 Q-5 -16 0 -22Z'],
-  [teal, 'M0 -18 Q3 -13 4 -5 L3 1 -3 -2 Q-3 -12 0 -18Z'],
-  ['#e4fff5', 'M0 -16 1 -12 -2 -4Z'],
   [paper, 'M-7 13 -2 17 -2 26 -5 22Z M7 13 2 17 2 26 5 22Z'],
   [vermilion, 'M-6 27 -2 30 -2 36 -5 32Z M6 27 2 30 2 36 5 32Z'],
   [ink, 'M-5 36 5 36 5 42 -5 42Z'],
   [teal, 'M-4 38 4 38 3 41 -3 41Z'],
 ]);
 
-const falconPlates = plates([
+const falconHull = plates([
   [
     ink,
     'M0 -56 L8 -28 16 -12 40 -26 44 -14 29 14 33 34 20 31 12 24 7 43 -7 43 -12 24 -20 31 -33 34 -29 14 -44 -14 -40 -26 -16 -12 -8 -28Z',
@@ -70,15 +67,12 @@ const falconPlates = plates([
   [shadow, 'M-27 14 -29 29 -19 26 -14 14Z M27 14 29 29 19 26 14 14Z'],
   [steel, 'M0 -52 L7 -26 12 10 6 39 -6 39 -12 10 -7 -26Z'],
   [paper, 'M0 -51 -2 -18 -8 8 -4 26 -10 10 -6 -24Z M2 -45 6 -22 8 2 4 -14Z'],
-  [ink, 'M0 -24 Q5 -16 5 -2 L3 10 0 15 -3 10 -5 -2 Q-5 -16 0 -24Z'],
-  ['#ffd18a', 'M0 -20 Q3 -13 3 -4 L2 4 -2 1 Q-3 -12 0 -20Z'],
-  ['#fff8e0', 'M0 -18 1 -13 -1 -5Z'],
   [amber, 'M-24 27 -18 28 -18 31 -24 30Z M24 27 18 28 18 31 24 30Z'],
   [ink, 'M-5 35 5 35 5 41 -5 41Z'],
   ['#ffd18a', 'M-4 37 4 37 3 40 -3 40Z'],
 ]);
 
-const aegisPlates = plates([
+const aegisHull = plates([
   [
     ink,
     'M0 -45 L12 -32 16 -14 26 -24 37 -18 45 10 43 34 26 37 22 29 11 33 8 42 -8 42 -11 33 -22 29 -26 37 -43 34 -45 10 -37 -18 -26 -24 -16 -14 -12 -32Z',
@@ -90,59 +84,54 @@ const aegisPlates = plates([
   [steel, 'M0 -42 L10 -29 15 10 9 37 -9 37 -15 10 -10 -29Z'],
   [paper, 'M0 -40 -4 -18 -11 8 -6 24 -12 10 -8 -27Z M3 -35 9 -20 11 4 6 -12Z'],
   [vermilion, 'M-14 6 -9 10 -9 22 -14 18Z M14 6 9 10 9 22 14 18Z'],
-  [ink, 'M0 -24 Q8 -16 8 -2 L6 10 0 14 -6 10 -8 -2 Q-8 -16 0 -24Z'],
-  ['#9be9ff', 'M0 -20 Q5 -13 5 -4 L3 3 -4 1 Q-5 -12 0 -20Z'],
-  ['#effcff', 'M-1 -17 2 -11 -2 -5Z'],
   [ink, 'M-7 34 7 34 7 40 -7 40Z'],
   ['#9be9ff', 'M-5 36 5 36 4 39 -4 39Z'],
 ]);
 
-const shipModels = {
-  kestrel: kestrelPlates,
-  falcon: falconPlates,
-  aegis: aegisPlates,
+const shipHulls = {
+  kestrel: kestrelHull,
+  falcon: falconHull,
+  aegis: aegisHull,
 };
 
-// Elevated canopy + spine detail drawn with parallax offset during 2.5D Chicken Invaders roll
 const shipCanopies = {
   kestrel: plates([
-    [ink, 'M0 -24 Q6 -16 6 -4 L4 8 0 13 -5 8 -6 -3 Q-5 -17 0 -24Z'],
-    [teal, 'M0 -19 Q3.2 -13 4 -5 L3 1.5 -3 -2 Q-3.2 -12 0 -19Z'],
-    ['#e8fff7', 'M0 -17 1.2 -12 -2 -4Z'],
+    [ink, 'M0 -22 Q6 -15 6 -4 L4 7 0 12 -5 7 -6 -3 Q-5 -16 0 -22Z'],
+    [teal, 'M0 -18 Q3 -13 4 -5 L3 1 -3 -2 Q-3 -12 0 -18Z'],
+    ['#e4fff5', 'M0 -16 1 -12 -2 -4Z'],
   ]),
   falcon: plates([
-    [ink, 'M0 -25 Q5.5 -16 5.5 -2 L3.5 10 0 15.5 -3.5 10 -5.5 -2 Q-5.5 -16 0 -25Z'],
-    ['#ffd18a', 'M0 -21 Q3.2 -13 3.2 -4 L2 4 -2 1 Q-3.2 -12 0 -21Z'],
-    ['#fff9e4', 'M0 -18.5 1.2 -13 -1.2 -5Z'],
+    [ink, 'M0 -24 Q5 -16 5 -2 L3 10 0 15 -3 10 -5 -2 Q-5 -16 0 -24Z'],
+    ['#ffd18a', 'M0 -20 Q3 -13 3 -4 L2 4 -2 1 Q-3 -12 0 -20Z'],
+    ['#fff8e0', 'M0 -18 1 -13 -1 -5Z'],
   ]),
   aegis: plates([
-    [ink, 'M0 -25 Q8 -16 8 -2 L6 10 0 14.5 -6 10 -8 -2 Q-8 -16 0 -25Z'],
-    ['#9be9ff', 'M0 -21 Q5 -13 5 -4 L3 3.5 -4 1 Q-5 -12 0 -21Z'],
-    ['#f0fdff', 'M-1 -17.5 2 -11 -2 -5Z'],
+    [ink, 'M0 -24 Q8 -16 8 -2 L6 10 0 14 -6 10 -8 -2 Q-8 -16 0 -24Z'],
+    ['#9be9ff', 'M0 -20 Q5 -13 5 -4 L3 3 -4 1 Q-5 -12 0 -20Z'],
+    ['#effcff', 'M-1 -17 2 -11 -2 -5Z'],
   ]),
 };
 
 export function drawInterceptor(ctx, variant = 'kestrel') {
-  print(ctx, shipModels[variant] || kestrelPlates);
+  print(ctx, shipHulls[variant] || kestrelHull);
+  print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
 }
 
-// 2.5D Chicken Invaders-style longitudinal roll:
-// Nose stays locked straight up while wings foreshorten, vertically skew, and the fuselage/canopy shifts in depth.
+// 2.5D Chicken Invaders-style longitudinal roll with single parallax cockpit (zero double cockpit!)
 export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, accent = teal) {
   const r = Math.max(-1, Math.min(1, roll));
   const absR = Math.abs(r);
-  const scaleX = Math.cos(r * 0.72); // crisp horizontal foreshortening
-  const skewY = r * 0.24; // raised outer wing, dipped inner wing (Chicken Invaders roll!)
+  const scaleX = Math.cos(r * 0.72);
+  const skewY = r * 0.24;
 
   ctx.save();
-  // Apply 2.5D roll shear + horizontal compression around nose-to-tail axis
   ctx.transform(scaleX, skewY, 0, 1, 0, 0);
 
-  // Subtle underside hull thickness rim exposed on the lifted wing side when banking
+  // Subtle underside hull rim exposed on lifted side during roll
   if (absR > 0.06) {
     ctx.save();
-    ctx.translate(-r * 7.5, 2.5);
-    ctx.globalAlpha = absR * 0.6;
+    ctx.translate(-r * 7, 2.5);
+    ctx.globalAlpha = absR * 0.56;
     ctx.fillStyle = '#25354b';
     ctx.beginPath();
     ctx.ellipse(0, 6, 30, 34, 0, 0, TAU);
@@ -150,19 +139,29 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
     ctx.restore();
   }
 
-  // Visual wing weapon pods for upgraded MK II+ tiers
+  // Wing weapon pods scale up visually with weapon tiers MK II -> MK VII!
   if (tier >= 2) {
     ctx.fillStyle = ink;
     ctx.fillRect(-35, 1, 7, 17);
     ctx.fillRect(28, 1, 7, 17);
-    ctx.fillStyle = tier >= 4 ? gold : accent;
+    ctx.fillStyle = tier >= 5 ? gold : accent;
     ctx.fillRect(-33.5, 3, 4, 12);
     ctx.fillRect(29.5, 3, 4, 12);
   }
+  if (tier >= 4) {
+    // Seeker missile pods
+    ctx.fillStyle = ink;
+    ctx.fillRect(-43, 12, 6, 14);
+    ctx.fillRect(37, 12, 6, 14);
+    ctx.fillStyle = tier >= 6 ? '#ffe694' : amber;
+    ctx.fillRect(-41.5, 14, 3, 10);
+    ctx.fillRect(38.5, 14, 3, 10);
+  }
 
-  print(ctx, shipModels[variant] || kestrelPlates);
+  // Draw hull ONLY (no baked-in canopy!)
+  print(ctx, shipHulls[variant] || kestrelHull);
 
-  // Directional 3D roll shading: shadow dips on the turning-in wing, highlight catches the lifted wing
+  // Directional 3D roll shading across wings
   if (absR > 0.06) {
     const shade = ctx.createLinearGradient(-44, 0, 44, 0);
     if (r > 0) {
@@ -185,14 +184,12 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
   }
   ctx.restore();
 
-  // Elevated cockpit canopy shifts subtly in X for genuine 3D depth parallax!
-  if (absR > 0.04) {
-    ctx.save();
-    ctx.translate(r * 5.2, 0);
-    ctx.scale(Math.max(0.76, scaleX), 1);
-    print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
-    ctx.restore();
-  }
+  // Single elevated canopy drawn ONCE with clean 3D depth parallax!
+  ctx.save();
+  ctx.translate(r * 4.5, 0);
+  ctx.transform(Math.max(0.74, scaleX), skewY * 0.45, 0, 1, 0, 0);
+  print(ctx, shipCanopies[variant] || shipCanopies.kestrel);
+  ctx.restore();
 }
 
 // --- ENEMY SILHOUETTES ---

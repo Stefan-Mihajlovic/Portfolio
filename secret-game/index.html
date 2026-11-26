@@ -45,13 +45,10 @@
             <div id="boss-parts" class="boss-parts"></div>
           </div>
 
-          <div class="hud-bottom-left hud-dock">
-            <div class="dock-head">
-              <span class="metric-label">Weapon</span>
-              <div class="weapon-tags">
-                <b id="weapon-tier" class="tier-tag">MK I</b>
-                <span id="fire-mode" class="mode-tag">WIDE</span>
-              </div>
+          <div class="hud-bottom-left">
+            <div class="weapon-head">
+              <b id="weapon-tier" class="tier-tag">MK I</b>
+              <span id="fire-mode" class="mode-tag">WIDE</span>
             </div>
             <div class="dock-keys">
               <span id="focus-chip" class="hud-key-chip"><kbd>Shift</kbd><span>Focus</span></span>
@@ -73,7 +70,7 @@
           </div>
 
           <div class="hud-bottom-right">
-            <div class="gauge-block hud-dock" id="nova-block">
+            <div class="gauge-block" id="nova-block">
               <div class="gauge-head">
                 <span class="metric-label" id="nova-label">Nova</span>
                 <b id="nova-pct">0%</b>
@@ -143,7 +140,7 @@
       </header>
 
       <section id="panel" aria-labelledby="title">
-        <div class="flight-brief">
+        <div class="menu-stack">
           <h1 id="title">Low Orbit</h1>
           <p id="message">Dodge incoming fire. Clear each wave.</p>
 
@@ -203,35 +200,37 @@
           </fieldset>
 
           <div class="launch-row">
-            <button id="action" type="button">
-              <span aria-hidden="true">▶</span><span id="action-text">Play</span>
+            <button id="action" class="hero-btn primary" type="button">
+              <svg class="play-icon" aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M3.5 2.4a1 1 0 0 1 1.5-.86l8.6 5.6a1 1 0 0 1 0 1.72l-8.6 5.6A1 1 0 0 1 3.5 13.6Z" />
+              </svg>
+              <span id="action-text">Play</span>
             </button>
-            <button id="hangar-open" class="secondary-btn upgrade-btn" type="button">
-              <i class="coin-dot" aria-hidden="true"></i>Upgrades
+            <button id="hangar-open" class="hero-btn secondary-btn upgrade-btn" type="button">
+              <i class="coin-dot" aria-hidden="true"></i><span>Upgrades</span>
               <span id="upgrade-dot" class="upgrade-dot" hidden aria-label="Upgrade available"></span>
             </button>
-            <button id="restart-menu" class="secondary-btn" type="button" hidden>Restart</button>
-          </div>
-        </div>
-
-        <div class="flight-console">
-          <div class="flight-actions">
-            <button class="guide-open" id="guide-open" type="button">
+            <button id="restart-menu" class="hero-btn secondary-btn" type="button" hidden>
               <svg
                 aria-hidden="true"
-                width="17"
-                height="17"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.6"
+                stroke-width="2.2"
+                stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="M3 4.5c3-.7 6-.2 9 1.5 3-1.7 6-2.2 9-1.5v14c-3-.7-6-.2-9 1.5-3-1.7-6-2.2-9-1.5zM12 6v14" />
+                <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+                <path d="M3 3v5h5" />
               </svg>
-              Field guide
+              <span>Restart</span>
             </button>
           </div>
+        </div>
+
+        <div class="panel-bottom">
           <footer aria-label="Flight controls">
             <div class="keyboard">
               <span class="key-chip"><kbd>WASD</kbd><span>Move</span></span>
@@ -241,8 +240,23 @@
               <span class="key-chip"><kbd>E</kbd><span>Nova</span></span>
               <span class="key-chip"><kbd>F</kbd><span>Auto</span></span>
             </div>
-            <span class="touch">Drag to steer &amp; fire <i aria-hidden="true"></i> Tap Dash / Nova</span>
+            <span class="touch">Drag anywhere to fly &amp; fire <i aria-hidden="true"></i> Tap Dash / Nova</span>
           </footer>
+          <button class="guide-open" id="guide-open" type="button">
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linejoin="round"
+            >
+              <path d="M3 4.5c3-.7 6-.2 9 1.5 3-1.7 6-2.2 9-1.5v14c-3-.7-6-.2-9 1.5-3-1.7-6-2.2-9-1.5zM12 6v14" />
+            </svg>
+            Guide
+          </button>
         </div>
       </section>
 
@@ -250,16 +264,30 @@
         <form method="dialog" class="modal-head">
           <div>
             <h2 id="hangar-title">Upgrades</h2>
-            <p class="modal-sub">Spend coins collected on runs to start every flight stronger.</p>
+            <p class="modal-sub">Each ship has its own upgrades. Select a ship below.</p>
           </div>
           <div class="hangar-head-right">
             <span class="hangar-balance"><i class="coin-dot" aria-hidden="true"></i><b id="hangar-coins">0</b></span>
             <button type="submit" class="modal-close" aria-label="Close upgrades">×</button>
           </div>
         </form>
+        <div id="hangar-tabs" class="hangar-tabs" role="tablist" aria-label="Ship upgrades">
+          <button type="button" class="hangar-tab" role="tab" data-tab="kestrel" aria-selected="true">
+            <canvas class="tab-preview" data-ship="kestrel" width="64" height="64" aria-hidden="true"></canvas>
+            <span>Kestrel</span>
+          </button>
+          <button type="button" class="hangar-tab" role="tab" data-tab="falcon" aria-selected="false">
+            <canvas class="tab-preview" data-ship="falcon" width="64" height="64" aria-hidden="true"></canvas>
+            <span>Falcon</span>
+          </button>
+          <button type="button" class="hangar-tab" role="tab" data-tab="aegis" aria-selected="false">
+            <canvas class="tab-preview" data-ship="aegis" width="64" height="64" aria-hidden="true"></canvas>
+            <span>Aegis</span>
+          </button>
+        </div>
         <div id="upgrade-list" class="upgrade-list"></div>
         <div class="hangar-footer">
-          <button id="refund-upgrades" type="button" class="refund-btn">Reset &amp; refund coins</button>
+          <button id="refund-upgrades" type="button" class="refund-btn">Refund this ship</button>
         </div>
       </dialog>
 
@@ -271,12 +299,12 @@
 
         <div class="manual-systems">
           <div>
-            <strong>Focus Lance <kbd>Shift</kbd></strong>
-            <p>Concentrates shots forward, slows movement, and reveals your core hitbox.</p>
+            <strong>Weapon Tiers (MK I–VII)</strong>
+            <p>Unlock wide spreads, automatic homing seekers (MK IV+), piercing bolts (MK V+), and twin rails (MK VI+).</p>
           </div>
           <div>
             <strong>Phase Dash <kbd>C</kbd> / <kbd>RMB</kbd></strong>
-            <p>Short invulnerable burst that slips through fire and pulls in nearby loot.</p>
+            <p>Short invulnerable burst that slips through fire and pulls in nearby shards and coins.</p>
           </div>
           <div>
             <strong>Nova Pulse <kbd>E</kbd></strong>
@@ -284,7 +312,7 @@
           </div>
           <div>
             <strong>Overshield &amp; Coins</strong>
-            <p>Grab golden <b>OS</b> cells for 6.5s of indestructible ramming armor. Spend coins in Upgrades.</p>
+            <p>Grab golden <b>OS</b> cells for 6.5s of indestructible ramming armor. Upgrade each ship separately.</p>
           </div>
         </div>
 

@@ -406,7 +406,7 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     return;
   }
 
-  const baseY = Math.max(84, h * 0.19);
+  const baseY = w < h ? Math.max(128, h * 0.24) : Math.max(92, h * 0.2);
   if (b.entering > 0) {
     b.entering = Math.max(0, b.entering - dt);
     b.y += (baseY - b.y) * (1 - Math.exp(-dt * 3.4));

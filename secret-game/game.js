@@ -76,30 +76,30 @@ const RIGS = {
   },
 };
 
-// Persistent Coin Bank & Fleet Upgrades
+// Persistent Coin Bank & Per-Ship Upgrades!
 const UPGRADE_DEFS = [
   {
     id: 'weapon',
     name: 'Starting Firepower',
-    desc: 'Begin every run with a higher weapon tier (MK II → MK IV).',
-    costs: [80, 180, 340],
+    desc: 'Start runs at MK II → MK VI (unlocks homing seekers at MK IV, piercing bolts at MK V, twin rails at MK VI).',
+    costs: [75, 160, 300, 480, 720],
   },
   {
     id: 'hull',
     name: 'Reinforced Hull',
-    desc: '+1 permanent red Hull armor block per level across all ships.',
+    desc: '+1 permanent red Hull armor block per level for this ship.',
     costs: [70, 150, 280],
   },
   {
     id: 'shield',
     name: 'Shield Capacitors',
-    desc: '+1 rechargeable Shield block per level across all ships.',
+    desc: '+1 rechargeable Shield block per level for this ship.',
     costs: [60, 140, 260],
   },
   {
     id: 'thruster',
     name: 'Thruster & Dash',
-    desc: '+9% cruise speed and -14% Phase Dash cooldown per level.',
+    desc: '+9% speed and -14% Phase Dash cooldown per level.',
     costs: [50, 120, 230],
   },
   {
@@ -110,16 +110,36 @@ const UPGRADE_DEFS = [
   },
 ];
 
+const emptyShipUpgrades = () => ({ weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0 });
 let meta = {
   coins: 0,
-  upgrades: { weapon: 0, hull: 0, shield: 0, thruster: 0, nova: 0 },
+  ships: {
+    kestrel: emptyShipUpgrades(),
+    falcon: emptyShipUpgrades(),
+    aegis: emptyShipUpgrades(),
+  },
 };
 try {
   const raw = JSON.parse(localStorage.getItem('low-orbit-meta') || 'null');
   if (raw && typeof raw === 'object') {
     meta.coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
-    for (const def of UPGRADE_DEFS) {
-      meta.upgrades[def.id] = Math.max(0, Math.min(def.costs.length, Math.floor(Number(raw.upgrades?.[def.id]) || 0)));
+    if (raw.ships && typeof raw.ships === 'object') {
+      for (const shipKey of Object.keys(RIGS)) {
+        for (const def of UPGRADE_DEFS) {
+          meta.ships[shipKey][def.id] = Math.max(
+            0,
+            Math.min(def.costs.length, Math.floor(Number(raw.ships?.[shipKey]?.[def.id]) || 0)),
+          );
+        }
+      }
+    } else if (raw.upgrades && typeof raw.upgrades === 'object') {
+      // Cleanly migrate legacy global upgrades to Kestrel so returning players lose nothing!
+      for (const def of UPGRADE_DEFS) {
+        meta.ships.kestrel[def.id] = Math.max(
+          0,
+          Math.min(def.costs.length, Math.floor(Number(raw.upgrades[def.id]) || 0)),
+        );
+      }
     }
   }
 } catch {}
@@ -132,7 +152,7 @@ function saveMeta() {
 
 function getEffectiveRig(key = selectedRig) {
   const base = RIGS[key] || RIGS.kestrel;
-  const u = meta.upgrades;
+  const u = meta.ships[key] || emptyShipUpgrades();
   return {
     ...base,
     hull: base.hull + u.hull,
@@ -147,6 +167,7 @@ function getEffectiveRig(key = selectedRig) {
 }
 
 let selectedRig = 'kestrel';
+let hangarRig = 'kestrel';
 try {
   const savedRig = localStorage.getItem('low-orbit-rig');
   if (savedRig && RIGS[savedRig]) selectedRig = savedRig;
@@ -298,8 +319,9 @@ let distance = 0;
 let introTime = 0;
 let introCursorX = 0.5;
 let introCursorY = 0.5;
-let introRoll = 0;
-let introPitch = 0;
+let introShip = { x: 0, y: 0, vx: 0, vy: 0, heading: 0.72, roll: 0, trails: [[], []], ready: false };
+let playerDying = 0;
+let deathTick = 0;
 let time = 0;
 let currentWave = 1;
 let spawnIn = 0;
@@ -563,46 +585,35 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
-  // Interactive Hangar / Intro hero flyover with rich 2.5D mouse-reactive roll & pitch!
+  // Selected ship actively patrols and flies across the Main Menu space behind the centered UI!
   if (intro) {
-    const portrait = w < h;
-    const cx = introCursorX - 0.5;
-    const cy = introCursorY - 0.5;
-    const x =
-      w * (portrait ? 0.48 : 0.65) +
-      Math.sin(introTime * 0.45) * 5 +
-      cx * (portrait ? 14 : 30);
-    const y =
-      h * (portrait ? 0.25 : 0.43) +
-      Math.cos(introTime * 0.55) * 4 +
-      cy * 20;
-    const size = Math.min(w * (portrait ? 0.25 : 0.195), h * (portrait ? 0.2 : 0.32));
-    const rig = RIGS[selectedRig];
-    const heading = 0.76 + introRoll * 0.16 + introPitch * 0.08;
-    const bankSpan = Math.cos(introRoll * 0.72);
-
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(heading);
-    ctx.scale(size / 94, size / 94);
-    for (const side of [-1, 1]) {
-      const tipX = side * 23 * bankSpan;
-      const tipY = 32 + side * introRoll * 6;
-      const bendX = -15 - introRoll * 28;
-      const endX = -138 - introRoll * 38;
-      const endY = 272 - introPitch * 22;
-      ctx.beginPath();
-      ctx.moveTo(tipX - 2, tipY);
-      ctx.bezierCurveTo(tipX - 4, 108, bendX, 168, endX, endY);
-      ctx.bezierCurveTo(bendX - 11, 179, tipX + 6, 99, tipX + 2, tipY);
-      ctx.fillStyle = rig.accent + '66';
-      ctx.fill();
+    if (!introShip.ready && w && h) {
+      introShip.x = w * 0.72;
+      introShip.y = h * 0.28;
+      introShip.ready = true;
     }
-    ctx.restore();
-    paintShip(x, y, size, heading, 1.25 - introPitch * 0.35, selectedRig, {
-      tier: Math.max(2, getEffectiveRig().startWeapon),
-      roll: introRoll,
-      pitch: introPitch,
+    const rig = RIGS[selectedRig];
+    const size = Math.min(w * (w < h ? 0.14 : 0.085), h * 0.125, 84);
+
+    // Sweeping wingtip contrails trailing behind the patrolling ship
+    for (const trail of introShip.trails) {
+      if (trail.length < 2) continue;
+      for (let i = 1; i < trail.length; i++) {
+        const a = i / trail.length;
+        ctx.strokeStyle = rig.accent;
+        ctx.globalAlpha = a * 0.34;
+        ctx.lineWidth = 1 + a * 2.4;
+        ctx.beginPath();
+        ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+        ctx.lineTo(trail[i].x, trail[i].y);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    paintShip(introShip.x, introShip.y, size, introShip.heading, 1.35, selectedRig, {
+      tier: getEffectiveRig().startWeapon,
+      roll: introShip.roll,
     });
     ctx.restore();
     return;
@@ -726,6 +737,18 @@ function draw() {
       continue;
     }
 
+    if (s.pierce > 0) {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = 'rgba(255, 212, 112, 0.42)';
+      ctx.fillRect(-5, -13, 10, 26);
+      ctx.fillStyle = '#ffcb6b';
+      ctx.fillRect(-2.4, -11, 4.8, 22);
+      ctx.fillStyle = '#fffdf2';
+      ctx.fillRect(-1.1, -9, 2.2, 14);
+      ctx.restore();
+      continue;
+    }
+
     ctx.globalCompositeOperation = 'lighter';
     const bw = s.heavy ? 4.4 : s.focused ? 2.6 : 2.1;
     const bh = s.focused ? 22 : s.heavy ? 16 : 15;
@@ -763,9 +786,9 @@ function draw() {
     ctx.restore();
   }
 
-  // Player ship — nose always straight ahead like Chicken Invaders, subtle roll foreshortening
+  // Player ship — hidden during warp tunnel or after exploding in death sequence
   const hideForTunnel = warp && warp.phase === 'tunnel';
-  if (hull > 0 && !hideForTunnel) {
+  if (hull > 0 && !hideForTunnel && playerDying <= 0) {
     const rig = RIGS[selectedRig];
     for (const trail of player.trails) {
       if (trail.length < 2) continue;
@@ -1033,8 +1056,8 @@ function dropTacticalCell(x, y, forcedKind = null) {
   let kind = forcedKind;
   if (!kind) {
     const roll = Math.random();
-    if (roll < 0.28) kind = 'overshield';
-    else if (weaponLevel < 4) kind = 'weapon';
+    if (roll < 0.25) kind = 'overshield';
+    else if (weaponLevel < 7) kind = 'weapon';
     else if (shields < maxShields) kind = 'shield';
     else kind = roll < 0.65 ? 'overshield' : 'nova';
   }
@@ -1252,7 +1275,7 @@ function finishBossCollapse(b) {
   shockwaves.push({ x: b.x, y: b.y, radius: 280, color: '#ffe5a3', life: 0.6, maxLife: 0.6 });
   dropShards(b.x, b.y, 14, true);
   dropCoins(b.x, b.y, 14 + b.rank * 4);
-  dropTacticalCell(b.x - 26, b.y, weaponLevel < 4 ? 'weapon' : 'overshield');
+  dropTacticalCell(b.x - 26, b.y, weaponLevel < 7 ? 'weapon' : 'overshield');
   if (shields < maxShields) dropTacticalCell(b.x + 26, b.y, 'shield');
   addScore(b.points, b.x, b.y, true, PALETTE.gold);
   kills++;
@@ -1371,8 +1394,8 @@ function updateHud() {
     comboHud.style.setProperty('--combo-life', `${Math.max(0, (comboTimer / 4.2) * 100)}%`);
   }
 
-  // Weapon & mode dock
-  const roman = ['I', 'II', 'III', 'IV'][clamp(weaponLevel - 1, 0, 3)];
+  // Weapon & mode dock (supports MK I through MK VII!)
+  const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][clamp(weaponLevel - 1, 0, 6)];
   weaponTierEl.textContent = `MK ${roman}`;
   const focused = preciseSteering();
   fireModeEl.textContent = overdriveTime > 0 ? 'OVERDRIVE' : focused ? 'LANCE' : 'WIDE';
@@ -1428,6 +1451,8 @@ function setMode(next) {
     sectorIndex = 0;
     hitFlash = 0;
     overshieldTime = 0;
+    playerDying = 0;
+    deathTick = 0;
     bossHud.hidden = true;
     title.textContent = 'Low Orbit';
     message.hidden = false;
@@ -1439,7 +1464,6 @@ function setMode(next) {
   } else {
     const lost = next === 'over';
     sound.stop();
-    if (lost) sound.death();
     title.textContent = lost ? 'Ship lost' : 'Paused';
     message.hidden = true;
     document.querySelector('#debrief').hidden = false;
@@ -1498,6 +1522,8 @@ function launch() {
   sectorIndex = 0;
   warp = null;
   hitFlash = 0;
+  playerDying = 0;
+  deathTick = 0;
   bossHud.hidden = true;
   sound.rewind();
   nextShot = 0;
@@ -1521,12 +1547,11 @@ function launch() {
 }
 
 function hitPlayer() {
-  if (immune > 0 || player.dashTime > 0 || overshieldTime > 0 || warp) return;
+  if (immune > 0 || player.dashTime > 0 || overshieldTime > 0 || warp || playerDying > 0) return;
   combo = Math.floor(combo * 0.35);
   immune = 1.65;
 
   if (shields > 0) {
-    // Shield absorbs the impact first (keeps weapon tier intact!)
     shields--;
     hitFlash = 0.42;
     sound.effect('shield', shields);
@@ -1546,16 +1571,15 @@ function hitPlayer() {
       });
     }
   } else {
-    // Direct Hull damage — permanent, heavier crunch, drops 1 weapon tier
     hull--;
-    hitFlash = 0.62;
+    hitFlash = 0.65;
     if (weaponLevel > 1) weaponLevel--;
-    if (hull > 0) sound.effect('hull', hull);
-    addShake(16);
-    triggerHitstop(0.08);
-    burst(player, '#ff5c4d', true);
-    shockwaves.push({ x: player.x, y: player.y, radius: 150, color: '#ff5c4d', life: 0.38, maxLife: 0.38 });
     if (hull > 0) {
+      sound.effect('hull', hull);
+      addShake(16);
+      triggerHitstop(0.08);
+      burst(player, '#ff5c4d', true);
+      shockwaves.push({ x: player.x, y: player.y, radius: 150, color: '#ff5c4d', life: 0.38, maxLife: 0.38 });
       popups.push({
         x: player.x,
         y: player.y - 26,
@@ -1565,6 +1589,25 @@ function hitPlayer() {
         maxLife: 0.95,
         size: 13,
       });
+    } else {
+      // Dramatic multi-stage ship explosion sequence before transitioning to Game Over!
+      playerDying = reducedMotion.matches ? 0.55 : 1.45;
+      deathTick = 0;
+      sound.stop();
+      sound.death();
+      addShake(18);
+      triggerHitstop(0.09);
+      burst({ x: player.x, y: player.y, r: 28 }, '#ff8f66', true);
+      shockwaves.push({ x: player.x, y: player.y, radius: 220, color: '#ff9c6e', life: 0.55, maxLife: 0.55 });
+      if (score > best) {
+        best = Math.floor(score);
+        bestLabel.textContent = formatScore(best);
+        try {
+          localStorage.setItem('low-orbit-best', String(best));
+        } catch {}
+      }
+      updateHud();
+      return;
     }
   }
 
@@ -1572,16 +1615,6 @@ function hitPlayer() {
     if (s.hostile && Math.hypot(s.x - player.x, s.y - player.y) < 145) s.dead = true;
   }
   updateHud();
-  if (hull <= 0) {
-    if (score > best) {
-      best = Math.floor(score);
-      bestLabel.textContent = formatScore(best);
-      try {
-        localStorage.setItem('low-orbit-best', String(best));
-      } catch {}
-    }
-    setMode('over');
-  }
 }
 
 function preciseSteering() {
@@ -1589,91 +1622,126 @@ function preciseSteering() {
 }
 
 function firePlayerWeapons(focused) {
-  const rig = RIGS[selectedRig];
+  const rig = getEffectiveRig();
   const od = overdriveTime > 0;
-  const dmgBoost = (focused ? 1.28 : 1) * (od ? 1.25 : 1);
-  // Always fire straight ahead (no nose tilt skew)
+  const tierScale = 1 + Math.max(0, weaponLevel - 4) * 0.14;
+  const dmgBoost = (focused ? 1.28 : 1) * (od ? 1.25 : 1) * tierScale;
   const aimBase = 0;
 
   function shoot(ox, oy, angle, speed, dmg, opts = {}) {
     shots.push({
       x: player.x + ox,
       y: player.y + oy,
-      r: opts.heavy ? 5.5 : 4.2,
+      r: opts.heavy ? 5.6 : opts.pierce ? 5.2 : 4.2,
       vx: Math.sin(angle) * speed,
       vy: -Math.cos(angle) * speed,
       dmg,
       hostile: false,
       focused,
       overdrive: od,
+      pierce: opts.pierce || 0,
+      hitIds: opts.pierce ? new Set() : null,
       ...opts,
     });
   }
 
   if (selectedRig === 'aegis') {
-    // Heavy tri-plasma cannons
     if (focused) {
-      shoot(-7, -17, aimBase * 0.4, 650, 1.45 * dmgBoost, { heavy: true });
-      shoot(7, -17, aimBase * 0.4, 650, 1.45 * dmgBoost, { heavy: true });
-      if (weaponLevel >= 3) shoot(0, -21, aimBase * 0.3, 690, 1.25 * dmgBoost, { heavy: true });
+      shoot(-7, -17, 0, 660, 1.45 * dmgBoost, { heavy: true });
+      shoot(7, -17, 0, 660, 1.45 * dmgBoost, { heavy: true });
+      if (weaponLevel >= 3) shoot(0, -22, 0, 700, 1.3 * dmgBoost, { heavy: true });
+      if (weaponLevel >= 5) {
+        shoot(-16, -10, 0, 720, 1.35 * dmgBoost, { pierce: 2 });
+        shoot(16, -10, 0, 720, 1.35 * dmgBoost, { pierce: 2 });
+      }
+      if (weaponLevel >= 7) shoot(0, -26, 0, 780, 1.65 * dmgBoost, { pierce: 3 });
     } else {
-      shoot(0, -19, aimBase, 590, 1.35 * dmgBoost, { heavy: true });
-      shoot(-13, -10, aimBase - 0.14, 570, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
-      shoot(13, -10, aimBase + 0.14, 570, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
+      shoot(0, -19, aimBase, 600, 1.35 * dmgBoost, { heavy: true });
+      shoot(-13, -10, -0.14, 575, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
+      shoot(13, -10, 0.14, 575, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
       if (weaponLevel >= 2) {
-        shoot(-18, -5, aimBase - 0.27, 540, 0.9 * dmgBoost);
-        shoot(18, -5, aimBase + 0.27, 540, 0.9 * dmgBoost);
+        shoot(-18, -5, -0.27, 545, 0.9 * dmgBoost);
+        shoot(18, -5, 0.27, 545, 0.9 * dmgBoost);
       }
       if (weaponLevel >= 4) {
-        shoot(-7, -16, aimBase - 0.05, 620, 1.0 * dmgBoost);
-        shoot(7, -16, aimBase + 0.05, 620, 1.0 * dmgBoost);
+        shoot(-7, -16, -0.05, 630, 1.0 * dmgBoost);
+        shoot(7, -16, 0.05, 630, 1.0 * dmgBoost);
+      }
+      if (weaponLevel >= 5) {
+        shoot(-22, -2, -0.38, 600, 1.1 * dmgBoost, { pierce: 2 });
+        shoot(22, -2, 0.38, 600, 1.1 * dmgBoost, { pierce: 2 });
+      }
+      if (weaponLevel >= 7) {
+        shoot(0, -24, 0, 700, 1.5 * dmgBoost, { pierce: 3 });
       }
     }
   } else if (selectedRig === 'falcon') {
-    // High-cadence twin/quad needles + seeker missiles
     if (focused) {
-      shoot(-5, -18, 0, 720, 0.95 * dmgBoost);
-      shoot(5, -18, 0, 720, 0.95 * dmgBoost);
-      if (weaponLevel >= 2) shoot(0, -22, 0, 750, 0.85 * dmgBoost);
+      shoot(-5, -18, 0, 730, 0.95 * dmgBoost);
+      shoot(5, -18, 0, 730, 0.95 * dmgBoost);
+      if (weaponLevel >= 2) shoot(0, -22, 0, 760, 0.9 * dmgBoost);
       if (weaponLevel >= 4) {
-        shoot(-11, -12, 0, 700, 0.75 * dmgBoost);
-        shoot(11, -12, 0, 700, 0.75 * dmgBoost);
+        shoot(-11, -12, 0, 710, 0.8 * dmgBoost);
+        shoot(11, -12, 0, 710, 0.8 * dmgBoost);
+      }
+      if (weaponLevel >= 6) {
+        shoot(-17, -7, 0, 750, 1.15 * dmgBoost, { pierce: 2 });
+        shoot(17, -7, 0, 750, 1.15 * dmgBoost, { pierce: 2 });
       }
     } else {
-      shoot(-7, -16, aimBase - 0.04, 670, 0.85 * dmgBoost);
-      shoot(7, -16, aimBase + 0.04, 670, 0.85 * dmgBoost);
+      shoot(-7, -16, -0.04, 680, 0.85 * dmgBoost);
+      shoot(7, -16, 0.04, 680, 0.85 * dmgBoost);
       if (weaponLevel >= 2) {
-        shoot(-15, -8, aimBase - 0.18, 630, 0.75 * dmgBoost);
-        shoot(15, -8, aimBase + 0.18, 630, 0.75 * dmgBoost);
+        shoot(-15, -8, -0.18, 640, 0.78 * dmgBoost);
+        shoot(15, -8, 0.18, 640, 0.78 * dmgBoost);
       }
-      if (weaponLevel >= 4) {
-        shoot(0, -21, aimBase, 690, 0.85 * dmgBoost);
+      if (weaponLevel >= 4) shoot(0, -21, 0, 700, 0.9 * dmgBoost);
+      if (weaponLevel >= 5) {
+        shoot(-20, -3, -0.32, 660, 0.95 * dmgBoost, { pierce: 2 });
+        shoot(20, -3, 0.32, 660, 0.95 * dmgBoost, { pierce: 2 });
+      }
+      if (weaponLevel >= 7) {
+        shoot(-10, -18, -0.09, 720, 1.0 * dmgBoost, { pierce: 2 });
+        shoot(10, -18, 0.09, 720, 1.0 * dmgBoost, { pierce: 2 });
       }
     }
   } else {
-    // Kestrel balanced pulse + focused rail-lance
+    // Kestrel balanced pulse + focused rail-lance + MK V-VII piercing wing lances
     if (focused) {
-      shoot(-4.5, -19, 0, 740, 1.1 * dmgBoost);
-      shoot(4.5, -19, 0, 740, 1.1 * dmgBoost);
+      shoot(-4.5, -19, 0, 745, 1.1 * dmgBoost);
+      shoot(4.5, -19, 0, 745, 1.1 * dmgBoost);
       if (weaponLevel >= 3) {
-        shoot(-11, -12, 0, 710, 0.85 * dmgBoost);
-        shoot(11, -12, 0, 710, 0.85 * dmgBoost);
+        shoot(-11, -12, 0, 715, 0.9 * dmgBoost);
+        shoot(11, -12, 0, 715, 0.9 * dmgBoost);
       }
+      if (weaponLevel >= 5) {
+        shoot(-17, -8, 0, 760, 1.2 * dmgBoost, { pierce: 2 });
+        shoot(17, -8, 0, 760, 1.2 * dmgBoost, { pierce: 2 });
+      }
+      if (weaponLevel >= 7) shoot(0, -25, 0, 810, 1.55 * dmgBoost, { pierce: 3 });
     } else {
       if (weaponLevel === 1) {
-        shoot(-6, -16, aimBase - 0.03, 620, 1.0 * dmgBoost);
-        shoot(6, -16, aimBase + 0.03, 620, 1.0 * dmgBoost);
+        shoot(-6, -16, -0.03, 625, 1.0 * dmgBoost);
+        shoot(6, -16, 0.03, 625, 1.0 * dmgBoost);
       } else {
-        shoot(0, -19, aimBase, 640, 1.0 * dmgBoost);
-        shoot(-12, -12, aimBase - 0.12, 610, 0.9 * dmgBoost);
-        shoot(12, -12, aimBase + 0.12, 610, 0.9 * dmgBoost);
+        shoot(0, -19, 0, 645, 1.0 * dmgBoost);
+        shoot(-12, -12, -0.12, 615, 0.9 * dmgBoost);
+        shoot(12, -12, 0.12, 615, 0.9 * dmgBoost);
         if (weaponLevel >= 3) {
-          shoot(-18, -6, aimBase - 0.24, 585, 0.85 * dmgBoost);
-          shoot(18, -6, aimBase + 0.24, 585, 0.85 * dmgBoost);
+          shoot(-18, -6, -0.24, 590, 0.85 * dmgBoost);
+          shoot(18, -6, 0.24, 590, 0.85 * dmgBoost);
         }
         if (weaponLevel >= 4) {
-          shoot(-6, -17, aimBase - 0.04, 660, 0.85 * dmgBoost);
-          shoot(6, -17, aimBase + 0.04, 660, 0.85 * dmgBoost);
+          shoot(-6, -17, -0.04, 665, 0.9 * dmgBoost);
+          shoot(6, -17, 0.04, 665, 0.9 * dmgBoost);
+        }
+        if (weaponLevel >= 5) {
+          shoot(-22, -2, -0.35, 635, 1.05 * dmgBoost, { pierce: 2 });
+          shoot(22, -2, 0.35, 635, 1.05 * dmgBoost, { pierce: 2 });
+        }
+        if (weaponLevel >= 6) {
+          shoot(-11, -16, 0, 720, 1.15 * dmgBoost, { pierce: 2 });
+          shoot(11, -16, 0, 720, 1.15 * dmgBoost, { pierce: 2 });
         }
       }
     }
@@ -1682,7 +1750,7 @@ function firePlayerWeapons(focused) {
   player.muzzle = 0.09;
   player.recoil = 2.6;
   sound.effect(focused ? 'focusFire' : 'fire');
-  nextShot = rig.fireRate * (od ? 0.68 : 1);
+  nextShot = rig.fireRate * (od ? 0.68 : 1) * (weaponLevel >= 6 ? 0.9 : 1);
 }
 
 function pointHitsBeam(px, py, bx, by, angle, halfWidth) {
@@ -1704,6 +1772,66 @@ function update(dt) {
 
   if (hitstop > 0) {
     hitstop = Math.max(0, hitstop - dt);
+    return;
+  }
+
+  // Cinematic slow-motion player destruction sequence before Game Over screen!
+  if (playerDying > 0) {
+    playerDying -= dt;
+    deathTick -= dt;
+    hitFlash = Math.max(0, hitFlash - dt * 0.7);
+    if (deathTick <= 0 && playerDying > 0.22) {
+      deathTick = 0.2;
+      const ox = between(-22, 22);
+      const oy = between(-22, 22);
+      burst({ x: player.x + ox, y: player.y + oy, r: 16 }, Math.random() < 0.5 ? '#ff9d6e' : '#ffe39c', false);
+      smoke.push({
+        x: player.x + ox,
+        y: player.y + oy,
+        vx: between(-35, 35),
+        vy: between(-35, 35),
+        r: between(6, 13),
+        color: '#6b7585',
+        life: 0.75,
+        maxLife: 0.75,
+      });
+      addShake(9);
+    }
+    const slowDt = dt * 0.35;
+    distance += slowDt * 120;
+    for (const s of shots) {
+      s.x += s.vx * slowDt;
+      s.y += s.vy * slowDt;
+    }
+    for (const p of sparks) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= Math.exp(-dt * 3);
+      p.vy *= Math.exp(-dt * 3);
+      p.life -= dt;
+    }
+    for (const d of debris) {
+      d.x += d.vx * dt;
+      d.y += d.vy * dt;
+      d.angle += d.spin * dt;
+      d.life -= dt;
+    }
+    for (const puff of smoke) {
+      puff.x += puff.vx * dt;
+      puff.y += puff.vy * dt;
+      puff.life -= dt;
+    }
+    for (const ring of impacts) ring.life -= dt;
+    for (const sw of shockwaves) sw.life -= dt;
+    sparks = sparks.filter((p) => p.life > 0);
+    debris = debris.filter((d) => d.life > 0);
+    smoke = smoke.filter((p) => p.life > 0);
+    impacts = impacts.filter((ring) => ring.life > 0);
+    shockwaves = shockwaves.filter((sw) => sw.life > 0);
+
+    if (playerDying <= 0) {
+      setMode('over');
+    }
     return;
   }
 
@@ -1819,8 +1947,22 @@ function update(dt) {
     player.vy = player.dashDy * rig.dashSpeed;
     player.x = clamp(player.x + player.vx * dt, 19, w - 19);
     player.y = clamp(player.y + player.vy * dt, 24, h - 24);
+    if (pointer) {
+      pointer.goalX = player.x;
+      pointer.goalY = player.y;
+    }
     player.ghosts.push({ x: player.x, y: player.y, bank: player.bank, life: 0.24 });
     if (player.ghosts.length > 6) player.ghosts.shift();
+  } else if (pointer) {
+    // 1:1 instant touch & mouse tracking (ZERO lag!), computing velocity purely for crisp 2.5D roll bank
+    const prevX = player.x;
+    const prevY = player.y;
+    player.x = clamp(pointer.goalX, 19, w - 19);
+    player.y = clamp(pointer.goalY, 24, h - 24);
+    const instVx = dt > 0.001 ? (player.x - prevX) / dt : 0;
+    const instVy = dt > 0.001 ? (player.y - prevY) / dt : 0;
+    player.vx += (clamp(instVx, -rig.speed * 1.4, rig.speed * 1.4) - player.vx) * (1 - Math.exp(-dt * 24));
+    player.vy += (clamp(instVy, -rig.speed * 1.4, rig.speed * 1.4) - player.vy) * (1 - Math.exp(-dt * 24));
   } else {
     const dx =
       Number(keys.has('ArrowRight') || keys.has('KeyD')) -
@@ -1829,16 +1971,13 @@ function update(dt) {
       Number(keys.has('ArrowDown') || keys.has('KeyS')) - Number(keys.has('ArrowUp') || keys.has('KeyW'));
     const length = Math.hypot(dx, dy);
     const thrust = focused ? rig.focusSpeed : rig.speed;
-    const offsetX = pointer ? pointer.goalX - player.x : 0;
-    const offsetY = pointer ? pointer.goalY - player.y : 0;
-    const follow = Math.min(19, 490 / (Math.hypot(offsetX, offsetY) || 1));
-    const targetX = pointer ? offsetX * follow : (dx * thrust) / (length || 1);
-    const targetY = pointer ? offsetY * follow : (dy * thrust) / (length || 1);
+    const targetX = (dx * thrust) / (length || 1);
+    const targetY = (dy * thrust) / (length || 1);
 
     function steer(position, velocity, target, min, max) {
       const v = player[velocity];
       const braking = Math.abs(target) < Math.abs(v) || target * v < 0;
-      const rate = pointer ? 30 : braking ? 34 : 20;
+      const rate = braking ? 34 : 20;
       const blend = -Math.expm1(-dt * rate);
       player[position] = clamp(player[position] + target * dt + ((v - target) * blend) / rate, min, max);
       player[velocity] = v + (target - v) * blend;
@@ -1879,18 +2018,21 @@ function update(dt) {
     firePlayerWeapons(focused);
   }
 
-  // Falcon (or MK III+ Kestrel/Aegis in Overdrive) homing micro-missiles
-  const hasMissiles = selectedRig === 'falcon' || (weaponLevel >= 3 && overdriveTime > 0);
+  // Automatic Homing Seeker Missiles (Falcon from MK I, ALL ships from MK IV+, quad swarms at MK VI+!)
+  const hasMissiles = selectedRig === 'falcon' || weaponLevel >= 4 || (weaponLevel >= 3 && overdriveTime > 0);
   if (isFiring && hasMissiles && missileTimer <= 0 && enemies.length > 0) {
-    const interval = selectedRig === 'falcon' ? (weaponLevel >= 3 ? 0.42 : 0.62) : 0.7;
-    for (const side of [-1, 1]) {
+    const quadSalvo = (selectedRig === 'falcon' && weaponLevel >= 4) || weaponLevel >= 6;
+    const interval = selectedRig === 'falcon' ? (weaponLevel >= 3 ? 0.42 : 0.62) : weaponLevel >= 6 ? 0.54 : 0.72;
+    const launchers = quadSalvo ? [-20, -10, 10, 20] : [-14, 14];
+    for (const ox of launchers) {
+      const side = Math.sign(ox);
       shots.push({
-        x: player.x + side * 14,
-        y: player.y + 2,
+        x: player.x + ox,
+        y: player.y + (Math.abs(ox) > 15 ? 6 : 1),
         r: 4.5,
-        vx: side * 130,
-        vy: -180,
-        dmg: selectedRig === 'falcon' ? 1.5 : 1.15,
+        vx: side * (Math.abs(ox) > 15 ? 195 : 120),
+        vy: -185,
+        dmg: selectedRig === 'falcon' ? 1.55 : 1.35,
         hostile: false,
         homing: true,
         age: 0,
@@ -2126,9 +2268,15 @@ function update(dt) {
       }
       if (hitSomething) continue;
 
-      const e = enemies.find((cand) => cand !== boss && !cand.dead && collides(s, cand));
+      const e = enemies.find((cand) => cand !== boss && !cand.dead && !s.hitIds?.has(cand) && collides(s, cand));
       if (e) {
-        s.dead = true;
+        if (s.pierce > 0) {
+          s.pierce--;
+          s.hitIds?.add(e);
+          if (s.pierce <= 0) s.dead = true;
+        } else {
+          s.dead = true;
+        }
         e.hp = Math.max(0, e.hp - (s.dmg || 1));
         e.flash = 0.13;
         if (e.hp > 0) {
@@ -2221,20 +2369,21 @@ function update(dt) {
         });
         sound.effect('overshield');
       } else if (p.kind === 'weapon') {
-        if (weaponLevel < 4) {
+        if (weaponLevel < 7) {
           weaponLevel++;
+          const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][weaponLevel - 1];
           popups.push({
             x: player.x,
             y: player.y - 24,
-            text: `WEAPON MK ${['I', 'II', 'III', 'IV'][weaponLevel - 1]}`,
-            color: PALETTE.teal,
+            text: `WEAPON MK ${roman}`,
+            color: weaponLevel >= 5 ? PALETTE.gold : PALETTE.teal,
             life: 1.0,
             maxLife: 1.0,
             size: 14,
           });
         } else {
-          addScore(350, player.x, player.y - 22, true, PALETTE.gold);
-          novaCharge = Math.min(100, novaCharge + 30);
+          addScore(450, player.x, player.y - 22, true, PALETTE.gold);
+          novaCharge = Math.min(100, novaCharge + 35);
         }
         sound.effect('upgrade');
       } else if (p.kind === 'shield') {
@@ -2320,17 +2469,65 @@ function update(dt) {
   updateHud();
 }
 
+function updateIntroFlight(dt) {
+  introTime += dt;
+  if (!introShip.ready && w && h) {
+    introShip.x = w * 0.22;
+    introShip.y = h * 0.34;
+    introShip.ready = true;
+  }
+  // Smooth figure-8 patrol loop across the open sky + gentle attraction toward mouse cursor!
+  const portrait = w < h;
+  const patrolX = w * (0.5 + Math.sin(introTime * 0.48) * 0.34);
+  const patrolY = portrait
+    ? h * (0.21 + Math.sin(introTime * 0.96) * 0.08)
+    : h * (0.28 + Math.sin(introTime * 0.96) * 0.14);
+  const mouseX = introCursorX * w;
+  const mouseY = clamp(introCursorY * h, h * 0.1, h * 0.68);
+  const targetX = patrolX * 0.62 + mouseX * 0.38;
+  const targetY = patrolY * 0.62 + mouseY * 0.38;
+
+  const dx = targetX - introShip.x;
+  const dy = targetY - introShip.y;
+  const desiredVx = clamp(dx * 2.2, -320, 320);
+  const desiredVy = clamp(dy * 2.2, -240, 240);
+  const prevVx = introShip.vx;
+  introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * 3.4));
+  introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * 3.4));
+  introShip.x += introShip.vx * dt;
+  introShip.y += introShip.vy * dt;
+
+  const spd = Math.hypot(introShip.vx, introShip.vy);
+  if (spd > 14) {
+    const targetHeading = Math.atan2(introShip.vx, -introShip.vy);
+    let diff = targetHeading - introShip.heading;
+    while (diff > Math.PI) diff -= TAU;
+    while (diff < -Math.PI) diff += TAU;
+    introShip.heading += diff * (1 - Math.exp(-dt * 6.5));
+    const turnRoll = clamp(diff * 1.7 + (introShip.vx - prevVx) * 0.015, -0.92, 0.92);
+    introShip.roll += (turnRoll - introShip.roll) * (1 - Math.exp(-dt * 6.5));
+  }
+
+  // Record wingtip contrails behind the flying ship
+  const cos = Math.cos(introShip.heading);
+  const sin = Math.sin(introShip.heading);
+  const span = Math.min(w * (w < h ? 0.14 : 0.078), h * 0.115, 76) * 0.33 * Math.cos(introShip.roll * 0.72);
+  for (let i = 0; i < 2; i++) {
+    const s = i === 0 ? -1 : 1;
+    const wx = introShip.x + cos * (s * span) - sin * 14;
+    const wy = introShip.y + sin * (s * span) + cos * 14;
+    const trail = introShip.trails[i];
+    trail.push({ x: wx, y: wy });
+    if (trail.length > 26) trail.shift();
+  }
+}
+
 function tick(now) {
   if (document.hidden || (mode !== 'playing' && mode !== 'intro')) return;
   const dt = lastTime ? Math.min(0.04, (now - lastTime) / 1000) : 0;
   lastTime = now;
   if (mode === 'intro') {
-    introTime += dt;
-    // Silky spring-damped 2.5D roll & pitch tracking cursor on Start screen!
-    const targetRoll = clamp((introCursorX - 0.5) * 1.9 + Math.sin(introTime * 0.55) * 0.14, -0.92, 0.92);
-    const targetPitch = clamp((introCursorY - 0.5) * 1.5 + Math.cos(introTime * 0.45) * 0.1, -0.8, 0.8);
-    introRoll += (targetRoll - introRoll) * (1 - Math.exp(-dt * 7.5));
-    introPitch += (targetPitch - introPitch) * (1 - Math.exp(-dt * 7.5));
+    updateIntroFlight(dt);
   } else {
     update(dt);
   }
@@ -2371,10 +2568,13 @@ for (const thumb of document.querySelectorAll('.rig-preview')) {
 for (const btn of document.querySelectorAll('.rig-option')) {
   btn.addEventListener('click', () => {
     selectedRig = btn.dataset.rig;
+    hangarRig = selectedRig;
     try {
       localStorage.setItem('low-orbit-rig', selectedRig);
     } catch {}
     syncRigButtons();
+    syncMetaUi();
+    introShip.trails = [[], []];
     draw();
   });
 }
@@ -2384,7 +2584,9 @@ action.addEventListener('click', () => {
   else launch();
 });
 restartMenu.addEventListener('click', () => setMode('intro'));
-pauseButton.addEventListener('click', () => setMode('paused'));
+pauseButton.addEventListener('click', () => {
+  if (playerDying <= 0) setMode('paused');
+});
 autofireBtn.addEventListener('click', () => {
   autoFire = !autoFire;
   updateHud();
@@ -2417,7 +2619,7 @@ window.addEventListener('keydown', (e) => {
   if (manual.open || hangar.open) return;
   if (e.target.closest?.('input, summary, button, a') && !['Escape', 'KeyP'].includes(e.code)) return;
 
-  if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused')) {
+  if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused') && playerDying <= 0) {
     e.preventDefault();
     if (!e.repeat) setMode(mode === 'playing' ? 'paused' : 'playing');
     return;
@@ -2487,7 +2689,7 @@ canvas.addEventListener('lostpointercapture', (e) => {
 });
 
 function autoPause() {
-  if (mode === 'playing') setMode('paused');
+  if (mode === 'playing' && playerDying <= 0) setMode('paused');
   else if (mode === 'over') sound.stop();
 }
 window.addEventListener('blur', autoPause);
@@ -2600,19 +2802,41 @@ function renderRigPips() {
 }
 
 function canAffordAnyUpgrade() {
+  const shipUpgrades = meta.ships[selectedRig] || emptyShipUpgrades();
   return UPGRADE_DEFS.some((def) => {
-    const lvl = meta.upgrades[def.id] || 0;
+    const lvl = shipUpgrades[def.id] || 0;
     return lvl < def.costs.length && meta.coins >= def.costs[lvl];
+  });
+}
+
+// Render tiny ship icons inside the per-ship Hangar tabs
+for (const thumb of document.querySelectorAll('.tab-preview')) {
+  const c = thumb.getContext('2d');
+  c.save();
+  c.translate(32, 32);
+  c.scale(0.5, 0.5);
+  drawInterceptor(c, thumb.dataset.ship);
+  c.restore();
+}
+
+for (const tab of document.querySelectorAll('.hangar-tab')) {
+  tab.addEventListener('click', () => {
+    hangarRig = tab.dataset.tab;
+    renderUpgrades();
   });
 }
 
 function renderUpgrades() {
   hangarCoinsEl.textContent = meta.coins.toLocaleString();
+  for (const tab of document.querySelectorAll('.hangar-tab')) {
+    tab.setAttribute('aria-selected', String(tab.dataset.tab === hangarRig));
+  }
+  const shipUpgrades = meta.ships[hangarRig] || emptyShipUpgrades();
   upgradeListEl.innerHTML = '';
   let totalSpent = 0;
 
   for (const def of UPGRADE_DEFS) {
-    const lvl = meta.upgrades[def.id] || 0;
+    const lvl = shipUpgrades[def.id] || 0;
     for (let i = 0; i < lvl; i++) totalSpent += def.costs[i];
     const maxed = lvl >= def.costs.length;
     const cost = maxed ? 0 : def.costs[lvl];
@@ -2643,7 +2867,7 @@ function renderUpgrades() {
       btn.addEventListener('click', () => {
         if (meta.coins < cost) return;
         meta.coins -= cost;
-        meta.upgrades[def.id] = lvl + 1;
+        meta.ships[hangarRig][def.id] = lvl + 1;
         saveMeta();
         sound.uiBuy();
         syncMetaUi();
@@ -2655,6 +2879,7 @@ function renderUpgrades() {
     upgradeListEl.append(row);
   }
   refundBtn.disabled = totalSpent === 0;
+  refundBtn.textContent = `Refund ${RIGS[hangarRig].name} (${totalSpent} coins)`;
 }
 
 function syncMetaUi() {
@@ -2664,16 +2889,19 @@ function syncMetaUi() {
 }
 
 function openHangar() {
+  hangarRig = selectedRig;
   renderUpgrades();
   hangar.showModal();
 }
 
 refundBtn.addEventListener('click', () => {
+  const shipUpgrades = meta.ships[hangarRig];
+  if (!shipUpgrades) return;
   let refund = 0;
   for (const def of UPGRADE_DEFS) {
-    const lvl = meta.upgrades[def.id] || 0;
+    const lvl = shipUpgrades[def.id] || 0;
     for (let i = 0; i < lvl; i++) refund += def.costs[i];
-    meta.upgrades[def.id] = 0;
+    shipUpgrades[def.id] = 0;
   }
   if (!refund) return;
   meta.coins += refund;
