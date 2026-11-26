@@ -828,6 +828,8 @@ h1 {
   color: #14202b;
   background: #eee4c9;
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+  overflow: hidden;
+  isolation: isolate;
 }
 #action .play-icon {
   color: #14202b;
@@ -835,8 +837,132 @@ h1 {
   height: 13px;
   flex: none;
 }
+#action .oc-bolt {
+  display: none;
+  flex: none;
+  color: #ffe396;
+  filter: drop-shadow(0 0 5px rgb(255 210 100 / 0.8));
+}
 #action:is(:hover, :focus-visible) {
   background: #a9efe1;
+}
+
+/* Overclock Engaged — Fierce Crimson Hazard & Crackling Energy Play Button! */
+body[data-overclock='true']:not([data-mode='paused']) #action {
+  color: #fff6ea;
+  background: linear-gradient(135deg, #ff4b38 0%, #d81e34 54%, #9e1129 100%);
+  border: 1.5px solid rgb(255 170 120 / 0.72);
+  box-shadow:
+    0 10px 34px rgb(235 36 52 / 0.52),
+    0 0 18px rgb(255 88 52 / 0.36),
+    inset 0 1px 0 rgb(255 224 185 / 0.45);
+  text-shadow: 0 1px 6px rgb(40 4 10 / 0.65);
+}
+body[data-overclock='true']:not([data-mode='paused']) #action::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: repeating-linear-gradient(
+    -52deg,
+    rgb(45 4 12 / 0.24) 0 10px,
+    transparent 10px 22px
+  );
+  pointer-events: none;
+}
+body[data-overclock='true']:not([data-mode='paused']) #action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgb(255 232 165 / 0.28) 48%,
+    rgb(255 255 240 / 0.42) 50%,
+    rgb(255 180 110 / 0.16) 53%,
+    transparent 76%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  body[data-overclock='true']:not([data-mode='paused']) #action {
+    animation: overclock-glow 1.9s ease-in-out infinite;
+  }
+  body[data-overclock='true']:not([data-mode='paused']) #action::before {
+    animation: hazard-march 2.2s linear infinite;
+  }
+  body[data-overclock='true']:not([data-mode='paused']) #action::after {
+    animation: heat-sweep 2.8s ease-in-out infinite;
+  }
+  body[data-overclock='true']:not([data-mode='paused']) #action .oc-bolt {
+    animation: bolt-flicker 1.35s ease-in-out infinite;
+  }
+}
+body[data-overclock='true']:not([data-mode='paused']) #action .play-icon {
+  display: none;
+}
+body[data-overclock='true']:not([data-mode='paused']) #action .oc-bolt {
+  display: block;
+}
+body[data-overclock='true']:not([data-mode='paused']) #action .oc-bolt-r {
+  scale: -1 1;
+}
+body[data-overclock='true']:not([data-mode='paused']) #action:is(:hover, :focus-visible) {
+  background: linear-gradient(135deg, #ff5d47 0%, #ec263d 54%, #ba1732 100%);
+  border-color: #ffd7a6;
+  box-shadow:
+    0 12px 40px rgb(255 52 52 / 0.68),
+    0 0 24px rgb(255 140 72 / 0.48),
+    inset 0 1px 0 rgb(255 236 205 / 0.65);
+}
+@keyframes overclock-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 32px rgb(235 36 52 / 0.48),
+      0 0 16px rgb(255 88 52 / 0.3),
+      inset 0 1px 0 rgb(255 224 185 / 0.42);
+  }
+  50% {
+    box-shadow:
+      0 10px 40px rgb(255 48 56 / 0.72),
+      0 0 26px rgb(255 128 64 / 0.52),
+      inset 0 1px 0 rgb(255 238 206 / 0.6);
+  }
+}
+@keyframes hazard-march {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(28px);
+  }
+}
+@keyframes heat-sweep {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+@keyframes bolt-flicker {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  65% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
 }
 .secondary-btn {
   color: #edf2f0;
@@ -874,6 +1000,134 @@ h1 {
   border-radius: 50%;
   background: var(--teal);
   box-shadow: 0 0 8px var(--teal);
+}
+
+/* Overclock Toggle + Hover Info Tooltip directly under Play/Upgrades */
+.overclock-row {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+.overclock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 5px 14px 5px 8px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 640;
+  color: #cfd9df;
+  background: rgb(11 19 32 / 0.64);
+  border: 1px solid rgb(164 196 206 / 0.22);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease;
+}
+.overclock-pill:hover {
+  border-color: rgb(250 117 77 / 0.55);
+  color: #f9edcf;
+}
+.switch-track {
+  position: relative;
+  width: 30px;
+  height: 17px;
+  border-radius: 999px;
+  background: rgb(164 196 206 / 0.24);
+  transition: background-color 0.18s ease;
+  flex: none;
+}
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #dce5ea;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease;
+}
+.overclock-pill[aria-pressed='true'] {
+  color: #ffcfb8;
+  background: rgb(42 18 18 / 0.78);
+  border-color: rgb(250 117 77 / 0.7);
+  box-shadow: 0 0 18px rgb(250 117 77 / 0.2);
+}
+.overclock-pill[aria-pressed='true'] .switch-track {
+  background: #fa754d;
+}
+.overclock-pill[aria-pressed='true'] .switch-knob {
+  transform: translateX(13px);
+  background: #fff6e8;
+}
+
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.info-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font:
+    700 12px/1 ui-monospace,
+    monospace;
+  color: var(--muted);
+  background: rgb(11 19 32 / 0.64);
+  border: 1px solid rgb(164 196 206 / 0.28);
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.16s ease,
+    color 0.16s ease;
+}
+.info-tip:is(:hover, :focus-within) .info-btn {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.info-popover {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%) translateY(-4px);
+  width: min(250px, 76vw);
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #101a2a;
+  border: 1px solid rgb(164 196 206 / 0.3);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.6);
+  color: #c5d1d8;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 10;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0.16s ease;
+}
+.info-popover strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12.5px;
+  color: #ffcfb8;
+}
+.info-tip:is(:hover, :focus-within) .info-popover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Bottom-pinned Controls + Guide Dock */
@@ -1014,7 +1268,7 @@ body[data-mode='paused'] h1,
 body[data-mode='over'] h1 {
   font-size: clamp(54px, 8.5vw, 118px);
 }
-body[data-mode='paused'] :is(.rig-select, #hangar-open) {
+body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
   display: none;
 }
 
@@ -1279,15 +1533,10 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open) {
   opacity: 0.45;
   cursor: default;
 }
-.skin-swatches {
-  display: inline-flex;
-  gap: 3px;
-}
-.skin-swatches i {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 1px solid rgb(0 0 0 / 0.35);
+.skin-preview {
+  width: 44px;
+  height: 44px;
+  display: block;
 }
 .skin-cost {
   display: inline-flex;
@@ -1300,50 +1549,6 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open) {
 }
 .skin-cost.owned {
   color: var(--teal);
-}
-.overclock-bar {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 13px;
-  border-radius: 10px;
-  background: rgb(250 117 77 / 0.07);
-  border: 1px solid rgb(250 117 77 / 0.26);
-}
-.overclock-bar strong {
-  display: block;
-  font-size: 14px;
-  color: #ffc8b0;
-}
-.overclock-bar p {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: #b7c2ca;
-}
-.overclock-toggle {
-  min-width: 68px;
-  min-height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  font:
-    700 11px/1 ui-monospace,
-    monospace;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  background: rgb(255 255 255 / 0.06);
-  border: 1px solid rgb(164 196 206 / 0.24);
-  transition:
-    background-color 0.16s ease,
-    border-color 0.16s ease,
-    color 0.16s ease;
-}
-.overclock-toggle[aria-pressed='true'] {
-  color: #190e0c;
-  background: #ff946b;
-  border-color: #ffbd9e;
-  box-shadow: 0 0 14px rgb(250 117 77 / 0.38);
 }
 
 .records-strip {

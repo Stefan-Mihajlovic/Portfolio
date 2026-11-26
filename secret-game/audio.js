@@ -861,12 +861,171 @@ export function createFlightAudio() {
     setTimeout(() => b.disconnect(), 600);
   }
 
+  function overclockOn() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+
+    // Separate saturated low-end growl bus from clean high-voltage sheen (zero muddy clash!)
+    const dirtyIn = ctx.createGain();
+    const shaper = ctx.createWaveShaper();
+    const dirtyFilter = ctx.createBiquadFilter();
+    const dirtyOut = ctx.createGain();
+    const cleanOut = ctx.createGain();
+
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) {
+      const x = i / 127.5 - 1;
+      curve[i] = Math.tanh(x * 2.6);
+    }
+    shaper.curve = curve;
+    shaper.oversample = '2x';
+
+    const t = ctx.currentTime;
+    dirtyFilter.type = 'lowpass';
+    dirtyFilter.Q.value = 3.2;
+    dirtyFilter.frequency.setValueAtTime(260, t);
+    dirtyFilter.frequency.exponentialRampToValueAtTime(2400, t + 0.14);
+    dirtyFilter.frequency.exponentialRampToValueAtTime(520, t + 0.38);
+    dirtyOut.gain.value = 0.62;
+    cleanOut.gain.value = 0.72;
+
+    dirtyIn.connect(shaper).connect(dirtyFilter).connect(dirtyOut).connect(compressor);
+    cleanOut.connect(compressor);
+
+    // 1. Tight mechanical ignition punch + crisp spark snap (instant tactile hit)
+    sfxVoice(t, 0.16, 'sine', 190, 48, 0.58, 0.002, 800, 0, 0, cleanOut);
+    sfxVoice(t, 0.065, 'noise', 0, 0, 0.34, 0.002, 3600, 0, 0, cleanOut);
+
+    // 2. Angry dark power-fifth reactor growl (D2 + A2 revving fiercely up to G2 + D3)
+    sfxVoice(t + 0.01, 0.36, 'sawtooth', 73.4, 98.0, 0.34, 0.012, 3200, -0.22, 0, dirtyIn);
+    sfxVoice(t + 0.01, 0.36, 'sawtooth', 74.2, 99.1, 0.28, 0.012, 3200, 0.22, 0, dirtyIn);
+    sfxVoice(t + 0.02, 0.34, 'sawtooth', 110.0, 146.8, 0.24, 0.015, 3200, 0, 0, dirtyIn);
+
+    // 3. Sleek dark metallic blade-lock sheen on top (clean, un-muddied tension!)
+    sfxVoice(t + 0.055, 0.24, 'plasma', 392, 587, 0.13, 0.008, 4200, 0, 0, cleanOut);
+    sfxVoice(t + 0.11, 0.19, 'triangle', 587, 554, 0.11, 0.005, 3800, 0, 0, cleanOut);
+
+    setTimeout(() => {
+      for (const n of [dirtyIn, shaper, dirtyFilter, dirtyOut, cleanOut]) n.disconnect();
+    }, 650);
+  }
+
+  function overclockOff() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const bus = ctx.createGain();
+    const lp = ctx.createBiquadFilter();
+    const t = ctx.currentTime;
+    lp.type = 'lowpass';
+    lp.Q.value = 1.6;
+    lp.frequency.setValueAtTime(1600, t);
+    lp.frequency.exponentialRampToValueAtTime(220, t + 0.28);
+    bus.gain.value = 0.72;
+    bus.connect(lp).connect(compressor);
+
+    // 1. Crisp mechanical unlatch click
+    sfxVoice(t, 0.055, 'triangle', 340, 145, 0.28, 0.002, 2400, 0, 0, bus);
+    // 2. Smooth reactor power-down turbine drop
+    sfxVoice(t + 0.01, 0.28, 'sawtooth', 146.8, 65.4, 0.22, 0.008, 1600, -0.18, 0, bus);
+    sfxVoice(t + 0.01, 0.28, 'sine', 110.0, 52.0, 0.34, 0.006, 900, 0.18, 0, bus);
+    // 3. Brief airy pressure-vent release
+    sfxVoice(t + 0.02, 0.16, 'noise', 0, 0, 0.18, 0.01, 2200, 0, 0, bus);
+
+    setTimeout(() => {
+      bus.disconnect();
+      lp.disconnect();
+    }, 500);
+  }
+
+  function uiClick() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    sfxVoice(t, 0.055, 'triangle', 640, 920, 0.14, 0.002, 4200, 0, 0, b);
+    sfxVoice(t, 0.025, 'noise', 0, 0, 0.09, 0.001, 4800, 0, 0, b);
+    setTimeout(() => b.disconnect(), 220);
+  }
+
+  function uiClose() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    sfxVoice(t, 0.075, 'triangle', 520, 290, 0.14, 0.002, 2800, 0, 0, b);
+    setTimeout(() => b.disconnect(), 240);
+  }
+
+  function uiLaunch(overclock = false) {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    if (overclock) {
+      sfxVoice(t, 0.28, 'sawtooth', 98, 220, 0.24, 0.005, 2400, 0, 0, b);
+      sfxVoice(t, 0.24, 'sine', 165, 58, 0.42, 0.003, 900, 0, 0, b);
+      sfxVoice(t + 0.04, 0.22, 'plasma', 440, 880, 0.16, 0.005, 4200, 0, 0, b);
+    } else {
+      sfxVoice(t, 0.22, 'sine', 220, 440, 0.22, 0.004, 2400, 0, 0, b);
+      sfxVoice(t + 0.03, 0.2, 'triangle', 523.25, 783.99, 0.18, 0.004, 4200, 0.15, 0, b);
+      sfxVoice(t, 0.16, 'noise', 0, 0, 0.14, 0.006, 2600, 0, 0, b);
+    }
+    setTimeout(() => b.disconnect(), 480);
+  }
+
+  function uiRefund() {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    [81, 76, 72, 79].forEach((n, i) =>
+      sfxVoice(t + i * 0.04, 0.14, 'triangle', hz(n), hz(n) * 0.98, 0.15, 0.003, 3600, (i - 1.5) * 0.18, 0, b),
+    );
+    setTimeout(() => b.disconnect(), 450);
+  }
+
+  // Unique signature selection SFX for each playable ship!
+  function uiShip(rig = 'kestrel') {
+    if (!volume || !init()) return;
+    ctx.resume().catch(() => {});
+    const b = ctx.createGain();
+    b.connect(compressor);
+    const t = ctx.currentTime;
+    if (rig === 'falcon') {
+      // Agile Striker: brisk thruster whoosh + snappy twin seeker target-lock chirps
+      sfxVoice(t, 0.12, 'noise', 0, 0, 0.16, 0.004, 3400, 0, 0, b);
+      sfxVoice(t + 0.01, 0.065, 'sine', 880, 1180, 0.16, 0.002, 4600, -0.18, 0, b);
+      sfxVoice(t + 0.08, 0.095, 'triangle', 1180, 1568, 0.17, 0.002, 5200, 0.18, 0, b);
+    } else if (rig === 'aegis') {
+      // Heavy Cruiser: deep armored bulkhead thud + warm low plasma shield hum
+      sfxVoice(t, 0.22, 'sine', 135, 58, 0.42, 0.003, 620, 0, 0, b);
+      sfxVoice(t + 0.015, 0.24, 'sawtooth', 146.8, 138.6, 0.13, 0.012, 920, -0.2, 0, b);
+      sfxVoice(t + 0.015, 0.24, 'triangle', 220.0, 220.0, 0.16, 0.015, 1400, 0.2, 0, b);
+    } else {
+      // Kestrel (Rail-Lance): sleek magnetic rail charge sweep + crisp cyan harmonic lock
+      sfxVoice(t, 0.16, 'plasma', 420, 880, 0.17, 0.004, 4000, -0.14, 0, b);
+      sfxVoice(t + 0.055, 0.17, 'triangle', 659.25, 1318.5, 0.15, 0.003, 4800, 0.14, 0, b);
+    }
+    setTimeout(() => b.disconnect(), 480);
+  }
+
   return {
     start,
     stop,
     death,
     effect,
     uiBuy,
+    uiClick,
+    uiClose,
+    uiLaunch,
+    uiRefund,
+    uiShip,
+    overclockOn,
+    overclockOff,
     setWave(value) {
       wave = value;
     },

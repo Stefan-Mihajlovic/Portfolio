@@ -57,7 +57,7 @@ function pickShuffledIndex(rank, runSeed, length) {
 }
 
 function buildPartsForChassis(chassis, rank, rng) {
-  const partHp = Math.round(16 + rank * 8.5);
+  const partHp = Math.round(24 + rank * 12);
   const parts = [];
   const role = chassis.defaultRole;
 
@@ -208,8 +208,8 @@ export function createBoss(rank, w, runSeed = 1, overclock = false) {
       : null;
 
   const palette = BOSS_PALETTES[palIdx];
-  // Smooth linear-asymptotic scaling so Rank 5, 10, 20+ stay exciting & fair, never exponential bloat!
-  const maxHp = Math.round(3 * (28 + rank * 14) * (overclock ? 1.18 : 1));
+  // Escalating boss durability so multi-phase fights stay dramatic against upgraded MK V–VII ships!
+  const maxHp = Math.round(3 * (42 + rank * 22) * (overclock ? 1.2 : 1));
   const scale = 1 + Math.min(0.24, (rank - 1) * 0.04);
 
   const boss = {

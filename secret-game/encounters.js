@@ -39,8 +39,8 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
   const sec = (overrides.sectorIndex || 0) % 4;
   // Asymptotic speed curve: climbs smoothly toward ~1.38x (+14% in Overclock, +7% in Eclipse Corona)
   const speed = (1 + 0.38 * (1 - Math.exp(-tier * 0.16))) * (overclock ? 1.14 : 1) * (sec === 3 ? 1.07 : 1);
-  // Sub-linear logarithmic HP growth: enemies feel tougher on late waves without turning into bullet sponges
-  const hpMult = (1 + Math.log2(1 + tier * 0.55) * 0.36) * (overclock ? 1.15 : 1);
+  // Smoothly escalating HP across ALL enemy tiers so higher waves stay engaging even at MK V–VII!
+  const hpMult = (1 + tier * 0.24 + Math.log2(1 + tier * 0.65) * 0.35) * (overclock ? 1.2 : 1);
 
   const rMap = {
     rock: 18 + Math.random() * 10,
@@ -66,13 +66,13 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
   };
   const baseHp = {
     rock: 2,
-    raider: tier >= 4 ? 2 : 1,
-    kite: tier >= 5 ? 2 : 1,
-    lancer: 2,
-    gunship: 6,
-    prism: 4,
-    minelayer: 11,
-    courier: 5,
+    raider: 1.35,
+    kite: 1.5,
+    lancer: 2.5,
+    gunship: 7,
+    prism: 5,
+    minelayer: 12,
+    courier: 6,
     mine: 2,
   };
   const shardMap = {
@@ -88,9 +88,11 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
   };
   const r = overrides.r ?? rMap[kind] ?? 16;
   const computedHp =
-    kind === 'raider' || kind === 'kite' || kind === 'mine'
-      ? baseHp[kind]
-      : Math.max(1, Math.round((baseHp[kind] || 1) * hpMult));
+    kind === 'mine'
+      ? baseHp.mine
+      : kind === 'rock'
+        ? Math.max(2, Math.round(baseHp.rock * (1 + tier * 0.12)))
+        : Math.max(1, Math.round((baseHp[kind] || 1) * hpMult));
   const hp = overrides.hp ?? computedHp;
   const cruise = (overrides.cruise ?? cruiseMap[kind] ?? 95) * speed;
 

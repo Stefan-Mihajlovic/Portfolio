@@ -202,10 +202,16 @@
 
           <div class="launch-row">
             <button id="action" class="hero-btn primary" type="button">
+              <svg class="oc-bolt oc-bolt-l" aria-hidden="true" width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
+                <path d="M9.5 0.5 2 9h4.6L4.5 15.5 12 7H7.4Z" />
+              </svg>
               <svg class="play-icon" aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M3.5 2.4a1 1 0 0 1 1.5-.86l8.6 5.6a1 1 0 0 1 0 1.72l-8.6 5.6A1 1 0 0 1 3.5 13.6Z" />
               </svg>
               <span id="action-text">Play</span>
+              <svg class="oc-bolt oc-bolt-r" aria-hidden="true" width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
+                <path d="M9.5 0.5 2 9h4.6L4.5 15.5 12 7H7.4Z" />
+              </svg>
             </button>
             <button id="hangar-open" class="hero-btn secondary-btn upgrade-btn" type="button">
               <i class="coin-dot" aria-hidden="true"></i><span>Upgrades</span>
@@ -228,6 +234,20 @@
               </svg>
               <span>Restart</span>
             </button>
+          </div>
+
+          <div class="overclock-row">
+            <button id="overclock-toggle" class="overclock-pill" type="button" aria-pressed="false">
+              <span class="switch-track" aria-hidden="true"><i class="switch-knob"></i></span>
+              <span>Overclock</span>
+            </button>
+            <span class="info-tip">
+              <button type="button" class="info-btn" aria-label="Overclock mode info" aria-describedby="overclock-tip">i</button>
+              <span id="overclock-tip" role="tooltip" class="info-popover">
+                <strong>Overclock Mode</strong>
+                +60% Coins &amp; +35% Score. Faster, tougher waves and flagships.
+              </span>
+            </span>
           </div>
         </div>
 
@@ -289,13 +309,6 @@
         <div id="upgrade-list" class="upgrade-list"></div>
         <div class="hangar-section-label">Ship Livery</div>
         <div id="skin-list" class="skin-list"></div>
-        <div class="overclock-bar">
-          <div>
-            <strong>Overclock Mode</strong>
-            <p>+60% Coins &amp; +35% Score. Faster, tougher waves and flagships.</p>
-          </div>
-          <button id="overclock-toggle" class="overclock-toggle" type="button" aria-pressed="false">OFF</button>
-        </div>
         <div class="hangar-footer">
           <button id="refund-upgrades" type="button" class="refund-btn">Refund this ship</button>
         </div>

@@ -50,7 +50,7 @@ const RIGS = {
     dashCd: 1.7,
     dashSpeed: 840,
     novaRadius: 260,
-    fireRate: 0.135,
+    fireRate: 0.16,
     accent: '#79e3d5',
   },
   falcon: {
@@ -62,7 +62,7 @@ const RIGS = {
     dashCd: 1.15,
     dashSpeed: 980,
     novaRadius: 235,
-    fireRate: 0.105,
+    fireRate: 0.14,
     accent: '#ffd18a',
   },
   aegis: {
@@ -74,7 +74,7 @@ const RIGS = {
     dashCd: 2.05,
     dashSpeed: 740,
     novaRadius: 320,
-    fireRate: 0.175,
+    fireRate: 0.2,
     accent: '#9be9ff',
   },
 };
@@ -263,6 +263,7 @@ volume.addEventListener('input', () => {
 
 fullscreen.hidden = !document.fullscreenEnabled;
 fullscreen.addEventListener('click', async () => {
+  sound.uiClick();
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await document.documentElement.requestFullscreen();
@@ -394,6 +395,7 @@ let peakMultiplier = 1;
 let novaCharge = 0;
 let overdriveTime = 0;
 let overshieldTime = 0;
+let overshieldBossRammed = false;
 let railBeamTime = 0;
 let railBeamTick = 0;
 let reflectShieldTime = 0;
@@ -1394,6 +1396,7 @@ function triggerNovaPulse() {
 
 function beginBoss() {
   bossHitTaken = false;
+  overshieldBossRammed = false;
   boss = createBoss(nextBossRank++, w, runSeed, meta.overclock);
   enemies = [boss, ...enemies.filter((e) => e.kind === 'rock')];
   for (const s of shots) if (s.hostile) s.dead = true;
@@ -1780,6 +1783,7 @@ function launch() {
   novaCharge = rig.startNova;
   overdriveTime = 0;
   overshieldTime = 0;
+  overshieldBossRammed = false;
   railBeamTime = 0;
   railBeamTick = 0;
   reflectShieldTime = 0;
@@ -1911,15 +1915,15 @@ function preciseSteering() {
 function firePlayerWeapons(focused) {
   const rig = getEffectiveRig();
   const od = overdriveTime > 0;
-  const tierScale = 1 + Math.max(0, weaponLevel - 4) * 0.14;
-  const dmgBoost = (focused ? 1.28 : 1) * (od ? 1.25 : 1) * tierScale;
-  const aimBase = 0;
+  // Clean, measured damage scaling across MK I–VII (evolves bolts instead of flooding the screen!)
+  const tierScale = 1 + (weaponLevel - 1) * 0.08;
+  const dmgBoost = (focused ? 1.24 : 1) * (od ? 1.2 : 1) * tierScale;
 
   function shoot(ox, oy, angle, speed, dmg, opts = {}) {
     shots.push({
       x: player.x + ox,
       y: player.y + oy,
-      r: opts.heavy ? 5.6 : opts.pierce ? 5.2 : 4.2,
+      r: opts.heavy ? 5.2 : opts.pierce ? 4.8 : 4.0,
       vx: Math.sin(angle) * speed,
       vy: -Math.cos(angle) * speed,
       dmg,
@@ -1934,110 +1938,76 @@ function firePlayerWeapons(focused) {
 
   if (selectedRig === 'aegis') {
     if (focused) {
-      shoot(-7, -17, 0, 660, 1.45 * dmgBoost, { heavy: true });
-      shoot(7, -17, 0, 660, 1.45 * dmgBoost, { heavy: true });
-      if (weaponLevel >= 3) shoot(0, -22, 0, 700, 1.3 * dmgBoost, { heavy: true });
-      if (weaponLevel >= 5) {
-        shoot(-16, -10, 0, 720, 1.35 * dmgBoost, { pierce: 2 });
-        shoot(16, -10, 0, 720, 1.35 * dmgBoost, { pierce: 2 });
+      // Max 3 clean heavy plasma lances
+      const outerPierce = weaponLevel >= 6 ? 1 : 0;
+      shoot(-8, -17, 0, 650, 1.35 * dmgBoost, { heavy: true, pierce: outerPierce });
+      shoot(8, -17, 0, 650, 1.35 * dmgBoost, { heavy: true, pierce: outerPierce });
+      if (weaponLevel >= 3) {
+        shoot(0, -22, 0, 700, 1.3 * dmgBoost, { heavy: true, pierce: weaponLevel >= 5 ? 2 : 0 });
       }
-      if (weaponLevel >= 7) shoot(0, -26, 0, 780, 1.65 * dmgBoost, { pierce: 3 });
     } else {
-      shoot(0, -19, aimBase, 600, 1.35 * dmgBoost, { heavy: true });
-      shoot(-13, -10, -0.14, 575, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
-      shoot(13, -10, 0.14, 575, 1.05 * dmgBoost, { heavy: weaponLevel >= 3 });
+      // Max 5 clean plasma bolts (MK V–VII evolve outer/center bolts into piercing!)
+      shoot(0, -19, 0, 610, 1.25 * dmgBoost, { heavy: true, pierce: weaponLevel >= 7 ? 2 : 0 });
+      shoot(-13, -11, -0.14, 575, 1.0 * dmgBoost, { heavy: weaponLevel >= 3 });
+      shoot(13, -11, 0.14, 575, 1.0 * dmgBoost, { heavy: weaponLevel >= 3 });
       if (weaponLevel >= 2) {
-        shoot(-18, -5, -0.27, 545, 0.9 * dmgBoost);
-        shoot(18, -5, 0.27, 545, 0.9 * dmgBoost);
-      }
-      if (weaponLevel >= 4) {
-        shoot(-7, -16, -0.05, 630, 1.0 * dmgBoost);
-        shoot(7, -16, 0.05, 630, 1.0 * dmgBoost);
-      }
-      if (weaponLevel >= 5) {
-        shoot(-22, -2, -0.38, 600, 1.1 * dmgBoost, { pierce: 2 });
-        shoot(22, -2, 0.38, 600, 1.1 * dmgBoost, { pierce: 2 });
-      }
-      if (weaponLevel >= 7) {
-        shoot(0, -24, 0, 700, 1.5 * dmgBoost, { pierce: 3 });
+        const wingPierce = weaponLevel >= 5 ? 1 : 0;
+        shoot(-19, -5, -0.28, 560, 0.9 * dmgBoost, { pierce: wingPierce });
+        shoot(19, -5, 0.28, 560, 0.9 * dmgBoost, { pierce: wingPierce });
       }
     }
   } else if (selectedRig === 'falcon') {
     if (focused) {
-      shoot(-5, -18, 0, 730, 0.95 * dmgBoost);
-      shoot(5, -18, 0, 730, 0.95 * dmgBoost);
-      if (weaponLevel >= 2) shoot(0, -22, 0, 760, 0.9 * dmgBoost);
-      if (weaponLevel >= 4) {
-        shoot(-11, -12, 0, 710, 0.8 * dmgBoost);
-        shoot(11, -12, 0, 710, 0.8 * dmgBoost);
-      }
-      if (weaponLevel >= 6) {
-        shoot(-17, -7, 0, 750, 1.15 * dmgBoost, { pierce: 2 });
-        shoot(17, -7, 0, 750, 1.15 * dmgBoost, { pierce: 2 });
+      // Max 3 razor-tight needle bolts
+      const outerPierce = weaponLevel >= 5 ? 1 : 0;
+      shoot(-7, -17, 0, 720, 0.92 * dmgBoost, { pierce: outerPierce });
+      shoot(7, -17, 0, 720, 0.92 * dmgBoost, { pierce: outerPierce });
+      if (weaponLevel >= 3) {
+        shoot(0, -22, 0, 760, 0.95 * dmgBoost, { pierce: weaponLevel >= 7 ? 2 : 0 });
       }
     } else {
-      shoot(-7, -16, -0.04, 680, 0.85 * dmgBoost);
-      shoot(7, -16, 0.04, 680, 0.85 * dmgBoost);
+      // Max 5 crisp bolts (outer evolve to piercing at MK V, center lance unlocks at MK VI)
+      shoot(-7, -16, -0.05, 675, 0.85 * dmgBoost);
+      shoot(7, -16, 0.05, 675, 0.85 * dmgBoost);
       if (weaponLevel >= 2) {
-        shoot(-15, -8, -0.18, 640, 0.78 * dmgBoost);
-        shoot(15, -8, 0.18, 640, 0.78 * dmgBoost);
+        const wingPierce = weaponLevel >= 5 ? 1 : 0;
+        shoot(-16, -8, -0.2, 645, 0.8 * dmgBoost, { pierce: wingPierce });
+        shoot(16, -8, 0.2, 645, 0.8 * dmgBoost, { pierce: wingPierce });
       }
-      if (weaponLevel >= 4) shoot(0, -21, 0, 700, 0.9 * dmgBoost);
-      if (weaponLevel >= 5) {
-        shoot(-20, -3, -0.32, 660, 0.95 * dmgBoost, { pierce: 2 });
-        shoot(20, -3, 0.32, 660, 0.95 * dmgBoost, { pierce: 2 });
-      }
-      if (weaponLevel >= 7) {
-        shoot(-10, -18, -0.09, 720, 1.0 * dmgBoost, { pierce: 2 });
-        shoot(10, -18, 0.09, 720, 1.0 * dmgBoost, { pierce: 2 });
+      if (weaponLevel >= 6) {
+        shoot(0, -21, 0, 720, 1.0 * dmgBoost, { pierce: 2 });
       }
     }
   } else {
-    // Kestrel balanced pulse + focused rail-lance + MK V-VII piercing wing lances
+    // Kestrel: crisp 2 -> 3 Focused Rail-Lance, 2 -> 5 Wide Pulse with evolved piercing tiers
     if (focused) {
-      shoot(-4.5, -19, 0, 745, 1.1 * dmgBoost);
-      shoot(4.5, -19, 0, 745, 1.1 * dmgBoost);
+      const outerPierce = weaponLevel >= 5 ? 1 : 0;
+      shoot(-7, -18, 0, 735, 1.05 * dmgBoost, { pierce: outerPierce });
+      shoot(7, -18, 0, 735, 1.05 * dmgBoost, { pierce: outerPierce });
       if (weaponLevel >= 3) {
-        shoot(-11, -12, 0, 715, 0.9 * dmgBoost);
-        shoot(11, -12, 0, 715, 0.9 * dmgBoost);
+        shoot(0, -23, 0, 770, 1.1 * dmgBoost, { pierce: weaponLevel >= 6 ? 2 : 0 });
       }
-      if (weaponLevel >= 5) {
-        shoot(-17, -8, 0, 760, 1.2 * dmgBoost, { pierce: 2 });
-        shoot(17, -8, 0, 760, 1.2 * dmgBoost, { pierce: 2 });
-      }
-      if (weaponLevel >= 7) shoot(0, -25, 0, 810, 1.55 * dmgBoost, { pierce: 3 });
     } else {
       if (weaponLevel === 1) {
         shoot(-6, -16, -0.03, 625, 1.0 * dmgBoost);
         shoot(6, -16, 0.03, 625, 1.0 * dmgBoost);
       } else {
-        shoot(0, -19, 0, 645, 1.0 * dmgBoost);
+        shoot(0, -19, 0, 650, 1.0 * dmgBoost, { pierce: weaponLevel >= 6 ? 2 : 0 });
         shoot(-12, -12, -0.12, 615, 0.9 * dmgBoost);
         shoot(12, -12, 0.12, 615, 0.9 * dmgBoost);
         if (weaponLevel >= 3) {
-          shoot(-18, -6, -0.24, 590, 0.85 * dmgBoost);
-          shoot(18, -6, 0.24, 590, 0.85 * dmgBoost);
-        }
-        if (weaponLevel >= 4) {
-          shoot(-6, -17, -0.04, 665, 0.9 * dmgBoost);
-          shoot(6, -17, 0.04, 665, 0.9 * dmgBoost);
-        }
-        if (weaponLevel >= 5) {
-          shoot(-22, -2, -0.35, 635, 1.05 * dmgBoost, { pierce: 2 });
-          shoot(22, -2, 0.35, 635, 1.05 * dmgBoost, { pierce: 2 });
-        }
-        if (weaponLevel >= 6) {
-          shoot(-11, -16, 0, 720, 1.15 * dmgBoost, { pierce: 2 });
-          shoot(11, -16, 0, 720, 1.15 * dmgBoost, { pierce: 2 });
+          const wingPierce = weaponLevel >= 5 ? 1 : 0;
+          shoot(-19, -5, -0.25, 600, 0.88 * dmgBoost, { pierce: wingPierce });
+          shoot(19, -5, 0.25, 600, 0.88 * dmgBoost, { pierce: wingPierce });
         }
       }
     }
   }
 
-  player.muzzle = 0.09;
-  player.recoil = 2.6;
+  player.muzzle = 0.08;
+  player.recoil = 2.4;
   sound.effect(focused ? 'focusFire' : 'fire');
-  nextShot = rig.fireRate * (od ? 0.68 : 1) * (weaponLevel >= 6 ? 0.9 : 1);
+  nextShot = rig.fireRate * (od ? 0.74 : 1);
 }
 
 function pointHitsBeam(px, py, bx, by, angle, halfWidth) {
@@ -2352,45 +2322,46 @@ function update(dt) {
     firePlayerWeapons(focused);
   }
 
-  // Automatic Homing Seeker Missiles (Falcon from MK I, ALL ships from MK IV+, quad swarms at MK VI+!)
+  // Measured Homing Seeker Missiles (only fire when visible enemies are on-screen; never solo-clears waves!)
   const hasMissiles = selectedRig === 'falcon' || weaponLevel >= 4 || (weaponLevel >= 3 && overdriveTime > 0);
-  if (isFiring && hasMissiles && missileTimer <= 0 && enemies.length > 0) {
-    const quadSalvo = (selectedRig === 'falcon' && weaponLevel >= 4) || weaponLevel >= 6;
-    const interval = selectedRig === 'falcon' ? (weaponLevel >= 3 ? 0.42 : 0.62) : weaponLevel >= 6 ? 0.54 : 0.72;
-    const launchers = quadSalvo ? [-20, -10, 10, 20] : [-14, 14];
+  const visibleEnemies = enemies.some((e) => !e.dead && e.y > 10);
+  if (isFiring && hasMissiles && missileTimer <= 0 && visibleEnemies) {
+    const tripleSalvo = selectedRig === 'falcon' && weaponLevel >= 6;
+    const interval = selectedRig === 'falcon' ? (weaponLevel >= 5 ? 0.82 : 0.98) : weaponLevel >= 6 ? 1.05 : 1.28;
+    const launchers = tripleSalvo ? [-17, 0, 17] : [-15, 15];
     for (const ox of launchers) {
       const side = Math.sign(ox);
       shots.push({
         x: player.x + ox,
-        y: player.y + (Math.abs(ox) > 15 ? 6 : 1),
-        r: 4.5,
-        vx: side * (Math.abs(ox) > 15 ? 195 : 120),
-        vy: -185,
-        dmg: selectedRig === 'falcon' ? 1.55 : 1.35,
+        y: player.y + (ox === 0 ? -12 : 2),
+        r: 4.2,
+        vx: side * 135,
+        vy: -175,
+        dmg: selectedRig === 'falcon' ? 1.05 : 0.95,
         hostile: false,
         homing: true,
         age: 0,
       });
     }
     sound.effect('missile');
-    missileTimer = interval * (overdriveTime > 0 ? 0.72 : 1);
+    missileTimer = interval * (overdriveTime > 0 ? 0.78 : 1);
   }
 
-  // Smart Wave Director with Crowd Budget (prevents overwhelming pileups on endless waves!)
+  // Smart Wave Director with Crowd Budget (keeps arena lively & challenging without unfair overlap!)
   if (!boss && !warp) {
     spawnIn -= worldDt;
     const combatHostiles = enemies.filter((e) => !e.dead && e.kind !== 'rock' && e.kind !== 'mine');
     const heavyCount = combatHostiles.filter((e) => ['gunship', 'prism', 'minelayer'].includes(e.kind)).length;
     if (spawnCount >= nextBossAtSpawn) {
-      if (combatHostiles.length === 0 && spawnIn <= 0.4) {
+      if (combatHostiles.length === 0 && spawnIn <= 0.35) {
         beginBoss();
       }
     } else {
-      if (combatHostiles.length === 0 && spawnIn > 0.6) {
-        spawnIn = 0.6;
+      if (combatHostiles.length === 0 && spawnIn > 0.28) {
+        spawnIn = 0.28;
       }
-      // Hold next squad cleanly if arena already has heavy threats or >= 5 active combat craft
-      const arenaCrowded = combatHostiles.length >= 5 || heavyCount >= 2;
+      const maxActive = currentWave >= 6 ? 7 : 6;
+      const arenaCrowded = combatHostiles.length >= maxActive || heavyCount >= 3;
       if (spawnIn <= 0 && !arenaCrowded) {
         const wave = Math.floor(spawnCount / 6) + 1;
         const beat = spawnCount % 6;
@@ -2541,11 +2512,11 @@ function update(dt) {
     if (s.dead) continue;
     if (s.homing) {
       s.age += dt;
-      // Pick closest live enemy or boss part
+      // Pick closest VISIBLE live enemy or boss part (never lock onto off-screen spawns!)
       let target = null;
       let bestDist = Infinity;
       for (const e of enemies) {
-        if (e.dead || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
+        if (e.dead || e.y < 10 || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
         if (e === boss) {
           for (const part of aliveBossParts(e)) {
             const d = Math.hypot(part.x - s.x, part.y - s.y);
@@ -2663,7 +2634,9 @@ function update(dt) {
       }
       if (hitSomething) continue;
 
-      const e = enemies.find((cand) => cand !== boss && !cand.dead && !s.hitIds?.has(cand) && collides(s, cand));
+      const e = enemies.find(
+        (cand) => cand !== boss && !cand.dead && cand.y > -4 && !s.hitIds?.has(cand) && collides(s, cand),
+      );
       if (e) {
         if (s.pierce > 0) {
           s.pierce--;
@@ -2698,13 +2671,41 @@ function update(dt) {
     if (Math.hypot(player.x - e.x, player.y - e.y) < hitDist && player.dashTime <= 0) {
       if (overshieldTime > 0) {
         if (e === boss) {
-          damageBossCore(e, 4);
+          // One-time modest ram impact per Overshield + clean repulsion bounce (never insta-melts boss!)
+          if (!overshieldBossRammed) {
+            overshieldBossRammed = true;
+            const ramDmg = Math.min(12, Math.max(5, Math.round(e.maxHp * 0.08)));
+            damageBossCore(e, ramDmg);
+            shockwaves.push({ x: player.x, y: player.y, radius: 110, color: '#ffe58f', life: 0.32, maxLife: 0.32 });
+            popups.push({
+              x: e.x,
+              y: e.y + e.r + 12,
+              text: 'RAM IMPACT',
+              color: '#ffe58f',
+              life: 0.85,
+              maxLife: 0.85,
+              size: 13,
+            });
+            addShake(8);
+          }
+          const rx = player.x - e.x;
+          const ry = player.y - e.y;
+          const rd = Math.hypot(rx, ry) || 1;
+          const pushDist = hitDist + 10;
+          player.x = clamp(e.x + (rx / rd) * pushDist, 19, w - 19);
+          player.y = clamp(e.y + (ry / rd) * pushDist, 24, h - 24);
+          player.vx = (rx / rd) * 260;
+          player.vy = Math.max(160, (ry / rd) * 260);
+          if (pointer) {
+            pointer.goalX = player.x;
+            pointer.goalY = player.y;
+          }
         } else {
           e.hp -= 10;
           e.flash = 0.16;
           if (e.hp <= 0) killEnemy(e);
+          addShake(5);
         }
-        addShake(5);
         continue;
       }
       if (e !== boss) {
@@ -2753,6 +2754,7 @@ function update(dt) {
         sound.effect('coin');
       } else if (p.kind === 'overshield') {
         overshieldTime = 6.5;
+        overshieldBossRammed = false;
         shockwaves.push({ x: player.x, y: player.y, radius: 130, color: '#ffe58f', life: 0.36, maxLife: 0.36 });
         popups.push({
           x: player.x,
@@ -2828,7 +2830,7 @@ function update(dt) {
 
   // Cleanup arrays
   enemies = enemies.filter((e) => !e.dead && e.y < h + e.r + 40 && e.x > -120 && e.x < w + 120);
-  shots = shots.filter((s) => !s.dead && s.y > -40 && s.y < h + 40 && s.x > -40 && s.x < w + 40);
+  shots = shots.filter((s) => !s.dead && s.y > -14 && s.y < h + 40 && s.x > -40 && s.x < w + 40);
   pickups = pickups.filter((p) => !p.dead && p.y < h + 30);
 
   for (const p of sparks) {
@@ -3028,6 +3030,7 @@ for (const btn of document.querySelectorAll('.rig-option')) {
   btn.addEventListener('click', () => {
     selectedRig = btn.dataset.rig;
     hangarRig = selectedRig;
+    sound.uiShip(selectedRig);
     try {
       localStorage.setItem('low-orbit-rig', selectedRig);
     } catch {}
@@ -3039,14 +3042,22 @@ for (const btn of document.querySelectorAll('.rig-option')) {
 }
 
 action.addEventListener('click', () => {
+  sound.uiLaunch(meta.overclock && mode !== 'paused');
   if (mode === 'paused') setMode('playing');
   else launch();
 });
-restartMenu.addEventListener('click', () => setMode('intro'));
+restartMenu.addEventListener('click', () => {
+  sound.uiClose();
+  setMode('intro');
+});
 pauseButton.addEventListener('click', () => {
-  if (playerDying <= 0) setMode('paused');
+  if (playerDying <= 0) {
+    sound.uiClose();
+    setMode('paused');
+  }
 });
 autofireBtn.addEventListener('click', () => {
+  sound.uiClick();
   autoFire = !autoFire;
   updateHud();
   canvas.focus({ preventScroll: true });
@@ -3101,6 +3112,10 @@ window.addEventListener('keydown', (e) => {
   }
 });
 window.addEventListener('keyup', (e) => keys.delete(e.code));
+
+mixer.querySelector('summary')?.addEventListener('click', () => sound.uiClick());
+document.querySelector('.back')?.addEventListener('click', () => sound.uiClose());
+document.querySelector('.info-btn')?.addEventListener('click', () => sound.uiClick());
 
 mixer.addEventListener('toggle', () => {
   if (!mixer.open && mode === 'playing' && mixer.contains(document.activeElement)) {
@@ -3236,6 +3251,7 @@ function wireModal(dialog) {
     closeTopLayer(dialog);
   });
   dialog.querySelector('form')?.addEventListener('submit', (event) => {
+    sound.uiClose();
     if (!supportsTopLayerExit()) {
       event.preventDefault();
       closeTopLayer(dialog);
@@ -3290,6 +3306,7 @@ function canAffordAnyUpgrade() {
 for (const tab of document.querySelectorAll('.hangar-tab')) {
   tab.addEventListener('click', () => {
     hangarRig = tab.dataset.tab;
+    sound.uiShip(hangarRig);
     renderUpgrades();
   });
 }
@@ -3297,8 +3314,9 @@ for (const tab of document.querySelectorAll('.hangar-tab')) {
 overclockToggle.addEventListener('click', () => {
   meta.overclock = !meta.overclock;
   saveMeta();
-  sound.uiBuy();
-  renderUpgrades();
+  if (meta.overclock) sound.overclockOn();
+  else sound.overclockOff();
+  syncMetaUi();
 });
 
 function renderRecordsAndMilestones() {
@@ -3318,8 +3336,6 @@ function renderRecordsAndMilestones() {
 
 function renderUpgrades() {
   hangarCoinsEl.textContent = meta.coins.toLocaleString();
-  overclockToggle.setAttribute('aria-pressed', String(meta.overclock));
-  overclockToggle.textContent = meta.overclock ? 'ON' : 'OFF';
   for (const tab of document.querySelectorAll('.hangar-tab')) {
     tab.setAttribute('aria-selected', String(tab.dataset.tab === hangarRig));
   }
@@ -3371,7 +3387,7 @@ function renderUpgrades() {
     upgradeListEl.append(row);
   }
 
-  // Render unlockable per-ship Liveries / Skins
+  // Render unlockable per-ship Liveries / Skins with actual live ship preview illustrations!
   const ownedSkins = meta.skins[hangarRig] || ['standard'];
   const equipped = meta.equippedSkin[hangarRig] || 'standard';
   skinListEl.innerHTML = '';
@@ -3384,20 +3400,45 @@ function renderUpgrades() {
     btn.className = 'skin-btn';
     btn.setAttribute('aria-pressed', String(isEquipped));
     btn.disabled = !isOwned && !canBuy;
-    btn.innerHTML = `
-      <span class="skin-swatches">${skin.swatch.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
-      <span>${skin.name}</span>
-      <span class="skin-cost ${isOwned ? 'owned' : ''}">${isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : skin.cost}</span>
-    `;
+
+    const preview = document.createElement('canvas');
+    preview.className = 'skin-preview';
+    preview.width = 88;
+    preview.height = 88;
+    preview.setAttribute('aria-hidden', 'true');
+    const pc = preview.getContext('2d');
+    const accent = getSkinAccent(skin.id, RIGS[hangarRig].accent);
+    pc.save();
+    pc.translate(44, 44);
+    const glow = pc.createRadialGradient(0, 4, 3, 0, 4, 34);
+    glow.addColorStop(0, accent + '36');
+    glow.addColorStop(1, accent + '00');
+    pc.fillStyle = glow;
+    pc.beginPath();
+    pc.arc(0, 4, 34, 0, TAU);
+    pc.fill();
+    pc.scale(0.68, 0.68);
+    drawInterceptor(pc, hangarRig, skin.id);
+    pc.restore();
+
+    const nameEl = document.createElement('span');
+    nameEl.textContent = skin.name;
+    const costEl = document.createElement('span');
+    costEl.className = 'skin-cost' + (isOwned ? ' owned' : '');
+    costEl.textContent = isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : String(skin.cost);
+
+    btn.append(preview, nameEl, costEl);
     btn.addEventListener('click', () => {
-      if (!isOwned) {
+      const bought = !isOwned;
+      if (bought) {
         if (meta.coins < skin.cost) return;
         meta.coins -= skin.cost;
         meta.skins[hangarRig].push(skin.id);
       }
       meta.equippedSkin[hangarRig] = skin.id;
       saveMeta();
-      sound.uiBuy();
+      if (bought) sound.uiBuy();
+      else sound.uiClick();
       renderShipPreviews();
       syncMetaUi();
       renderUpgrades();
@@ -3413,10 +3454,13 @@ function renderUpgrades() {
 function syncMetaUi() {
   coinBankEl.textContent = meta.coins.toLocaleString();
   upgradeDot.hidden = !canAffordAnyUpgrade();
+  overclockToggle.setAttribute('aria-pressed', String(meta.overclock));
+  document.body.dataset.overclock = String(meta.overclock);
   renderRigPips();
 }
 
 function openHangar() {
+  sound.uiClick();
   hangarRig = selectedRig;
   renderUpgrades();
   hangar.showModal();
@@ -3434,12 +3478,13 @@ refundBtn.addEventListener('click', () => {
   if (!refund) return;
   meta.coins += refund;
   saveMeta();
-  sound.uiBuy();
+  sound.uiRefund();
   syncMetaUi();
   renderUpgrades();
 });
 
 document.querySelector('#guide-open').addEventListener('click', () => {
+  sound.uiClick();
   renderRecordsAndMilestones();
   manual.showModal();
 });
