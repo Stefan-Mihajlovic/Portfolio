@@ -1,7 +1,4 @@
-import { createPixelRenderer } from '../assets/sky/dust-field.js';
-import { nebulaRegion } from '../assets/sky/nebula.js';
-
-// Shared ink-and-enamel aerospace palette harmonized with the portfolio's cosmic sky.
+// Shared ink-and-enamel aerospace palette & seamless high-craft multi-sector space backgrounds.
 export const PALETTE = {
   ink: '#0d1422',
   deep: '#080c16',
@@ -34,7 +31,6 @@ function print(ctx, layers) {
 
 // --- PLAYER SHIPS (3 distinct silhouettes sharing the graphic novel enamel language) ---
 
-// VX-01 KESTREL — balanced interceptor (preserves the iconic portfolio visitor silhouette)
 const kestrelPlates = plates([
   [
     ink,
@@ -63,7 +59,6 @@ const kestrelPlates = plates([
   [teal, 'M-4 38 4 38 3 41 -3 41Z'],
 ]);
 
-// VX-07 FALCON — swept forward-wing dart (high speed, seeker missiles)
 const falconPlates = plates([
   [
     ink,
@@ -83,7 +78,6 @@ const falconPlates = plates([
   ['#ffd18a', 'M-4 37 4 37 3 40 -3 40Z'],
 ]);
 
-// VX-04 AEGIS — armored twin-hull vanguard (heavy plasma, 4 shields)
 const aegisPlates = plates([
   [
     ink,
@@ -113,7 +107,7 @@ export function drawInterceptor(ctx, variant = 'kestrel') {
   print(ctx, shipModels[variant] || kestrelPlates);
 }
 
-// --- ENEMY SILHOUETTES (6 tactical archetypes + golden supply courier) ---
+// --- ENEMY SILHOUETTES ---
 
 const foes = {
   raider: plates([
@@ -172,7 +166,6 @@ export function drawFoe(ctx, e) {
   ctx.save();
   ctx.translate(e.x, e.y);
 
-  // Lancer dive sightline
   if (e.kind === 'lancer' && e.locked && e.fireIn > 0) {
     ctx.save();
     ctx.rotate(e.tilt || 0);
@@ -188,7 +181,6 @@ export function drawFoe(ctx, e) {
     ctx.restore();
   }
 
-  // Prism thermal beam telegraph / active beam
   if (e.kind === 'prism' && (e.beamWarn > 0 || e.beamActive > 0)) {
     ctx.save();
     ctx.rotate(e.beamAngle || 0);
@@ -220,7 +212,6 @@ export function drawFoe(ctx, e) {
   const scale = e.r / 18;
   ctx.scale(scale, scale);
 
-  // Engine glow on active craft
   if (e.kind !== 'prism' && e.kind !== 'courier') {
     const flick = 0.75 + 0.25 * Math.sin((e.age || 0) * 28);
     ctx.fillStyle = e.kind === 'lancer' && e.fireIn <= 0 ? '#ffe7b3' : '#ff8c5990';
@@ -231,7 +222,6 @@ export function drawFoe(ctx, e) {
     ctx.fill();
   }
 
-  // Courier rotating beacon halo
   if (e.kind === 'courier') {
     ctx.save();
     ctx.rotate((e.age || 0) * 1.8);
@@ -247,7 +237,6 @@ export function drawFoe(ctx, e) {
 
   print(ctx, foes[e.kind] || foes.raider);
 
-  // Hit flash overlay
   if (e.flash > 0) {
     ctx.globalCompositeOperation = 'lighter';
     ctx.fillStyle = 'rgba(255, 244, 216, 0.55)';
@@ -257,7 +246,6 @@ export function drawFoe(ctx, e) {
     ctx.globalCompositeOperation = 'source-over';
   }
 
-  // Weapon charge core
   const charge = e.fireIn < 0.6 && e.fireIn >= 0 && e.kind !== 'courier';
   const coreColor =
     e.kind === 'courier'
@@ -282,7 +270,6 @@ export function drawFoe(ctx, e) {
 
   ctx.restore();
 
-  // Compact diegetic armor bar for damaged multi-HP craft
   if (e.maxHp > 1 && e.hp < e.maxHp && e.hp > 0) {
     const bw = Math.max(24, e.r * 1.45);
     const bx = e.x - bw / 2;
@@ -363,7 +350,6 @@ export function drawRock(ctx, e) {
     ctx.lineTo(nx, ny);
     ctx.fill();
   });
-  // Crisp sunlit rim
   ctx.strokeStyle = '#d3c5b8';
   ctx.lineWidth = 0.04;
   ctx.beginPath();
@@ -372,7 +358,6 @@ export function drawRock(ctx, e) {
   ctx.lineTo(...e.shape[8]);
   ctx.stroke();
 
-  // Crack lines on damaged large rocks
   if (e.maxHp > 1 && e.hp < e.maxHp) {
     ctx.strokeStyle = '#ffbe78cc';
     ctx.lineWidth = 0.06;
@@ -415,7 +400,6 @@ export function drawPickup(ctx, p) {
     return;
   }
 
-  // Major tactical drop (weapon / shield / nova)
   const palette = {
     weapon: { rim: '#88f0de', core: '#16343d', label: 'W+' },
     shield: { rim: '#99dcff', core: '#172d44', label: '+S' },
@@ -425,7 +409,6 @@ export function drawPickup(ctx, p) {
   const scale = 1 + bob;
   ctx.scale(scale, scale);
 
-  // Outer rotating brackets
   ctx.save();
   ctx.rotate(p.age * 1.4);
   ctx.strokeStyle = palette.rim;
@@ -438,7 +421,6 @@ export function drawPickup(ctx, p) {
   }
   ctx.restore();
 
-  // Octagonal badge
   ctx.fillStyle = palette.core;
   ctx.strokeStyle = palette.rim;
   ctx.lineWidth = 1.8;
@@ -462,14 +444,23 @@ export function drawPickup(ctx, p) {
   ctx.restore();
 }
 
-// --- PROCEDURAL GRAPHIC-NOVEL PLANETS (replaces generic AI-slop clipart globes) ---
+// --- 4 DISTINCT ORBITAL SECTORS (Cohesive graphic-novel space skies + planets, zero low-res seams) ---
 
-const SECTOR_WORLDS = [
+export const SECTORS = [
   {
     name: 'PELAGIC RIM',
-    lane: 0.72,
-    width: 0.5,
-    base: ['#10263a', '#1d4c63', '#49a6a6', '#b8f2de'],
+    skyTop: '#060c18',
+    skyBottom: '#0b1829',
+    veilA: 'rgba(34, 118, 138, 0.22)',
+    veilB: 'rgba(26, 62, 118, 0.24)',
+    veilC: 'rgba(116, 224, 210, 0.11)',
+    starTint: '#d8f4ff',
+    starAccent: '#ffe2c2',
+    arcColor: 'rgba(121, 227, 213, 0.08)',
+    warpColor: '#9af5ec',
+    lane: 0.74,
+    width: 0.46,
+    base: ['#0e2438', '#1b4a62', '#449ea2', '#b9f3df'],
     rim: '#8ceee0',
     bands: 6,
     ring: false,
@@ -478,9 +469,18 @@ const SECTOR_WORLDS = [
   },
   {
     name: 'CALDERA BELT',
+    skyTop: '#12080d',
+    skyBottom: '#231015',
+    veilA: 'rgba(186, 74, 48, 0.24)',
+    veilB: 'rgba(110, 34, 52, 0.24)',
+    veilC: 'rgba(255, 178, 108, 0.12)',
+    starTint: '#ffe8d6',
+    starAccent: '#ffb380',
+    arcColor: 'rgba(255, 170, 112, 0.09)',
+    warpColor: '#ffbe82',
     lane: 0.22,
-    width: 0.36,
-    base: ['#26141b', '#5d2629', '#b85038', '#f5b076'],
+    width: 0.38,
+    base: ['#281218', '#622629', '#bf5138', '#f7b377'],
     rim: '#ff9d6b',
     bands: 4,
     ring: false,
@@ -489,10 +489,19 @@ const SECTOR_WORLDS = [
     seed: 43,
   },
   {
-    name: 'OPAL RING',
-    lane: 0.68,
-    width: 0.62,
-    base: ['#191830', '#383666', '#7265a3', '#d4c3f5'],
+    name: 'OPAL EXPANSE',
+    skyTop: '#0b0817',
+    skyBottom: '#1a1332',
+    veilA: 'rgba(124, 86, 198, 0.24)',
+    veilB: 'rgba(184, 88, 146, 0.18)',
+    veilC: 'rgba(156, 218, 255, 0.11)',
+    starTint: '#ece2ff',
+    starAccent: '#ffc2e0',
+    arcColor: 'rgba(200, 176, 255, 0.09)',
+    warpColor: '#d2b8ff',
+    lane: 0.7,
+    width: 0.56,
+    base: ['#191632', '#3a346b', '#7666aa', '#d7c6f7'],
     rim: '#c8b8ff',
     bands: 9,
     ring: true,
@@ -501,9 +510,18 @@ const SECTOR_WORLDS = [
   },
   {
     name: 'ECLIPSE CORONA',
-    lane: 0.32,
-    width: 0.46,
-    base: ['#0a0d16', '#141928', '#25283d', '#ffb474'],
+    skyTop: '#08090f',
+    skyBottom: '#191418',
+    veilA: 'rgba(220, 134, 62, 0.2)',
+    veilB: 'rgba(148, 42, 54, 0.2)',
+    veilC: 'rgba(255, 222, 138, 0.11)',
+    starTint: '#fff2d8',
+    starAccent: '#ff9c70',
+    arcColor: 'rgba(255, 206, 130, 0.09)',
+    warpColor: '#ffe099',
+    lane: 0.28,
+    width: 0.44,
+    base: ['#0a0d16', '#151929', '#2a2b3f', '#ffb878'],
     rim: '#ffbe7d',
     bands: 0,
     ring: false,
@@ -532,7 +550,6 @@ function buildWorldPlate(spec, isCover = false) {
   const r = size * 0.46;
   const rand = seededRandom(spec.seed);
 
-  // Back half of planetary rings
   const drawRings = (front) => {
     if (!spec.ring) return;
     c.save();
@@ -549,9 +566,9 @@ function buildWorldPlate(spec, isCover = false) {
       const ry = rx * 0.25;
       c.strokeStyle =
         i % 4 === 0
-          ? `rgba(246, 232, 206, ${0.06 + (1 - t) * 0.18})`
-          : `rgba(176, 165, 224, ${0.05 + Math.sin(t * Math.PI) * 0.16})`;
-      c.lineWidth = 1.5 + rand() * 3.5;
+          ? `rgba(246, 232, 206, ${0.08 + (1 - t) * 0.2})`
+          : `rgba(176, 165, 224, ${0.06 + Math.sin(t * Math.PI) * 0.18})`;
+      c.lineWidth = 1.5 + rand() * 3.2;
       c.beginPath();
       c.ellipse(0, 0, rx, ry, 0, 0, TAU);
       c.stroke();
@@ -561,23 +578,20 @@ function buildWorldPlate(spec, isCover = false) {
 
   drawRings(false);
 
-  // Atmospheric outer bloom
   const halo = c.createRadialGradient(cx - r * 0.22, cy - r * 0.22, r * 0.72, cx, cy, r * 1.28);
-  halo.addColorStop(0, spec.eclipse ? 'rgba(255, 174, 102, 0.42)' : spec.rim + '38');
-  halo.addColorStop(0.58, spec.eclipse ? 'rgba(250, 117, 77, 0.14)' : spec.rim + '12');
+  halo.addColorStop(0, spec.eclipse ? 'rgba(255, 174, 102, 0.48)' : spec.rim + '3c');
+  halo.addColorStop(0.58, spec.eclipse ? 'rgba(250, 117, 77, 0.16)' : spec.rim + '14');
   halo.addColorStop(1, 'rgba(8, 12, 22, 0)');
   c.fillStyle = halo;
   c.beginPath();
   c.arc(cx, cy, r * 1.28, 0, TAU);
   c.fill();
 
-  // Clip sphere interior
   c.save();
   c.beginPath();
   c.arc(cx, cy, r, 0, TAU);
   c.clip();
 
-  // Primary directional sphere gradient (crisp graphic sunlight top-left)
   const lit = c.createRadialGradient(
     cx - r * 0.44,
     cy - r * 0.44,
@@ -593,7 +607,6 @@ function buildWorldPlate(spec, isCover = false) {
   c.fillStyle = lit;
   c.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-  // Graphic contour bands / cloud strata
   if (spec.bands > 0) {
     c.save();
     c.translate(cx, cy);
@@ -615,7 +628,6 @@ function buildWorldPlate(spec, isCover = false) {
     c.restore();
   }
 
-  // Volcanic fissures or graphic surface landmasses/craters
   if (spec.fissures) {
     c.strokeStyle = 'rgba(255, 174, 102, 0.52)';
     c.lineWidth = 2;
@@ -643,7 +655,6 @@ function buildWorldPlate(spec, isCover = false) {
     }
   }
 
-  // Dramatic directional terminator shadow (leaves sunlit crescent bright and graphic!)
   const term = c.createLinearGradient(cx - r * 0.72, cy - r * 0.72, cx + r * 0.68, cy + r * 0.68);
   if (spec.eclipse) {
     term.addColorStop(0, 'rgba(10, 14, 24, 0.38)');
@@ -658,23 +669,20 @@ function buildWorldPlate(spec, isCover = false) {
   c.fillStyle = term;
   c.fillRect(cx - r, cy - r, r * 2, r * 2);
 
-  // Subtle orbital longitude/latitude cartography arc (editorial aerospace touch)
   c.strokeStyle = spec.rim + (isCover ? '34' : '1c');
   c.lineWidth = 1;
   c.beginPath();
   c.ellipse(cx, cy, r * 0.99, r * 0.36, -0.34, 0, TAU);
   c.stroke();
 
-  // Crisp sunlit atmospheric crescent rim
   c.strokeStyle = spec.rim + (spec.eclipse ? 'e0' : 'b8');
   c.lineWidth = spec.eclipse ? 4 : 2.6;
   c.beginPath();
   c.arc(cx, cy, r - 1.2, Math.PI * 0.72, Math.PI * 1.72);
   c.stroke();
 
-  // Subdue distant combat plates so gameplay bullets pop with 100% clarity
   if (!isCover) {
-    c.fillStyle = 'rgba(8, 12, 22, 0.32)';
+    c.fillStyle = 'rgba(8, 12, 22, 0.24)';
     c.fillRect(cx - r, cy - r, r * 2, r * 2);
   }
   c.restore();
@@ -683,7 +691,7 @@ function buildWorldPlate(spec, isCover = false) {
   return canvas;
 }
 
-const worldCache = SECTOR_WORLDS.map((spec) => ({
+const worldCache = SECTORS.map((spec) => ({
   ...spec,
   cover: null,
   distant: null,
@@ -697,9 +705,111 @@ export function loadPlanets(_inFlight, redraw) {
   redraw?.();
 }
 
-export function getSectorName(wave) {
-  const index = Math.floor((wave - 1) / 2) % SECTOR_WORLDS.length;
-  return SECTOR_WORLDS[index].name;
+export function getSector(index) {
+  return SECTORS[Math.max(0, index) % SECTORS.length];
+}
+
+export function getSectorName(index) {
+  return getSector(index).name;
+}
+
+// Seamless, razor-sharp layered nebula ribbons & orbital cartography (zero pixelation, zero mirror seams)
+const skyLayers = SECTORS.map((spec) => {
+  const rand = seededRandom(spec.seed + 313);
+  const ribbons = Array.from({ length: 7 }, (_, i) => ({
+    x: 0.1 + rand() * 0.8,
+    y: i / 7 + rand() * 0.1,
+    rx: 0.28 + rand() * 0.36,
+    ry: 0.16 + rand() * 0.22,
+    rot: (rand() - 0.5) * 1.1,
+    color: i % 3 === 0 ? spec.veilA : i % 3 === 1 ? spec.veilB : spec.veilC,
+  }));
+  const clusters = Array.from({ length: 10 }, () => ({
+    x: rand(),
+    y: rand(),
+    dots: Array.from({ length: 8 }, () => ({
+      dx: (rand() - 0.5) * 0.08,
+      dy: (rand() - 0.5) * 0.06,
+      s: 0.6 + rand() * 1.4,
+      a: 0.18 + rand() * 0.45,
+      warm: rand() < 0.32,
+    })),
+  }));
+  return { ribbons, clusters };
+});
+
+export function drawSpaceBackdrop(ctx, w, h, travel, pan, sectorIndex, warpFactor = 0) {
+  const idx = Math.max(0, sectorIndex) % SECTORS.length;
+  const spec = SECTORS[idx];
+  const layer = skyLayers[idx];
+
+  // Crisp deep sky base gradient
+  const grad = ctx.createLinearGradient(0, 0, w * 0.25, h);
+  grad.addColorStop(0, spec.skyTop);
+  grad.addColorStop(1, spec.skyBottom);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Silky seamless wrapping nebula clouds (no mirroring, no pixelation!)
+  const spanY = h * 1.5;
+  const offset = (travel * 0.18) % spanY;
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  for (const rb of layer.ribbons) {
+    const baseY = ((rb.y * spanY + offset) % spanY) - spanY * 0.25;
+    const cx = (rb.x - pan * 0.08) * w;
+    const rx = rb.rx * Math.max(w, h);
+    const ry = rb.ry * Math.max(w, h);
+    // Draw wrapped copies so transition across top/bottom edge is 100% invisible
+    for (const wy of [baseY, baseY - spanY, baseY + spanY]) {
+      if (wy + ry < -60 || wy - ry > h + 60) continue;
+      ctx.save();
+      ctx.translate(cx, wy);
+      ctx.rotate(rb.rot);
+      ctx.scale(1, ry / rx);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+      g.addColorStop(0, rb.color);
+      g.addColorStop(0.55, rb.color.replace(/[\d.]+\)$/, '0.06)'));
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, 0, rx, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+
+  // Subtle editorial orbital telemetry arcs drifting slowly in deep space
+  const arcOffset = (travel * 0.09) % (h * 1.6);
+  ctx.save();
+  ctx.strokeStyle = spec.arcColor;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(w * 0.86 - pan * 28, arcOffset - h * 0.2, Math.min(w, h) * 0.62, 0, TAU);
+  ctx.stroke();
+  ctx.setLineDash([4, 12]);
+  ctx.beginPath();
+  ctx.arc(w * 0.14 - pan * 18, ((arcOffset + h * 0.8) % (h * 1.6)) - h * 0.2, Math.min(w, h) * 0.44, 0, TAU);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Crisp distant star clusters (subtle depth, fades cleanly during warp)
+  if (warpFactor < 0.7) {
+    const clusterAlpha = 1 - warpFactor * 1.2;
+    const cOffset = (travel * 0.14) % h;
+    for (const cl of layer.clusters) {
+      const bx = (((cl.x - pan * 0.05) % 1) + 1) % 1;
+      const by = (cl.y * h + cOffset) % h;
+      for (const dot of cl.dots) {
+        ctx.globalAlpha = dot.a * clusterAlpha;
+        ctx.fillStyle = dot.warm ? spec.starAccent : spec.starTint;
+        ctx.fillRect(bx * w + dot.dx * w, by + dot.dy * h, dot.s, dot.s);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
 }
 
 function paintGlobe(ctx, image, x, y, width) {
@@ -707,9 +817,9 @@ function paintGlobe(ctx, image, x, y, width) {
   ctx.drawImage(image, x - width / 2, y - height / 2, width, height);
 }
 
-export function drawPlanets(ctx, w, h, distance, pan, intro) {
+export function drawPlanets(ctx, w, h, distance, pan, intro, sectorIndex = 0) {
+  const world = worldCache[Math.max(0, sectorIndex) % worldCache.length];
   if (intro) {
-    const world = worldCache[0];
     if (world.cover) {
       const portrait = w < h;
       paintGlobe(
@@ -722,75 +832,10 @@ export function drawPlanets(ctx, w, h, distance, pan, intro) {
     }
     return;
   }
-
-  const route = distance / 2400 + 0.38;
-  const current = Math.floor(route);
-  for (let i = Math.max(0, current - 1); i <= current; i++) {
-    const world = worldCache[i % worldCache.length];
-    if (!world.distant) continue;
-    const t = route - i;
-    const width = Math.min(w, h) * world.width * (0.94 + t * 0.16);
-    const x = w * world.lane + (t - 0.5) * width * 0.18 - pan * width * 0.11;
-    const y = h * (-0.28 + t * 1.15);
-    if (y - width / 2 < h && y + width / 2 > 0) paintGlobe(ctx, world.distant, x, y, width);
-  }
-}
-
-let paintDust;
-export function backdrop(w, h) {
-  const plate = document.createElement('canvas');
-  const scale = 540 / Math.max(w, h);
-  plate.width = Math.max(1, Math.round(w * scale));
-  plate.height = Math.max(1, Math.round(h * scale));
-  const c = plate.getContext('2d');
-  const pixels = c.createImageData(plate.width, plate.height);
-  paintDust ??= createPixelRenderer();
-  paintDust(pixels.data, {
-    w: plate.width,
-    h: plate.height,
-    region: nebulaRegion('/'),
-    phase: 1.4,
-    camera: 0,
-    progress: 1,
-    focusX: 0.5,
-    focusY: 0.5,
-  });
-  const data = pixels.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    data[i] = 4 + r * 1.28 + g * 0.08;
-    data[i + 1] = 6 + g * 1.18;
-    data[i + 2] = 10 + b * 1.15 + r * 0.14;
-    data[i + 3] = 255;
-  }
-  c.putImageData(pixels, 0, 0);
-
-  let seed = 229;
-  const roll = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let cluster = 0; cluster < 18; cluster++) {
-    const cx = roll() * plate.width;
-    const cy = roll() * plate.height;
-    const spread = 6 + roll() * 26;
-    const warm = roll() < 0.34;
-    for (let i = 0; i < 32; i++) {
-      const x = cx + (roll() - roll()) * spread;
-      const y = cy + (roll() - roll()) * spread * 0.48 + (x - cx) * 0.34;
-      c.globalAlpha = 0.14 + roll() * 0.48;
-      c.fillStyle = warm ? '#ffcdb0' : '#b6deed';
-      const size = 0.35 + roll() ** 4 * 0.95;
-      c.fillRect(x, y, size, size);
-    }
-    if (cluster % 4 === 0) {
-      c.globalAlpha = 1;
-      const halo = c.createRadialGradient(cx, cy, 0, cx, cy, 5.5);
-      halo.addColorStop(0, '#fff2cc');
-      halo.addColorStop(0.2, warm ? '#f4ba8d88' : '#b0dce388');
-      halo.addColorStop(1, '#adc7d200');
-      c.fillStyle = halo;
-      c.fillRect(cx - 5.5, cy - 5.5, 11, 11);
-    }
-  }
-  return plate;
+  if (!world.distant) return;
+  const t = ((distance / 2600 + 0.32) % 1.35);
+  const width = Math.min(w, h) * world.width * (0.94 + t * 0.14);
+  const x = w * world.lane + (t - 0.5) * width * 0.16 - pan * width * 0.1;
+  const y = h * (-0.28 + t * 1.05);
+  if (y - width / 2 < h && y + width / 2 > 0) paintGlobe(ctx, world.distant, x, y, width);
 }

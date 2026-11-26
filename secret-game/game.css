@@ -320,35 +320,79 @@ summary {
 .hud-bottom-left {
   position: fixed;
   left: max(var(--edge), env(safe-area-inset-left));
-  bottom: max(18px, env(safe-area-inset-bottom));
+  bottom: max(20px, env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   pointer-events: none;
 }
-.hull {
+
+.hud-bottom-center {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 9px 18px 11px;
+  border-radius: 12px;
+  background: rgb(9 15 26 / 0.72);
+  border: 1px solid rgb(121 227 213 / 0.28);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.hud-bottom-center.is-hit {
+  border-color: rgb(250 117 77 / 0.9);
+  background: rgb(56 16 20 / 0.76);
+}
+.hud-bottom-center.is-critical {
+  border-color: rgb(250 117 77 / 0.72);
+}
+.shield-head {
+  width: 100%;
   display: flex;
-  align-items: center;
-  gap: 9px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font:
+    700 11px/1 ui-monospace,
+    monospace;
+}
+.shield-head b {
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 .shield {
   display: flex;
-  gap: 4px;
+  gap: 7px;
   height: 18px;
   align-items: center;
 }
 .shield i {
-  width: 10px;
-  height: 12px;
-  transform: skew(-16deg);
-  background: #8ee6e2;
-  transition: background-color 0.2s ease;
+  width: clamp(28px, 3.6vw, 42px);
+  height: 15px;
+  border-radius: 3px;
+  transform: skew(-14deg);
+  background: linear-gradient(180deg, #b8fff6, #6fd9d6);
+  box-shadow: 0 0 14px rgb(121 227 213 / 0.45);
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 .shield.critical i:first-child {
-  background: var(--vermilion);
+  background: linear-gradient(180deg, #ffb48f, #fa6340);
+  box-shadow: 0 0 18px rgb(250 117 77 / 0.72);
 }
 .shield i.spent {
-  background: #2f3f50;
+  background: rgb(32 45 60 / 0.7);
+  border: 1px solid rgb(128 152 172 / 0.26);
+  box-shadow: none;
 }
 
 .weapon-strip {
@@ -984,12 +1028,20 @@ body[data-mode='paused'] .rig-select {
     grid-template-columns: 1fr;
   }
   .hud-bottom-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
+  }
+  .hud-bottom-center {
+    padding: 7px 14px 9px;
+  }
+  .shield i {
+    width: 24px;
+    height: 12px;
+  }
+  .hud-bottom-right {
+    bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px));
   }
   .gauge-block {
-    width: 118px;
+    width: 112px;
   }
 }
 

@@ -43,10 +43,6 @@
           </div>
 
           <div class="hud-bottom-left">
-            <span class="metric hull">
-              <span class="metric-label">Shields</span>
-              <span id="shield" class="shield" aria-label="3 shields"></span>
-            </span>
             <div class="weapon-strip">
               <span id="weapon-tier" class="badge">MK I</span>
               <span id="fire-mode" class="badge subtle">WIDE</span>
@@ -54,6 +50,14 @@
                 AUTO
               </button>
             </div>
+          </div>
+
+          <div class="hud-bottom-center" id="shield-hud">
+            <div class="shield-head">
+              <span class="metric-label">Shields</span>
+              <b id="shield-count">3/3</b>
+            </div>
+            <span id="shield" class="shield" aria-label="3 shields"></span>
           </div>
 
           <div class="hud-bottom-right">

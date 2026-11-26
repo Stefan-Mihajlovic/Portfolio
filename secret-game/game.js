@@ -1,9 +1,10 @@
 import { connectFlightPassage } from '../assets/sky/flight-passage.js';
 import {
   PALETTE,
-  backdrop,
+  drawSpaceBackdrop,
   drawPlanets,
   loadPlanets,
+  getSector,
   getSectorName,
   outlineRock,
   drawRock,
@@ -114,6 +115,8 @@ const hud = document.querySelector('#hud');
 const scoreLabel = document.querySelector('#score');
 const bestLabel = document.querySelector('#best');
 const shield = document.querySelector('#shield');
+const shieldHud = document.querySelector('#shield-hud');
+const shieldCount = document.querySelector('#shield-count');
 const comboHud = document.querySelector('#combo-hud');
 const comboMultEl = document.querySelector('#combo-mult');
 const bossHud = document.querySelector('#boss-hud');
@@ -180,7 +183,10 @@ let popups = [];
 
 let boss = null;
 let nextBossRank = 1;
-let bossScoreThreshold = 750;
+let nextBossAtSpawn = 12; // 2 full waves per sector before each flagship!
+let sectorIndex = 0;
+let warp = null; // { phase: 'collect'|'depart'|'tunnel'|'arrive', t, nextSector, switched }
+let hitFlash = 0;
 let mode = 'intro';
 let kills = 0;
 let grazes = 0;
@@ -217,7 +223,6 @@ let lastTime = 0;
 let pointer = null;
 let w = 0;
 let h = 700;
-let background;
 
 try {
   best = Number(localStorage.getItem('low-orbit-best')) || 0;
@@ -287,9 +292,6 @@ function resize() {
     }
   }
   pointer = null;
-  if (!background || Math.abs(previousWidth / previousHeight - w / h) > 0.001) {
-    background = backdrop(w, h);
-  }
   draw();
 }
 
@@ -362,13 +364,23 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   ctx.restore();
 }
 
+function getWarpIntensity() {
+  if (!warp) return 0;
+  if (warp.phase === 'depart') return Math.min(0.65, warp.t * 0.7);
+  if (warp.phase === 'tunnel') return 1;
+  if (warp.phase === 'arrive') return Math.max(0, 1 - warp.t / 0.85);
+  return 0;
+}
+
 function draw() {
-  if (!background) return;
+  if (!w || !h) return;
   const intro = mode === 'intro';
   const travel = intro ? introTime * 14 : distance;
   const pan = intro
     ? Math.sin(introTime * 0.14) * 0.12 + (introCursorX - 0.5) * 0.26
     : player.x / w - 0.5;
+  const warpFactor = getWarpIntensity();
+  const sector = getSector(intro ? 0 : sectorIndex);
 
   ctx.save();
   if (shake > 0.2 && mode === 'playing') {
@@ -377,38 +389,65 @@ function draw() {
     ctx.translate(sx, sy);
   }
 
-  // Seamless rolling nebula backdrop
-  const tile = h * 1.18;
-  const scroll = travel * 0.12;
-  const phase = scroll % tile;
-  const index = Math.floor(scroll / tile);
-  for (let i = -1; i <= 0; i++) {
-    ctx.save();
-    const flip = (index - i) % 2 !== 0;
-    ctx.translate(-w * (0.08 + pan * 0.09), phase + i * tile + (flip ? tile : 0));
-    if (flip) ctx.scale(1, -1);
-    ctx.drawImage(background, 0, 0, w * 1.16, tile);
-    ctx.restore();
-  }
+  // Seamless, razor-sharp multi-sector orbital backdrop (zero low-res seams)
+  drawSpaceBackdrop(ctx, w, h, travel, pan, intro ? 0 : sectorIndex, warpFactor);
 
-  // Deep parallax starfield
-  const speedStreak = overdriveTime > 0 ? 4.4 : player.dashTime > 0 ? 5.2 : 2.5;
+  // Deep parallax starfield + dramatic lightspeed hyper-streaks during sector warp
+  const speedStreak =
+    warpFactor > 0
+      ? 2.5 + warpFactor * 68
+      : overdriveTime > 0
+        ? 4.4
+        : player.dashTime > 0
+          ? 5.2
+          : 2.5;
   for (const star of stars) {
     const z = star.z;
     const x = (((star.x * w - pan * z * 34) % w) + w) % w;
     const y = (star.y * h + travel * z * z) % h;
-    ctx.fillStyle = star.warm ? '#ffe1c4' : '#e8f3ff';
-    ctx.globalAlpha = 0.2 + z * 0.56;
-    ctx.fillRect(x, y, 0.45 + z * 0.95, 0.6 + z * (intro ? 1.1 : speedStreak));
+    ctx.fillStyle = warpFactor > 0.35 && z > 0.55 ? sector.warpColor : star.warm ? sector.starAccent : sector.starTint;
+    ctx.globalAlpha = Math.min(1, 0.2 + z * (0.56 + warpFactor * 0.35));
+    const len = 0.7 + z * (intro ? 1.1 : speedStreak);
+    const thick = warpFactor > 0.25 ? 0.8 + z * 1.4 : 0.45 + z * 0.95;
+    ctx.fillRect(x, y - len * warpFactor * 0.5, thick, len);
   }
 
+  // Radial lightspeed tunnel lines & transition flash during hyperspace jump
+  if (warpFactor > 0.05) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const cx = w * 0.5;
+    const cy = h * 0.36;
+    for (let i = 0; i < 28; i++) {
+      const a = (i / 28) * TAU + (travel * 0.00025);
+      const phase = ((i * 0.37 + travel * 0.0024) % 1);
+      const r0 = 28 + phase * Math.max(w, h) * 0.35;
+      const r1 = r0 + (70 + phase * 190) * warpFactor;
+      ctx.strokeStyle = i % 3 === 0 ? '#ffffff' : sector.warpColor;
+      ctx.globalAlpha = warpFactor * (0.18 + phase * 0.42);
+      ctx.lineWidth = 1 + phase * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+      ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+      ctx.stroke();
+    }
+    if (warp && warp.phase === 'tunnel') {
+      const flash = Math.sin(Math.min(1, warp.t / 1.35) * Math.PI);
+      ctx.fillStyle = sector.warpColor;
+      ctx.globalAlpha = Math.pow(flash, 3) * 0.34;
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.restore();
+  }
+
+  ctx.globalAlpha = Math.max(0, 1 - warpFactor * 1.35);
+  if (ctx.globalAlpha > 0.01) drawPlanets(ctx, w, h, distance, pan, intro, intro ? 0 : sectorIndex);
   ctx.globalAlpha = 1;
-  drawPlanets(ctx, w, h, distance, pan, intro);
 
   // Subtle distant orbital debris belt
   const beltPhase = (travel / (h * 7) + 0.25) % 1;
   ctx.save();
-  ctx.globalAlpha = 0.22;
+  ctx.globalAlpha = 0.2 * Math.max(0, 1 - warpFactor);
   ctx.fillStyle = '#9aa7b0';
   for (const shard of belt) {
     const x = (shard.x - 0.5) * (1 + beltPhase * 0.24) + 0.5 - pan * 0.07;
@@ -426,17 +465,17 @@ function draw() {
   ctx.restore();
 
   // Perspective speed motes
-  ctx.strokeStyle = overdriveTime > 0 ? '#ffd7a1' : '#a6c4d4';
+  ctx.strokeStyle = overdriveTime > 0 ? '#ffd7a1' : sector.warpColor;
   for (const mote of motes) {
     const depth = 1.65 - ((mote.z + travel / (h * 2.6)) % 1.5);
     const dx = (mote.x - 0.5) * w;
     const dy = (mote.y - 0.39) * h;
     const cx = w * 0.5 - pan * 19;
     const cy = h * 0.3;
-    ctx.globalAlpha = Math.max(0, (1 - depth / 1.65) * 0.38);
-    ctx.lineWidth = 0.55 / depth;
+    ctx.globalAlpha = Math.max(0, (1 - depth / 1.65) * (0.34 + warpFactor * 0.3));
+    ctx.lineWidth = (0.55 + warpFactor * 0.9) / depth;
     ctx.beginPath();
-    ctx.moveTo(cx + dx / (depth + 0.017), cy + dy / (depth + 0.017));
+    ctx.moveTo(cx + dx / (depth + 0.017 + warpFactor * 0.06), cy + dy / (depth + 0.017 + warpFactor * 0.06));
     ctx.lineTo(cx + dx / depth, cy + dy / depth);
     ctx.stroke();
   }
@@ -629,8 +668,9 @@ function draw() {
     ctx.restore();
   }
 
-  // Wingtip contrails & Dash afterimages
-  if (lives > 0) {
+  // Player ship — nose always straight ahead like Chicken Invaders, subtle roll foreshortening
+  const hideForTunnel = warp && warp.phase === 'tunnel';
+  if (lives > 0 && !hideForTunnel) {
     const rig = RIGS[selectedRig];
     for (const trail of player.trails) {
       if (trail.length < 2) continue;
@@ -653,16 +693,16 @@ function draw() {
     }
 
     // Player ship — nose always straight ahead like Chicken Invaders, subtle roll foreshortening
-    ctx.globalAlpha = immune > 0 && player.dashTime <= 0 ? (Math.sin(time * 20) > 0 ? 0.55 : 0.88) : 1;
+    ctx.globalAlpha = immune > 0 && player.dashTime <= 0 && !warp ? (Math.sin(time * 20) > 0 ? 0.55 : 0.88) : 1;
     paintShip(
       player.x,
       player.y,
       34,
       0,
-      clamp(0.78 - player.vy / 360, 0.28, 1.7),
+      warp && warp.phase === 'depart' ? 2.4 : clamp(0.78 - player.vy / 360, 0.28, 1.7),
       selectedRig,
       {
-        dashing: player.dashTime > 0,
+        dashing: player.dashTime > 0 || (warp && warp.phase === 'depart'),
         overdrive: overdriveTime > 0,
         tier: weaponLevel,
         muzzle: player.muzzle,
@@ -744,6 +784,16 @@ function draw() {
     ctx.fillStyle = '#faf1d6';
     ctx.fillText(banner.headline, w / 2, cy + 14);
     ctx.restore();
+  }
+
+  // Visceral peripheral damage vignette when player takes a hit
+  if (hitFlash > 0 && mode === 'playing') {
+    const alpha = Math.min(0.55, hitFlash * 0.95);
+    const vig = ctx.createRadialGradient(w * 0.5, h * 0.5, Math.min(w, h) * 0.28, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
+    vig.addColorStop(0, 'rgba(250, 90, 62, 0)');
+    vig.addColorStop(1, `rgba(250, 82, 58, ${alpha})`);
+    ctx.fillStyle = vig;
+    ctx.fillRect(0, 0, w, h);
   }
 
   // Pause / Game Over atmospheric vignette
@@ -842,7 +892,7 @@ function dropTacticalCell(x, y, forcedKind = null) {
 }
 
 function triggerPhaseDash() {
-  if (mode !== 'playing' || player.dashCd > 0 || player.dashTime > 0) return;
+  if (mode !== 'playing' || (warp && warp.phase !== 'collect') || player.dashCd > 0 || player.dashTime > 0) return;
   const rig = RIGS[selectedRig];
   let dx =
     Number(keys.has('ArrowRight') || keys.has('KeyD')) -
@@ -869,7 +919,7 @@ function triggerPhaseDash() {
 }
 
 function triggerNovaPulse() {
-  if (mode !== 'playing' || novaCharge < 50) return;
+  if (mode !== 'playing' || (warp && warp.phase !== 'collect') || novaCharge < 50) return;
   const rig = RIGS[selectedRig];
   const power = novaCharge >= 98 ? 1.15 : 0.85;
   const radius = rig.novaRadius * power;
@@ -1049,9 +1099,17 @@ function finishBossCollapse(b) {
   addShake(16);
   sound.effect('nova');
   sound.setBoss(0);
-  bossScoreThreshold = score + 1400 + nextBossRank * 450;
-  spawnIn = 1.6;
-  showBanner('FLAGSHIP DESTROYED', `${b.name} NEUTRALIZED`, 'gold', 2.2);
+  // Schedule next flagship after 2 full waves in the next sector
+  nextBossAtSpawn = spawnCount + 12;
+  spawnIn = 1.4;
+  // Kick off cinematic Lightspeed Sector Jump after brief loot-magnet grace period
+  warp = {
+    phase: 'collect',
+    t: 0,
+    nextSector: sectorIndex + 1,
+    switched: false,
+  };
+  showBanner('FLAGSHIP DESTROYED', `${b.name} NEUTRALIZED`, 'gold', 1.8);
   updateHud();
 }
 
@@ -1110,6 +1168,9 @@ function renderShieldPips() {
   }
   shield.setAttribute('aria-label', `${lives} of ${maxLives} shields`);
   shield.classList.toggle('critical', lives === 1);
+  shieldCount.textContent = `${lives}/${maxLives}`;
+  shieldHud.classList.toggle('is-critical', lives === 1);
+  shieldHud.classList.toggle('is-hit', hitFlash > 0.08);
 }
 
 function updateHud() {
@@ -1175,6 +1236,9 @@ function setMode(next) {
     sound.stop();
     sound.rewind();
     boss = null;
+    warp = null;
+    sectorIndex = 0;
+    hitFlash = 0;
     bossHud.hidden = true;
     title.textContent = 'Low Orbit';
     message.hidden = false;
@@ -1233,7 +1297,10 @@ function launch() {
   sound.setIntensity(0);
   boss = null;
   nextBossRank = 1;
-  bossScoreThreshold = 750;
+  nextBossAtSpawn = 12;
+  sectorIndex = 0;
+  warp = null;
+  hitFlash = 0;
   bossHud.hidden = true;
   sound.rewind();
   nextShot = 0;
@@ -1251,24 +1318,25 @@ function launch() {
   impacts = [];
   shockwaves = [];
   popups = [];
-  showBanner(`SECTOR 01 // ${getSectorName(1)}`, `WAVE 01 — ${waveNames[0]}`, 'teal', 2.2);
+  showBanner(`SECTOR 01 // ${getSectorName(0)}`, `WAVE 01 — ${waveNames[0]}`, 'teal', 2.2);
   updateHud();
   setMode('playing');
 }
 
 function hitPlayer() {
-  if (immune > 0 || player.dashTime > 0) return;
+  if (immune > 0 || player.dashTime > 0 || warp) return;
   lives--;
+  hitFlash = 0.52;
   combo = Math.floor(combo * 0.35);
   if (weaponLevel > 1) weaponLevel--;
-  if (lives > 0) sound.effect('shield');
+  if (lives > 0) sound.effect('shield', lives);
   immune = 1.65;
-  addShake(12);
-  triggerHitstop(0.065);
-  burst(player, '#a6eaf1', true);
-  // Clear immediate danger bullets around player so you never get double-tapped
+  addShake(15);
+  triggerHitstop(0.075);
+  burst(player, '#ff8f6b', true);
+  shockwaves.push({ x: player.x, y: player.y, radius: 135, color: '#ff8a66', life: 0.34, maxLife: 0.34 });
   for (const s of shots) {
-    if (s.hostile && Math.hypot(s.x - player.x, s.y - player.y) < 130) s.dead = true;
+    if (s.hostile && Math.hypot(s.x - player.x, s.y - player.y) < 145) s.dead = true;
   }
   updateHud();
   if (lives <= 0) {
@@ -1408,6 +1476,7 @@ function update(dt) {
 
   time += dt;
   immune = Math.max(0, immune - dt);
+  hitFlash = Math.max(0, hitFlash - dt);
   nextShot -= dt;
   missileTimer -= dt;
   player.dashCd = Math.max(0, player.dashCd - dt);
@@ -1417,7 +1486,7 @@ function update(dt) {
   if (overdriveTime > 0) {
     overdriveTime = Math.max(0, overdriveTime - dt);
   }
-  if (comboTimer > 0) {
+  if (comboTimer > 0 && !warp) {
     comboTimer -= dt;
     if (comboTimer <= 0) combo = 0;
   }
@@ -1429,11 +1498,86 @@ function update(dt) {
   // Feed dynamic intensity to the music engine
   sound.setIntensity(clamp((getMultiplier() - 1) / 5 + (overdriveTime > 0 ? 0.45 : 0), 0, 1));
 
-  // Steering / Phase Dash
+  // --- CINEMATIC LIGHTSPEED WARP SEQUENCE BETWEEN SECTORS ---
+  if (warp) {
+    warp.t += dt;
+    immune = Math.max(immune, 0.5);
+    const shortMotion = reducedMotion.matches;
+
+    if (warp.phase === 'collect') {
+      // Auto-vacuum all boss drops while player can still steer briefly
+      for (const p of pickups) p.magnet = true;
+      if (warp.t >= (shortMotion ? 0.45 : 0.9)) {
+        warp.phase = 'depart';
+        warp.t = 0;
+        warp.startX = player.x;
+        warp.startY = player.y;
+        enemies = [];
+        shots = [];
+        sound.effect('warp');
+      }
+    } else if (warp.phase === 'depart') {
+      // Smoothly center horizontally and accelerate straight up off the top edge
+      const dur = shortMotion ? 0.45 : 0.95;
+      const p = clamp(warp.t / dur, 0, 1);
+      const easeIn = p * p * p;
+      player.x += (w * 0.5 - player.x) * (1 - Math.exp(-dt * 6));
+      player.y = warp.startY + (-110 - warp.startY) * easeIn;
+      player.vx = 0;
+      player.vy = -420 * p;
+      player.bank *= Math.exp(-dt * 12);
+      distance += dt * (220 + p * 1450);
+      if (p >= 1) {
+        warp.phase = 'tunnel';
+        warp.t = 0;
+        player.trails = [[], []];
+      }
+    } else if (warp.phase === 'tunnel') {
+      // Blazing hyperspace tunnel -> color space transitions cleanly at midpoint!
+      const dur = shortMotion ? 0.5 : 1.35;
+      distance += dt * 2100;
+      if (!warp.switched && warp.t >= dur * 0.48) {
+        warp.switched = true;
+        sectorIndex = warp.nextSector;
+        pickups = [];
+      }
+      if (warp.t >= dur) {
+        warp.phase = 'arrive';
+        warp.t = 0;
+        player.x = w * 0.5;
+        player.y = h + 86;
+        player.vy = -320;
+      }
+    } else if (warp.phase === 'arrive') {
+      // Ship flies smoothly in from bottom of the brand-new colored sector!
+      const dur = shortMotion ? 0.45 : 0.95;
+      const p = clamp(warp.t / dur, 0, 1);
+      const easeOut = 1 - Math.pow(1 - p, 3);
+      player.x = w * 0.5;
+      player.y = h + 86 + (h * 0.79 - (h + 86)) * easeOut;
+      player.vx = 0;
+      player.vy = -320 * (1 - p);
+      player.bank = 0;
+      distance += dt * (150 + (1 - p) * 1200);
+      if (p >= 1) {
+        warp = null;
+        player.y = h * 0.79;
+        player.vy = 0;
+        spawnIn = 0.8;
+        const secNum = String(sectorIndex + 1).padStart(2, '0');
+        showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, 'NEW ORBIT REACHED', 'teal', 2.2);
+      }
+    }
+  }
+
+  // Steering / Phase Dash (locked cleanly during depart/tunnel/arrive warp phases)
   const rig = RIGS[selectedRig];
   const focused = preciseSteering();
+  const controlsLocked = warp && warp.phase !== 'collect';
 
-  if (player.dashTime > 0) {
+  if (controlsLocked) {
+    // Ship position is driven by the warp choreography above
+  } else if (player.dashTime > 0) {
     player.dashTime = Math.max(0, player.dashTime - dt);
     player.vx = player.dashDx * rig.dashSpeed;
     player.vy = player.dashDy * rig.dashSpeed;
@@ -1469,26 +1613,30 @@ function update(dt) {
     if (player.y === 24 || player.y === h - 24) player.vy = 0;
   }
 
-  player.bank += (clamp(player.vx / rig.speed, -1, 1) * 0.36 - player.bank) * (1 - Math.exp(-dt * 12));
-  distance +=
-    dt *
-    clamp(128 - player.vy * 0.16, 70, 210) *
-    (overdriveTime > 0 ? 1.35 : 1) *
-    (reducedMotion.matches ? 0.45 : 1);
+  if (!controlsLocked) {
+    player.bank += (clamp(player.vx / rig.speed, -1, 1) * 0.36 - player.bank) * (1 - Math.exp(-dt * 12));
+    distance +=
+      dt *
+      clamp(128 - player.vy * 0.16, 70, 210) *
+      (overdriveTime > 0 ? 1.35 : 1) *
+      (reducedMotion.matches ? 0.45 : 1);
+  }
 
   // Update wingtip contrails & ghosts
-  for (let sideIdx = 0; sideIdx < 2; sideIdx++) {
-    const sign = sideIdx === 0 ? -1 : 1;
-    const trail = player.trails[sideIdx];
-    trail.push({ x: player.x + sign * 14 * (1 - Math.abs(player.bank) * 0.3), y: player.y + 11 });
-    if (trail.length > 10) trail.shift();
-    for (const pt of trail) pt.y += dt * 150;
+  if (!warp || warp.phase !== 'tunnel') {
+    for (let sideIdx = 0; sideIdx < 2; sideIdx++) {
+      const sign = sideIdx === 0 ? -1 : 1;
+      const trail = player.trails[sideIdx];
+      trail.push({ x: player.x + sign * 14 * (1 - Math.abs(player.bank) * 0.3), y: player.y + 11 });
+      if (trail.length > 10) trail.shift();
+      for (const pt of trail) pt.y += dt * (warp ? 420 : 150);
+    }
   }
   for (const g of player.ghosts) g.life -= dt;
   player.ghosts = player.ghosts.filter((g) => g.life > 0);
 
   // Firing logic
-  const isFiring = keys.has('Space') || Boolean(pointer) || autoFire;
+  const isFiring = !controlsLocked && (keys.has('Space') || Boolean(pointer) || autoFire);
   if (isFiring && nextShot <= 0) {
     firePlayerWeapons(focused);
   }
@@ -1514,34 +1662,41 @@ function update(dt) {
     missileTimer = interval * (overdriveTime > 0 ? 0.72 : 1);
   }
 
-  // Smart Wave Director (zero dead air!)
-  if (!boss) {
+  // Smart Wave Director (2 full waves per sector before Flagship arrives!)
+  if (!boss && !warp) {
     spawnIn -= dt;
     const activeHostiles = enemies.filter((e) => e.kind !== 'rock' && !e.dead).length;
-    if (activeHostiles === 0 && spawnIn > 0.55) {
-      spawnIn = 0.55;
-    }
-    if (spawnIn <= 0) {
-      const wave = Math.floor(spawnCount / 6) + 1;
-      const beat = spawnCount % 6;
-      hud.style.setProperty('--wave-progress', ((beat + 1) / 6) * 100 + '%');
-      if (beat === 0) {
-        currentWave = wave;
-        waveLabel.textContent = String(wave).padStart(2, '0');
-        sound.setWave(wave);
-        if (wave > 1) {
-          const opName = waveNames[(wave - 1) % waveNames.length];
-          showBanner(`SECTOR 0${((Math.floor((wave - 1) / 2)) % 4) + 1} // ${getSectorName(wave)}`, `WAVE ${String(wave).padStart(2, '0')} — ${opName}`, 'teal', 2.2);
+    if (spawnCount >= nextBossAtSpawn) {
+      if (activeHostiles === 0 && spawnIn <= 0.4) {
+        beginBoss();
+      }
+    } else {
+      if (activeHostiles === 0 && spawnIn > 0.55) {
+        spawnIn = 0.55;
+      }
+      if (spawnIn <= 0) {
+        const wave = Math.floor(spawnCount / 6) + 1;
+        const beat = spawnCount % 6;
+        hud.style.setProperty('--wave-progress', ((beat + 1) / 6) * 100 + '%');
+        if (beat === 0) {
+          currentWave = wave;
+          waveLabel.textContent = String(wave).padStart(2, '0');
+          sound.setWave(wave);
+          if (wave > 1) {
+            const opName = waveNames[(wave - 1) % waveNames.length];
+            const secNum = String(sectorIndex + 1).padStart(2, '0');
+            showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, `WAVE ${String(wave).padStart(2, '0')} — ${opName}`, 'teal', 2.1);
+          }
         }
+        const first = enemies.length;
+        spawnFormation(enemies, w, wave, beat, player.x);
+        for (const enemy of enemies.slice(first)) {
+          if (enemy.kind === 'rock') enemy.shape = outlineRock();
+        }
+        spawnCount++;
+        const cadence = 1 + 0.16 * Math.log2(wave);
+        spawnIn += (beat === 5 ? waveLength / 6 + 1.2 : waveLength / 6 - 0.15) / cadence;
       }
-      const first = enemies.length;
-      spawnFormation(enemies, w, wave, beat, player.x);
-      for (const enemy of enemies.slice(first)) {
-        if (enemy.kind === 'rock') enemy.shape = outlineRock();
-      }
-      spawnCount++;
-      const cadence = 1 + 0.19 * Math.log2(wave);
-      spawnIn += (beat === 5 ? waveLength / 6 + 1.1 : waveLength / 6 - 0.25) / cadence;
     }
   }
 
@@ -1809,9 +1964,15 @@ function update(dt) {
     }
   }
 
-  // Trigger flagship encounter at threshold
-  if (!boss && score >= bossScoreThreshold) {
-    beginBoss();
+  // Pull pickups strongly during warp collect phase too
+  for (const p of pickups) {
+    if (warp && warp.phase === 'collect' && p.kind !== 'shard') {
+      const dx = player.x - p.x;
+      const dy = player.y - p.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      p.x += (dx / dist) * 420 * dt;
+      p.y += (dy / dist) * 420 * dt;
+    }
   }
 
   // Cleanup arrays
