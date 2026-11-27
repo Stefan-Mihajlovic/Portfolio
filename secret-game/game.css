@@ -1487,6 +1487,282 @@ body[data-overclock='true']:not([data-mode='paused']) #action:is(:hover, :focus-
   color: var(--gold);
 }
 
+.record-btn svg {
+  color: var(--gold);
+}
+.record-btn:hover {
+  color: var(--gold);
+  border-color: rgb(255 214 107 / 0.55);
+}
+.panel-bottom-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+/* INLINE NEW BEST RECORD CALLSIGN SUBMISSION BAR */
+.record-submit {
+  width: min(440px, 100%);
+  margin: -10px 0 22px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgb(14 26 42 / 0.88), rgb(8 15 26 / 0.92));
+  border: 1px solid rgb(121 227 213 / 0.45);
+  border-left: 3px solid var(--gold);
+  pointer-events: auto;
+  display: grid;
+  gap: 8px;
+}
+.record-submit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font:
+    700 10.5px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+}
+.record-kicker {
+  color: var(--gold);
+}
+.record-ship-tag {
+  color: var(--teal);
+}
+.record-submit-row {
+  display: flex;
+  gap: 8px;
+}
+#pilot-name {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 11px;
+  font:
+    700 13px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgb(6 11 20 / 0.9);
+  border: 1px solid rgb(146 188 202 / 0.34);
+  outline: 0;
+  -webkit-user-select: text;
+  user-select: text;
+}
+#pilot-name:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px rgb(121 227 213 / 0.4);
+}
+.record-save-btn {
+  min-height: 38px;
+  padding: 0 15px;
+  clip-path: var(--chamfer-sm);
+  font:
+    800 11.5px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #14120c;
+  background: linear-gradient(180deg, #ffe799, #eab64d);
+  white-space: nowrap;
+}
+.record-save-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fff1be, #f2c361);
+}
+.record-save-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.record-status {
+  margin: 0 !important;
+  font:
+    600 11px/1.35 ui-monospace,
+    monospace !important;
+  letter-spacing: 0.06em;
+  color: var(--teal) !important;
+  text-align: left;
+}
+.record-status:empty {
+  display: none;
+}
+.record-status.is-error {
+  color: #ff8070 !important;
+}
+
+/* AEROSPACE GLOBAL LEADERBOARD TERMINAL */
+.lb-sheet {
+  width: min(650px, 94vw);
+}
+.lb-me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: rgb(16 34 52 / 0.72);
+  border: 1px solid rgb(121 227 213 / 0.45);
+  border-left: 3px solid var(--teal);
+  font:
+    700 12px/1.2 ui-monospace,
+    monospace;
+}
+.lb-me-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.lb-me-rank {
+  color: var(--gold);
+  font-size: 14px;
+}
+.lb-me-score {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.lb-table-head,
+.lb-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1.4fr) 104px 56px 96px;
+  align-items: center;
+  gap: 8px;
+}
+.lb-table-head {
+  padding: 0 10px 7px;
+  border-bottom: 1px solid rgb(146 188 202 / 0.2);
+  font:
+    700 10px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lb-table-head span:last-child,
+.lb-row .lb-score {
+  text-align: right;
+}
+.lb-list {
+  display: grid;
+  gap: 4px;
+  max-height: 46dvh;
+  overflow-y: auto;
+  padding: 8px 0;
+  touch-action: pan-y;
+}
+.lb-row {
+  padding: 7px 10px;
+  background: rgb(12 20 34 / 0.62);
+  border-left: 2px solid transparent;
+  font:
+    600 12px/1.2 ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.lb-row.is-me {
+  background: rgb(20 44 62 / 0.85);
+  border-left-color: var(--teal);
+}
+.lb-rank {
+  font-weight: 800;
+  color: var(--muted);
+}
+.lb-row[data-rank='1'] .lb-rank {
+  color: var(--gold);
+}
+.lb-row[data-rank='2'] .lb-rank {
+  color: #dce8f2;
+}
+.lb-row[data-rank='3'] .lb-rank {
+  color: #e69d6e;
+}
+.lb-pilot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink);
+}
+.lb-pilot-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-oc {
+  font-size: 10px;
+  color: #ff6e5e;
+  flex: none;
+}
+.lb-ship {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  color: #b7c8d6;
+}
+.lb-ship-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.lb-wave {
+  color: var(--muted);
+}
+.lb-score {
+  font-weight: 800;
+  color: var(--ink);
+}
+.lb-empty {
+  padding: 28px 12px;
+  text-align: center;
+  font:
+    600 12px/1.5 ui-monospace,
+    monospace;
+  color: var(--muted);
+}
+.lb-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(146 188 202 / 0.16);
+}
+.lb-count {
+  font:
+    600 10.5px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lb-more-btn {
+  min-height: 32px;
+  padding: 0 12px;
+  clip-path: var(--chamfer-sm);
+  font:
+    700 10.5px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgb(14 28 46 / 0.85);
+  box-shadow: inset 0 0 0 1px rgb(121 227 213 / 0.42);
+}
+@media (max-width: 560px) {
+  .lb-table-head,
+  .lb-row {
+    grid-template-columns: 40px minmax(0, 1.3fr) 74px 40px 76px;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .lb-ship-icon {
+    display: none;
+  }
+}
+
 /* FRAMELESS MECHANICAL KEYCAP PROMPTS */
 .keyboard {
   display: flex;

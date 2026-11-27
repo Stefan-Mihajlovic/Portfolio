@@ -390,6 +390,39 @@ let boss = null;
 let nextBossRank = 1;
 let runSeed = 1;
 let nextBossAtSpawn = 12; // 2 full waves per sector before each flagship!
+let runIsNewBest = false;
+let runShip = 'kestrel';
+let runOverclock = false;
+let runDuration = 0;
+
+// Persistent anonymous pilot profile for Global Leaderboard (only submits on personal best!)
+function loadLbProfile() {
+  let profile = { playerId: '', name: '', submittedBest: 0, submittedShip: 'kestrel' };
+  try {
+    const raw = JSON.parse(localStorage.getItem('low-orbit-lb-profile') || '{}');
+    if (raw && typeof raw === 'object') {
+      if (typeof raw.playerId === 'string' && raw.playerId.length >= 8) profile.playerId = raw.playerId;
+      if (typeof raw.name === 'string') profile.name = raw.name;
+      if (Number.isFinite(raw.submittedBest)) profile.submittedBest = Math.max(0, Math.floor(raw.submittedBest));
+      if (typeof raw.submittedShip === 'string') profile.submittedShip = raw.submittedShip;
+    }
+  } catch {}
+  if (!profile.playerId) {
+    profile.playerId =
+      globalThis.crypto?.randomUUID?.().replace(/-/g, '') ||
+      `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+    try {
+      localStorage.setItem('low-orbit-lb-profile', JSON.stringify(profile));
+    } catch {}
+  }
+  return profile;
+}
+const lbProfile = loadLbProfile();
+function saveLbProfile() {
+  try {
+    localStorage.setItem('low-orbit-lb-profile', JSON.stringify(lbProfile));
+  } catch {}
+}
 let sectorIndex = 0;
 let warp = null; // { phase: 'collect'|'depart'|'tunnel'|'arrive', t, nextSector, switched }
 let hitFlash = 0;
@@ -2146,6 +2179,7 @@ function setMode(next) {
     title.textContent = 'Low Orbit';
     message.hidden = false;
     document.querySelector('#debrief').hidden = true;
+    document.querySelector('#record-submit').hidden = true;
     document.querySelector('#action-text').textContent = 'Play';
     syncMetaUi();
     action.focus({ preventScroll: true });
@@ -2163,8 +2197,26 @@ function setMode(next) {
     document.querySelector('#run-kills').textContent = kills;
     document.querySelector('#run-combo').textContent = `×${peakMultiplier.toFixed(1)}`;
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
+    const recForm = document.querySelector('#record-submit');
+    if (lost && runIsNewBest && Math.floor(score) > 0) {
+      recForm.hidden = false;
+      const nameInput = document.querySelector('#pilot-name');
+      const saveBtn = document.querySelector('#save-record-btn');
+      const statusEl = document.querySelector('#record-status');
+      const shipTag = document.querySelector('#record-ship-tag');
+      shipTag.textContent = `${(RIGS[runShip]?.name || runShip).toUpperCase()}${runOverclock ? ' · ⚡ OVERCLOCK' : ''}`;
+      nameInput.value = lbProfile.name || '';
+      nameInput.disabled = false;
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'SAVE RANK';
+      statusEl.textContent = '';
+      statusEl.classList.remove('is-error');
+    } else {
+      recForm.hidden = true;
+    }
     syncMetaUi();
-    action.focus({ preventScroll: true });
+    if (!recForm.hidden) document.querySelector('#pilot-name').focus({ preventScroll: true });
+    else action.focus({ preventScroll: true });
     // Keep live ambient drifting space running smoothly on Ship lost!
     if (lost && !document.hidden && !reducedMotion.matches) {
       frame = requestAnimationFrame(tick);
@@ -2186,6 +2238,10 @@ function launch() {
   player.ghosts = [];
   score = 0;
   displayScore = 0;
+  runIsNewBest = false;
+  runShip = selectedRig;
+  runOverclock = Boolean(meta.overclock);
+  runDuration = 0;
   runCoins = 0;
   kills = 0;
   grazes = 0;
@@ -2314,8 +2370,12 @@ function hitPlayer() {
       triggerHitstop(0.09);
       burst({ x: player.x, y: player.y, r: 28 }, '#ff8f66', true);
       shockwaves.push({ x: player.x, y: player.y, radius: 220, color: '#ff9c6e', life: 0.55, maxLife: 0.55 });
-      if (score > best) {
-        best = Math.floor(score);
+      runDuration = Math.max(2, Math.round(time));
+      const finalScore = Math.floor(score);
+      // Prompt leaderboard submission ONLY when achieving a new personal best (or first-ever submitted best >= local best)
+      runIsNewBest = finalScore > 0 && (finalScore > best || (lbProfile.submittedBest === 0 && finalScore >= best));
+      if (finalScore > best) {
+        best = finalScore;
         bestLabel.textContent = formatScore(best);
         try {
           localStorage.setItem('low-orbit-best', String(best));
@@ -3861,7 +3921,7 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (manual.open || hangar.open) return;
+  if (manual.open || hangar.open || leaderboardDialog.open) return;
   if (e.target.closest?.('input, summary, button, a') && !['Escape', 'KeyP'].includes(e.code)) return;
 
   if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused') && playerDying <= 0) {
@@ -4043,6 +4103,16 @@ connectFlightPassage(document.querySelector('.back'));
 // --- MODAL DIALOGS (Field Guide + Hangar Upgrades with closedby & top-layer exit fallbacks) ---
 const manual = document.querySelector('#manual');
 const hangar = document.querySelector('#hangar');
+const leaderboardDialog = document.querySelector('#leaderboard');
+const lbListEl = document.querySelector('#lb-list');
+const lbMeEl = document.querySelector('#lb-me');
+const lbSubEl = document.querySelector('#lb-sub');
+const lbCountEl = document.querySelector('#lb-count');
+const lbMoreBtn = document.querySelector('#lb-more');
+const recordSubmitForm = document.querySelector('#record-submit');
+const pilotNameInput = document.querySelector('#pilot-name');
+const saveRecordBtn = document.querySelector('#save-record-btn');
+const recordStatusEl = document.querySelector('#record-status');
 const hangarCoinsEl = document.querySelector('#hangar-coins');
 const upgradeListEl = document.querySelector('#upgrade-list');
 const skinListEl = document.querySelector('#skin-list');
@@ -4115,6 +4185,273 @@ function wireModal(dialog) {
 }
 wireModal(manual);
 wireModal(hangar);
+wireModal(leaderboardDialog);
+
+// --- GLOBAL LEADERBOARD CLIENT (Netlify DB /api/leaderboard + Local Dev Preview Fallback) ---
+let lbOffset = 0;
+let lbTotal = 0;
+let lbOffline = false;
+
+function readLocalFallbackLb() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('low-orbit-local-lb') || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalFallbackScore(payload) {
+  const rows = readLocalFallbackLb();
+  const idx = rows.findIndex((r) => r.playerId === payload.playerId);
+  if (idx >= 0) {
+    if (payload.score <= rows[idx].score) {
+      return { ok: true, saved: false, reason: 'not_best', me: { ...rows[idx], rank: idx + 1 }, total: rows.length };
+    }
+    rows[idx] = { ...payload, updatedAt: Date.now() };
+  } else {
+    rows.push({ ...payload, updatedAt: Date.now() });
+  }
+  rows.sort((a, b) => b.score - a.score || a.updatedAt - b.updatedAt);
+  const trimmed = rows.slice(0, 1000);
+  try {
+    localStorage.setItem('low-orbit-local-lb', JSON.stringify(trimmed));
+  } catch {}
+  const myIdx = trimmed.findIndex((r) => r.playerId === payload.playerId);
+  return {
+    ok: true,
+    saved: myIdx >= 0,
+    local: true,
+    me: myIdx >= 0 ? { ...trimmed[myIdx], rank: myIdx + 1 } : null,
+    total: trimmed.length,
+  };
+}
+
+function paintMiniShip(canvasEl, shipKey) {
+  const c = canvasEl.getContext('2d');
+  c.clearRect(0, 0, canvasEl.width, canvasEl.height);
+  c.save();
+  c.translate(20, 20);
+  c.scale(0.34, 0.34);
+  drawInterceptor(c, RIGS[shipKey] ? shipKey : 'kestrel', 'standard');
+  c.restore();
+}
+
+function buildLbRow(entry) {
+  const row = document.createElement('div');
+  row.className = 'lb-row' + (entry.isMe ? ' is-me' : '');
+  row.dataset.rank = String(entry.rank);
+  row.setAttribute('role', 'listitem');
+
+  const rankEl = document.createElement('span');
+  rankEl.className = 'lb-rank';
+  rankEl.textContent = `#${entry.rank}`;
+
+  const pilotEl = document.createElement('span');
+  pilotEl.className = 'lb-pilot';
+  const nameEl = document.createElement('span');
+  nameEl.className = 'lb-pilot-name';
+  nameEl.textContent = entry.name;
+  pilotEl.append(nameEl);
+  if (entry.overclock) {
+    const oc = document.createElement('span');
+    oc.className = 'lb-oc';
+    oc.title = 'Overclock run';
+    oc.textContent = '⚡';
+    pilotEl.append(oc);
+  }
+
+  const shipEl = document.createElement('span');
+  shipEl.className = 'lb-ship';
+  const icon = document.createElement('canvas');
+  icon.className = 'lb-ship-icon';
+  icon.width = 40;
+  icon.height = 40;
+  icon.setAttribute('aria-hidden', 'true');
+  paintMiniShip(icon, entry.ship);
+  const shipName = document.createElement('span');
+  shipName.textContent = RIGS[entry.ship]?.name || 'Kestrel';
+  shipEl.append(icon, shipName);
+
+  const waveEl = document.createElement('span');
+  waveEl.className = 'lb-wave';
+  waveEl.textContent = `W${String(entry.wave || 1).padStart(2, '0')}`;
+
+  const scoreEl = document.createElement('span');
+  scoreEl.className = 'lb-score';
+  scoreEl.textContent = Math.floor(entry.score || 0).toLocaleString();
+
+  row.append(rankEl, pilotEl, shipEl, waveEl, scoreEl);
+  return row;
+}
+
+function renderLbMe(me) {
+  if (!me) {
+    lbMeEl.hidden = true;
+    return;
+  }
+  lbMeEl.hidden = false;
+  lbMeEl.innerHTML = '';
+  const left = document.createElement('span');
+  left.className = 'lb-me-left';
+  const rankSpan = document.createElement('span');
+  rankSpan.className = 'lb-me-rank';
+  rankSpan.textContent = `YOUR RANK #${me.rank}`;
+  const infoSpan = document.createElement('span');
+  infoSpan.textContent = `${me.name} · ${(RIGS[me.ship]?.name || 'Kestrel').toUpperCase()}${me.overclock ? ' ⚡' : ''}`;
+  left.append(rankSpan, infoSpan);
+
+  const right = document.createElement('span');
+  right.className = 'lb-me-score';
+  right.textContent = `${Math.floor(me.score).toLocaleString()} PTS`;
+  lbMeEl.append(left, right);
+}
+
+async function fetchLeaderboardPage(append = false) {
+  if (!append) {
+    lbOffset = 0;
+    lbListEl.innerHTML = '<div class="lb-empty">CONNECTING TO ORBITAL RANKINGS...</div>';
+    lbMoreBtn.hidden = true;
+  } else {
+    lbMoreBtn.disabled = true;
+  }
+
+  let data = null;
+  try {
+    const res = await fetch(
+      `/api/leaderboard?limit=100&offset=${lbOffset}&playerId=${encodeURIComponent(lbProfile.playerId)}`,
+      { cache: 'no-store' },
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    data = await res.json();
+    lbOffline = false;
+  } catch {
+    // Clean local fallback when previewing statically without `netlify dev`
+    lbOffline = true;
+    const rows = readLocalFallbackLb();
+    const slice = rows.slice(lbOffset, lbOffset + 100);
+    const myIdx = rows.findIndex((r) => r.playerId === lbProfile.playerId);
+    data = {
+      entries: slice.map((r, i) => ({
+        rank: lbOffset + i + 1,
+        name: r.name,
+        score: r.score,
+        wave: r.wave,
+        ship: r.ship,
+        overclock: Boolean(r.overclock),
+        isMe: r.playerId === lbProfile.playerId,
+      })),
+      total: rows.length,
+      me: myIdx >= 0 ? { ...rows[myIdx], rank: myIdx + 1 } : null,
+    };
+  }
+
+  if (!append) lbListEl.innerHTML = '';
+  lbTotal = data.total || 0;
+  lbSubEl.textContent = lbOffline
+    ? 'Local preview mode · Live DB activates on Netlify deploy'
+    : 'Top 1,000 pilots worldwide · Personal bests only';
+  renderLbMe(data.me);
+
+  if (data.entries?.length) {
+    const frag = document.createDocumentFragment();
+    for (const entry of data.entries) frag.append(buildLbRow(entry));
+    lbListEl.append(frag);
+    lbOffset += data.entries.length;
+  } else if (!append) {
+    lbListEl.innerHTML = '<div class="lb-empty">NO PILOTS RECORDED YET — SET A NEW RECORD TO CLAIM #1!</div>';
+  }
+
+  lbCountEl.textContent = `${lbTotal.toLocaleString()} / 1,000 PILOTS`;
+  lbMoreBtn.hidden = lbOffset >= lbTotal || lbOffset >= 1000;
+  lbMoreBtn.disabled = false;
+}
+
+function openLeaderboard() {
+  sound.uiClick();
+  leaderboardDialog.removeAttribute('data-closing');
+  leaderboardDialog.showModal();
+  fetchLeaderboardPage(false);
+}
+
+document.querySelector('#ranks-open')?.addEventListener('click', openLeaderboard);
+document.querySelector('#ranks-open-top')?.addEventListener('click', openLeaderboard);
+lbMoreBtn?.addEventListener('click', () => {
+  sound.uiClick();
+  fetchLeaderboardPage(true);
+});
+
+recordSubmitForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const rawName = pilotNameInput.value.trim().replace(/\s+/g, ' ');
+  if (rawName.length < 2 || rawName.length > 14 || !/^[\p{L}\p{N} _-]+$/u.test(rawName)) {
+    recordStatusEl.textContent = 'Use 2-14 letters, numbers, spaces, - or _.';
+    recordStatusEl.classList.add('is-error');
+    return;
+  }
+
+  saveRecordBtn.disabled = true;
+  pilotNameInput.disabled = true;
+  saveRecordBtn.textContent = 'SAVING...';
+  recordStatusEl.textContent = '';
+  recordStatusEl.classList.remove('is-error');
+
+  const payload = {
+    playerId: lbProfile.playerId,
+    name: rawName,
+    score: Math.floor(score),
+    wave: currentWave,
+    kills,
+    durationSec: runDuration,
+    ship: runShip,
+    overclock: runOverclock,
+  };
+
+  try {
+    let data;
+    try {
+      const res = await fetch('/api/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      data = json;
+    } catch (netErr) {
+      // Only fall back to local preview on localhost when Functions server isn't running
+      const isLocal = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
+      if (isLocal) {
+        data = saveLocalFallbackScore(payload);
+      } else {
+        throw netErr;
+      }
+    }
+
+    lbProfile.name = rawName;
+    if (data.saved || data.me) {
+      lbProfile.submittedBest = Math.max(lbProfile.submittedBest, payload.score);
+      lbProfile.submittedShip = runShip;
+      runIsNewBest = false;
+    }
+    saveLbProfile();
+    sound.uiBuy();
+    saveRecordBtn.textContent = 'SAVED';
+    if (data.reason === 'below_cutoff') {
+      recordStatusEl.textContent = `Score below Top 1,000 cutoff (${(data.cutoff || 0).toLocaleString()}).`;
+    } else if (data.me?.rank) {
+      recordStatusEl.textContent = `RECORD LOGGED // GLOBAL RANK #${data.me.rank} (${(RIGS[runShip]?.name || runShip).toUpperCase()})${data.local ? ' [LOCAL PREVIEW]' : ''}`;
+    } else {
+      recordStatusEl.textContent = 'RECORD SAVED TO LEADERBOARD.';
+    }
+  } catch (err) {
+    saveRecordBtn.disabled = false;
+    pilotNameInput.disabled = false;
+    saveRecordBtn.textContent = 'SAVE RANK';
+    recordStatusEl.textContent = err.message || 'Could not save score. Try again.';
+    recordStatusEl.classList.add('is-error');
+  }
+});
 
 function renderRigPips() {
   for (const container of document.querySelectorAll('[data-pips]')) {

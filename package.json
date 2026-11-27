@@ -18,5 +18,8 @@
   },
   "engines": {
     "node": ">=22.19"
+  },
+  "dependencies": {
+    "@netlify/database": "^2.0.4"
   }
 }
