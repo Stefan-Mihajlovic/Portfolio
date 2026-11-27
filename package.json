@@ -20,6 +20,6 @@
     "node": ">=22.19"
   },
   "dependencies": {
-    "@netlify/database": "^2.0.4"
+    "@netlify/blobs": "^11.1.12"
   }
 }

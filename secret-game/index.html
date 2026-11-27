@@ -210,6 +210,14 @@
                 <span class="rig-pips" data-pips="aegis"></span>
               </span>
             </button>
+            <button type="button" class="rig-option rig-custom" data-rig="custom" aria-pressed="false">
+              <canvas class="rig-preview" data-ship="custom" width="112" height="112" aria-hidden="true"></canvas>
+              <span class="rig-meta">
+                <strong>Custom</strong>
+                <small id="custom-rig-sub">LO-11200</small>
+                <span class="rig-pips" data-pips="custom"></span>
+              </span>
+            </button>
           </fieldset>
 
           <div class="launch-row">
@@ -301,6 +309,73 @@
         </div>
       </section>
 
+      <section id="forge-screen" class="forge-screen" aria-label="Custom Ship Forge" aria-hidden="true">
+        <div class="forge-left">
+          <div class="forge-left-dock">
+            <div id="forge-paints" class="forge-paints" aria-label="Hull paint scheme"></div>
+            <div class="forge-code-pill">
+              <span class="forge-code-label">CODE</span>
+              <b id="forge-code-val">LO-11200</b>
+              <button id="forge-copy-btn" type="button" class="forge-copy-btn">COPY</button>
+            </div>
+            <p class="forge-ship-hint">Click any part on the ship or a connected module</p>
+          </div>
+        </div>
+
+        <div class="forge-right">
+          <div class="forge-right-head">
+            <div>
+              <h2 id="forge-title">Custom Ship Forge</h2>
+              <p class="forge-sub">Max 10 Reactor Power · Balanced modular interceptor</p>
+            </div>
+            <button id="forge-back" type="button" class="forge-back-btn">← Menu</button>
+          </div>
+
+          <div class="forge-top-bar">
+            <div class="forge-pwr-wrap">
+              <div class="forge-pwr-head">
+                <span>REACTOR POWER</span>
+                <b id="forge-pwr-text">8 / 10 PWR</b>
+              </div>
+              <div id="forge-pwr-bars" class="forge-pwr-bars" aria-hidden="true"></div>
+            </div>
+            <div id="forge-stats" class="forge-stat-strip"></div>
+          </div>
+
+          <div id="forge-nodes" class="forge-nodes">
+            <button type="button" class="forge-node" data-slot="nose" aria-pressed="true"></button>
+            <button type="button" class="forge-node" data-slot="weapon" aria-pressed="false"></button>
+            <button type="button" class="forge-node" data-slot="wings" aria-pressed="false"></button>
+            <button type="button" class="forge-node" data-slot="engine" aria-pressed="false"></button>
+          </div>
+
+          <div class="forge-tray">
+            <div class="forge-tray-head">
+              <span id="forge-tray-title">NOSE / HULL FRAME · SELECT MODULE</span>
+              <b id="forge-tray-headroom">2 PWR FREE</b>
+            </div>
+            <div id="forge-parts" class="forge-options"></div>
+          </div>
+
+          <div class="forge-footer">
+            <form id="forge-import-form" class="forge-import-form">
+              <input
+                id="forge-import-input"
+                type="text"
+                maxlength="16"
+                placeholder="IMPORT CODE (LO-XXXXX)"
+                spellcheck="false"
+                autocomplete="off"
+                aria-label="Import build code"
+              />
+              <button type="submit" class="forge-load-btn">LOAD</button>
+            </form>
+            <button id="forge-equip" type="button" class="forge-equip-btn">▶ FLY CUSTOM</button>
+          </div>
+          <p id="forge-status" class="forge-status" aria-live="polite"></p>
+        </div>
+      </section>
+
       <dialog id="record-dialog" class="modal-sheet record-dialog" closedby="any" aria-labelledby="record-dialog-title">
         <form method="dialog" class="modal-head record-modal-head">
           <div>
@@ -389,9 +464,13 @@
             <canvas class="tab-preview" data-ship="aegis" width="64" height="64" aria-hidden="true"></canvas>
             <span>Aegis</span>
           </button>
+          <button type="button" class="hangar-tab" role="tab" data-tab="custom" aria-selected="false">
+            <canvas class="tab-preview" data-ship="custom" width="64" height="64" aria-hidden="true"></canvas>
+            <span>Custom</span>
+          </button>
         </div>
         <div id="upgrade-list" class="upgrade-list"></div>
-        <div class="hangar-section-label">Ship Livery</div>
+        <div id="skin-section-label" class="hangar-section-label">Ship Livery</div>
         <div id="skin-list" class="skin-list"></div>
         <div class="hangar-footer">
           <button id="refund-upgrades" type="button" class="refund-btn">Refund this ship</button>

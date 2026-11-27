@@ -183,7 +183,305 @@ const shipCanopies = {
   ]),
 };
 
+// --- MODULAR CUSTOM SHIP FORGE (10 PWR Budget + Shareable Build Codes LO-XXXXX) ---
+export const CUSTOM_MAX_POWER = 10;
+
+export const CUSTOM_PARTS = {
+  nose: [
+    { id: 0, name: 'Razor Dart', pwr: 1, hull: 2, speedMod: 25, desc: '2 Hull · Agile needle nose' },
+    { id: 1, name: 'Viper Core', pwr: 2, hull: 3, speedMod: 0, desc: '3 Hull · Balanced frame' },
+    { id: 2, name: 'Bastion Prow', pwr: 4, hull: 4, speedMod: -22, desc: '4 Hull · Heavy armor prow' },
+  ],
+  wings: [
+    { id: 0, name: 'Needle Blades', pwr: 1, shields: 2, speedMod: 20, dashCd: 1.55, desc: '2 Shield · Fast dash' },
+    { id: 1, name: 'Delta Swept', pwr: 2, shields: 3, speedMod: 0, dashCd: 1.85, desc: '3 Shield · Balanced lift' },
+    { id: 2, name: 'Forward Canards', pwr: 3, shields: 3, speedMod: 32, dashCd: 1.42, desc: '3 Shield · Peak agility' },
+    { id: 3, name: 'Aegis Bulwark', pwr: 4, shields: 4, speedMod: -18, dashCd: 2.15, desc: '4 Shield · Heavy wings' },
+  ],
+  weapon: [
+    { id: 0, name: 'Pulse Twin', pwr: 2, kind: 'pulse', fireRate: 0.132, heatMult: 0.76, desc: 'Cool rapid twin pulse' },
+    { id: 1, name: 'Seeker Pods', pwr: 3, kind: 'falcon', fireRate: 0.118, heatMult: 0.92, desc: 'Fast fire + auto seekers' },
+    { id: 2, name: 'Rail-Lance', pwr: 3, kind: 'kestrel', fireRate: 0.135, heatMult: 0.96, desc: 'High-velocity piercing' },
+    { id: 3, name: 'Tri-Plasma', pwr: 4, kind: 'aegis', fireRate: 0.162, heatMult: 1.08, desc: 'Heavy plasma punch' },
+  ],
+  engine: [
+    { id: 0, name: 'Cryo Drive', pwr: 1, perk: 'cryo', speedMod: 0, heatMult: 0.78, desc: '-22% weapon heat' },
+    { id: 1, name: 'Ion Afterburner', pwr: 2, perk: 'falcon', speedMod: 38, heatMult: 1.0, desc: '+Speed · Bullet-Time Dash' },
+    { id: 2, name: 'Rail Capacitor', pwr: 3, perk: 'kestrel', speedMod: 8, heatMult: 1.0, desc: 'Nova fires Rail-Beam' },
+    { id: 3, name: 'Mirror Core', pwr: 3, perk: 'aegis', speedMod: -6, heatMult: 1.0, desc: 'Nova reflects fire' },
+  ],
+  paint: [
+    {
+      id: 0,
+      name: 'Titanium',
+      accent: '#79e3d5',
+      swatch: ['#faf1d6', '#8395a3', '#79e3d5'],
+      map: { '#faf1d6': '#faf1d6', '#8395a3': '#8395a3', '#3f5069': '#3f5069', '#79e3d5': '#79e3d5', '#fa754d': '#fa754d', '#e4fff5': '#e4fff5' },
+    },
+    {
+      id: 1,
+      name: 'Crimson',
+      accent: '#ffd66b',
+      swatch: ['#f7e6e2', '#bd4a52', '#ffd66b'],
+      map: { '#faf1d6': '#f7e6e2', '#8395a3': '#bd4a52', '#3f5069': '#59202e', '#79e3d5': '#ffd66b', '#fa754d': '#ff7054', '#e4fff5': '#fff8dc' },
+    },
+    {
+      id: 2,
+      name: 'Obsidian',
+      accent: '#c89eff',
+      swatch: ['#8392a8', '#2f3a4f', '#c89eff'],
+      map: { '#faf1d6': '#8392a8', '#8395a3': '#2f3a4f', '#3f5069': '#171f2e', '#79e3d5': '#c89eff', '#fa754d': '#ff70a6', '#e4fff5': '#f4e8ff' },
+    },
+    {
+      id: 3,
+      name: 'Solar',
+      accent: '#ffe18c',
+      swatch: ['#fff3cc', '#c49648', '#ff6e42'],
+      map: { '#faf1d6': '#fff3cc', '#8395a3': '#c49648', '#3f5069': '#6b4724', '#79e3d5': '#ffe18c', '#fa754d': '#ff5c3d', '#e4fff5': '#fffbe0' },
+    },
+    {
+      id: 4,
+      name: 'Emerald',
+      accent: '#8effc8',
+      swatch: ['#e4f7ee', '#4b8f78', '#8effc8'],
+      map: { '#faf1d6': '#e4f7ee', '#8395a3': '#4b8f78', '#3f5069': '#1e423b', '#79e3d5': '#8effc8', '#fa754d': '#ffd166', '#e4fff5': '#ecfff6' },
+    },
+    {
+      id: 5,
+      name: 'Cobalt',
+      accent: '#8ce6ff',
+      swatch: ['#e8f6ff', '#4f7fb8', '#8ce6ff'],
+      map: { '#faf1d6': '#e8f6ff', '#8395a3': '#4f7fb8', '#3f5069': '#21395c', '#79e3d5': '#8ce6ff', '#fa754d': '#ff9e70', '#e4fff5': '#f2fbff' },
+    },
+  ],
+};
+
+export const DEFAULT_CUSTOM_BUILD = { nose: 1, wings: 1, weapon: 2, engine: 0, paint: 0 };
+
+export function computeCustomPower(b) {
+  const nose = CUSTOM_PARTS.nose[b.nose] || CUSTOM_PARTS.nose[1];
+  const wings = CUSTOM_PARTS.wings[b.wings] || CUSTOM_PARTS.wings[1];
+  const weapon = CUSTOM_PARTS.weapon[b.weapon] || CUSTOM_PARTS.weapon[2];
+  const engine = CUSTOM_PARTS.engine[b.engine] || CUSTOM_PARTS.engine[0];
+  return nose.pwr + wings.pwr + weapon.pwr + engine.pwr;
+}
+
+export function encodeCustomShip(b = DEFAULT_CUSTOM_BUILD) {
+  return `custom:${b.nose}${b.wings}${b.weapon}${b.engine}${b.paint}`;
+}
+
+export function formatShareCode(b = DEFAULT_CUSTOM_BUILD) {
+  return `LO-${b.nose}${b.wings}${b.weapon}${b.engine}${b.paint}`;
+}
+
+export function parseCustomCode(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  const cleaned = raw.trim().toLowerCase().replace(/^lo[-:\s]?/, '').replace(/^custom:/, '');
+  if (!/^[0-2][0-3][0-3][0-3][0-5]$/.test(cleaned)) return null;
+  const build = {
+    nose: +cleaned[0],
+    wings: +cleaned[1],
+    weapon: +cleaned[2],
+    engine: +cleaned[3],
+    paint: +cleaned[4],
+  };
+  if (computeCustomPower(build) > CUSTOM_MAX_POWER) return null;
+  return build;
+}
+
+export function computeCustomStats(b = DEFAULT_CUSTOM_BUILD) {
+  const nose = CUSTOM_PARTS.nose[b.nose] || CUSTOM_PARTS.nose[1];
+  const wings = CUSTOM_PARTS.wings[b.wings] || CUSTOM_PARTS.wings[1];
+  const weapon = CUSTOM_PARTS.weapon[b.weapon] || CUSTOM_PARTS.weapon[2];
+  const engine = CUSTOM_PARTS.engine[b.engine] || CUSTOM_PARTS.engine[0];
+  const paint = CUSTOM_PARTS.paint[b.paint] || CUSTOM_PARTS.paint[0];
+  const speed = Math.max(295, Math.min(445, 365 + nose.speedMod + wings.speedMod + engine.speedMod));
+  return {
+    name: 'Custom',
+    role: weapon.name,
+    accent: paint.accent,
+    speed,
+    focusSpeed: Math.round(speed * 0.56),
+    fireRate: weapon.fireRate,
+    dashCd: wings.dashCd,
+    dashSpeed: Math.round(speed * 2.55),
+    hull: nose.hull,
+    shields: wings.shields,
+    weaponKind: weapon.kind,
+    perk: engine.perk,
+    heatMult: +(weapon.heatMult * engine.heatMult).toFixed(3),
+    power: nose.pwr + wings.pwr + weapon.pwr + engine.pwr,
+  };
+}
+
+// Modular vector silhouettes for Custom Ship Forge (crisp ink-and-enamel plates!)
+const customWingPlates = [
+  // 0: Needle Blades
+  plates([
+    [ink, 'M-8 -10 -47 16 -44 26 -14 19 -7 12Z M8 -10 47 16 44 26 14 19 7 12Z'],
+    [steel, 'M-9 -6 -43 17 -41 22 -14 15 -8 9Z M9 -6 43 17 41 22 14 15 8 9Z'],
+    [paper, 'M-11 -3 -39 16 -24 14 -10 6Z M11 -3 39 16 24 14 10 6Z'],
+    [vermilion, 'M-40 16 -34 14 -37 21 -42 21Z M40 16 34 14 37 21 42 21Z'],
+  ]),
+  // 1: Delta Swept
+  plates([
+    [ink, 'M-8 -20 -46 24 -46 36 -18 28 -8 18Z M8 -20 46 24 46 36 18 28 8 18Z'],
+    [steel, 'M-9 -16 -43 25 -43 32 -18 25 -8 15Z M9 -16 43 25 43 32 18 25 8 15Z'],
+    [paper, 'M-10 -10 -41 26 -24 20 -10 11Z M10 -10 41 26 24 20 10 11Z'],
+    [shadow, 'M-42 31 -19 21 -11 15 -14 24Z M42 31 19 21 11 15 14 24Z'],
+    [vermilion, 'M-37 22 -32 18 -28 19 -34 25 -41 28Z M37 22 32 18 28 19 34 25 41 28Z'],
+  ]),
+  // 2: Forward Canards
+  plates([
+    [ink, 'M-10 -10 -43 -25 -46 -12 -27 16 -32 34 -18 30 -10 18Z M10 -10 43 -25 46 -12 27 16 32 34 18 30 10 18Z'],
+    [steel, 'M-11 -8 -39 -21 -42 -12 -24 16 -11 17Z M11 -8 39 -21 42 -12 24 16 11 17Z'],
+    [paper, 'M-13 -7 -37 -19 -31 -5 -16 9Z M13 -7 37 -19 31 -5 16 9Z'],
+    [shadow, 'M-26 14 -28 29 -19 26 -14 14Z M26 14 28 29 19 26 14 14Z'],
+    [vermilion, 'M-37 -19 -41 -12 -33 -3 -30 -9Z M37 -19 41 -12 33 -3 30 -9Z'],
+  ]),
+  // 3: Aegis Bulwark
+  plates([
+    [ink, 'M-12 -16 -27 -24 -39 -17 -46 11 -44 35 -25 38 -15 24Z M12 -16 27 -24 39 -17 46 11 44 35 25 38 15 24Z'],
+    [steel, 'M-13 -12 -26 -20 -36 -14 -43 11 -41 31 -26 34 -16 18Z M13 -12 26 -20 36 -14 43 11 41 31 26 34 16 18Z'],
+    [paper, 'M-26 -18 -34 -13 -39 9 -30 16 -22 -4Z M26 -18 34 -13 39 9 30 16 22 -4Z'],
+    [shadow, 'M-40 16 -39 30 -26 32 -23 18Z M40 16 39 30 26 32 23 18Z'],
+    [teal, 'M-35 26 -27 28 -27 32 -35 30Z M35 26 27 28 27 32 35 30Z'],
+  ]),
+];
+
+const customWeaponPlates = [
+  // 0: Pulse Twin
+  plates([
+    [ink, 'M-24 -10 -18 -10 -18 14 -24 14Z M18 -10 24 -10 24 14 18 14Z'],
+    [steel, 'M-22.5 -8 -19.5 -8 -19.5 11 -22.5 11Z M19.5 -8 22.5 -8 22.5 11 19.5 11Z'],
+    [teal, 'M-22 -8 -20 -8 -20 -1 -22 -1Z M20 -8 22 -8 22 -1 20 -1Z'],
+  ]),
+  // 1: Seeker Pods
+  plates([
+    [ink, 'M-30 -6 -20 -6 -19 16 -29 18Z M20 -6 30 -6 29 18 19 16Z'],
+    [shadow, 'M-28 -3 -22 -3 -21 13 -27 14Z M22 -3 28 -3 27 14 21 13Z'],
+    [vermilion, 'M-27 -2 -23 -2 -23 5 -27 5Z M23 -2 27 -2 27 5 23 5Z'],
+    [paper, 'M-26 7 -24 7 -24 11 -26 11Z M24 7 26 7 26 11 24 11Z'],
+  ]),
+  // 2: Rail-Lance
+  plates([
+    [ink, 'M-28 -24 -21 -24 -19 18 -27 22Z M21 -24 28 -24 27 22 19 18Z'],
+    [steel, 'M-26.5 -21 -22.5 -21 -21 16 -26 18Z M22.5 -21 26.5 -21 26 18 21 16Z'],
+    [teal, 'M-25.5 -20 -23.5 -20 -23.5 6 -25.5 6Z M23.5 -20 25.5 -20 25.5 6 23.5 6Z'],
+  ]),
+  // 3: Tri-Plasma
+  plates([
+    [ink, 'M-32 -16 -20 -16 -19 20 -31 24Z M20 -16 32 -16 31 24 19 20Z'],
+    [steel, 'M-30 -13 -22 -13 -21 17 -29 20Z M22 -13 30 -13 29 20 21 17Z'],
+    [teal, 'M-28 -11 -24 -11 -24 9 -28 9Z M24 -11 28 -11 28 9 24 9Z'],
+    [vermilion, 'M-28 11 -24 11 -24 16 -28 16Z M24 11 28 11 28 16 24 16Z'],
+  ]),
+];
+
+const customEnginePlates = [
+  // 0: Cryo Drive
+  plates([
+    [ink, 'M-14 26 -7 26 -7 44 -14 42Z M7 26 14 26 14 42 7 44Z'],
+    [teal, 'M-12 34 -9 34 -9 41 -12 40Z M9 34 12 34 12 40 9 41Z'],
+  ]),
+  // 1: Ion Afterburner
+  plates([
+    [ink, 'M-18 22 -8 22 -7 46 -17 44Z M8 22 18 22 17 44 7 46Z'],
+    [shadow, 'M-16 25 -10 25 -9 41 -15 40Z M10 25 16 25 15 40 9 41Z'],
+    [vermilion, 'M-15 37 -10 37 -10 43 -15 42Z M10 37 15 37 15 42 10 43Z'],
+  ]),
+  // 2: Rail Capacitor
+  plates([
+    [ink, 'M-11 24 11 24 9 45 -9 45Z'],
+    [teal, 'M-7 28 7 28 6 42 -6 42Z'],
+    ['#e4fff5', 'M-3 31 3 31 2 40 -2 40Z'],
+  ]),
+  // 3: Mirror Core
+  plates([
+    [ink, 'M-16 20 16 20 13 42 -13 42Z'],
+    [shadow, 'M-13 23 13 23 10 39 -10 39Z'],
+    [teal, 'M-11 32 11 32 9 37 -9 37Z'],
+  ]),
+];
+
+const customNosePlates = [
+  // 0: Razor Dart
+  plates([
+    [ink, 'M0 -57 Q4 -48 7 -22 L10 10 6 42 -6 42 -10 10 -7 -22 Q-4 -48 0 -57Z'],
+    [steel, 'M0 -53 Q3 -44 6 -20 L8 9 5 39 -5 39 -8 9 -6 -20 Q-3 -44 0 -53Z'],
+    [paper, 'M0 -51 -2 -18 -6 7 -3 28 -7 9 -5 -19Z M2 -44 5 -18 6 2 3 -14Z'],
+    [ink, 'M-4 36 4 36 4 41 -4 41Z'],
+    [teal, 'M-3 38 3 38 2 40 -2 40Z'],
+  ]),
+  // 1: Viper Core
+  plates([
+    [ink, 'M0 -52 Q6 -45 10 -22 L14 8 7 43 -7 43 -14 8 -10 -22 Q-6 -45 0 -52Z'],
+    [steel, 'M0 -48 Q5 -40 8 -20 L12 8 6 40 -6 40 -12 8 -8 -20 Q-5 -40 0 -48Z'],
+    [paper, 'M0 -47 -2 -17 -7 2 -6 16 -10 8 -7 -19Z M2 -41 7 -18 9 0 5 -14Z'],
+    [shadow, 'M0 -32 6 -16 9 9 4 28 0 35 -4 28 -6 11Z'],
+    [vermilion, 'M-6 27 -2 30 -2 36 -5 32Z M6 27 2 30 2 36 5 32Z'],
+    [ink, 'M-5 36 5 36 5 41 -5 41Z'],
+    [teal, 'M-4 38 4 38 3 40 -3 40Z'],
+  ]),
+  // 2: Bastion Prow
+  plates([
+    [ink, 'M0 -46 L13 -32 17 8 10 42 -10 42 -17 8 -13 -32Z'],
+    [steel, 'M0 -42 L11 -29 15 8 9 38 -9 38 -15 8 -11 -29Z'],
+    [paper, 'M0 -40 -4 -18 -11 8 -6 24 -12 10 -8 -27Z M3 -34 9 -19 11 4 6 -12Z'],
+    [vermilion, 'M-14 6 -9 10 -9 22 -14 18Z M14 6 9 10 9 22 14 18Z'],
+    [ink, 'M-7 34 7 34 7 40 -7 40Z'],
+    [teal, 'M-5 36 5 36 4 39 -4 39Z'],
+  ]),
+];
+
+const customCanopyPlates = [
+  plates([
+    [ink, 'M0 -24 Q5 -16 5 -2 L3 10 0 14 -3 10 -5 -2 Q-5 -16 0 -24Z'],
+    [teal, 'M0 -20 Q3 -13 3 -4 L2 4 -2 1 Q-3 -12 0 -20Z'],
+    ['#e4fff5', 'M0 -18 1 -13 -1 -5Z'],
+  ]),
+  plates([
+    [ink, 'M0 -22 Q6 -15 6 -4 L4 7 0 12 -5 7 -6 -3 Q-5 -16 0 -22Z'],
+    [teal, 'M0 -18 Q3 -13 4 -5 L3 1 -3 -2 Q-3 -12 0 -18Z'],
+    ['#e4fff5', 'M0 -16 1 -12 -2 -4Z'],
+  ]),
+  plates([
+    [ink, 'M0 -24 Q8 -16 8 -2 L6 10 0 14 -6 10 -8 -2 Q-8 -16 0 -24Z'],
+    [teal, 'M0 -20 Q5 -13 5 -4 L3 3 -4 1 Q-5 -12 0 -20Z'],
+    ['#e4fff5', 'M-1 -17 2 -11 -2 -5Z'],
+  ]),
+];
+
+function resolveCustomBuild(variant) {
+  if (variant && typeof variant === 'object' && 'nose' in variant) return variant;
+  if (typeof variant === 'string' && (variant.startsWith('custom:') || variant.startsWith('LO-'))) {
+    return parseCustomCode(variant) || DEFAULT_CUSTOM_BUILD;
+  }
+  return null;
+}
+
+function drawCustomHull(ctx, build, skinId = 'standard') {
+  const paint = CUSTOM_PARTS.paint[build.paint] || CUSTOM_PARTS.paint[0];
+  const colorMap = skinId && skinId !== 'standard' ? getSkin(skinId).map : paint.map;
+  print(ctx, customWingPlates[build.wings] || customWingPlates[1], colorMap);
+  print(ctx, customEnginePlates[build.engine] || customEnginePlates[0], colorMap);
+  print(ctx, customWeaponPlates[build.weapon] || customWeaponPlates[2], colorMap);
+  print(ctx, customNosePlates[build.nose] || customNosePlates[1], colorMap);
+}
+
+function drawCustomCanopy(ctx, build, skinId = 'standard') {
+  const paint = CUSTOM_PARTS.paint[build.paint] || CUSTOM_PARTS.paint[0];
+  const colorMap = skinId && skinId !== 'standard' ? getSkin(skinId).map : paint.map;
+  print(ctx, customCanopyPlates[build.nose] || customCanopyPlates[1], colorMap);
+}
+
 export function drawInterceptor(ctx, variant = 'kestrel', skinId = 'standard') {
+  const custom = resolveCustomBuild(variant);
+  if (custom) {
+    drawCustomHull(ctx, custom, skinId);
+    drawCustomCanopy(ctx, custom, skinId);
+    return;
+  }
   const colorMap = getSkin(skinId).map;
   print(ctx, shipHulls[variant] || kestrelHull, colorMap);
   print(ctx, shipCanopies[variant] || shipCanopies.kestrel, colorMap);
@@ -191,6 +489,7 @@ export function drawInterceptor(ctx, variant = 'kestrel', skinId = 'standard') {
 
 // 2.5D Chicken Invaders-style longitudinal roll with single parallax cockpit (zero double cockpit!)
 export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, accent = teal, skinId = 'standard') {
+  const custom = resolveCustomBuild(variant);
   const colorMap = getSkin(skinId).map;
   const r = Math.max(-1, Math.min(1, roll));
   const absR = Math.abs(r);
@@ -232,7 +531,8 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
   }
 
   // Draw hull ONLY (no baked-in canopy!)
-  print(ctx, shipHulls[variant] || kestrelHull, colorMap);
+  if (custom) drawCustomHull(ctx, custom, skinId);
+  else print(ctx, shipHulls[variant] || kestrelHull, colorMap);
 
   // Directional 3D roll shading across wings
   if (absR > 0.06) {
@@ -261,7 +561,8 @@ export function drawBankedShip(ctx, variant = 'kestrel', roll = 0, tier = 1, acc
   ctx.save();
   ctx.translate(r * 4.5, 0);
   ctx.transform(Math.max(0.74, scaleX), skewY * 0.45, 0, 1, 0, 0);
-  print(ctx, shipCanopies[variant] || shipCanopies.kestrel, colorMap);
+  if (custom) drawCustomCanopy(ctx, custom, skinId);
+  else print(ctx, shipCanopies[variant] || shipCanopies.kestrel, colorMap);
   ctx.restore();
 }
 

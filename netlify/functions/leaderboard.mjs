@@ -1,7 +1,16 @@
-import { getDatabase } from '@netlify/database';
+import { getStore } from '@netlify/blobs';
 
 const MAX_ENTRIES = 1000;
-const VALID_SHIPS = new Set(['kestrel', 'falcon', 'aegis']);
+const STORE_NAME = 'low-orbit-leaderboard';
+const BOARD_KEY = 'top1000';
+const VALID_PRESETS = new Set(['kestrel', 'falcon', 'aegis']);
+const CUSTOM_SHIP_RE = /^custom:[0-2][0-3][0-3][0-3][0-5]$/;
+const CUSTOM_POWER = {
+  nose: [1, 2, 4],
+  wings: [1, 2, 3, 4],
+  weapon: [2, 3, 3, 4],
+  engine: [1, 2, 3, 3],
+};
 const BLOCKED_WORDS = ['nigger', 'nigga', 'faggot', 'chink', 'kike', 'spic', 'retard', 'hitler', 'nazi'];
 
 function sanitizeName(raw) {
@@ -12,6 +21,21 @@ function sanitizeName(raw) {
   const lower = cleaned.toLowerCase().replace(/[^a-z0-9]/g, '');
   if (BLOCKED_WORDS.some((w) => lower.includes(w))) return null;
   return cleaned;
+}
+
+function sanitizeShip(raw) {
+  if (typeof raw !== 'string') return 'kestrel';
+  if (VALID_PRESETS.has(raw)) return raw;
+  if (CUSTOM_SHIP_RE.test(raw)) {
+    const digits = raw.slice(7);
+    const pwr =
+      CUSTOM_POWER.nose[+digits[0]] +
+      CUSTOM_POWER.wings[+digits[1]] +
+      CUSTOM_POWER.weapon[+digits[2]] +
+      CUSTOM_POWER.engine[+digits[3]];
+    if (pwr <= 10) return raw;
+  }
+  return 'kestrel';
 }
 
 function isValidPlayerId(id) {
@@ -29,30 +53,34 @@ function isPlausibleRun({ score, wave, kills, durationSec }) {
   return true;
 }
 
-async function fetchPlayerRank(db, playerId) {
+function sortBoard(rows) {
+  return rows.sort((a, b) => b.score - a.score || (a.updatedAt || 0) - (b.updatedAt || 0));
+}
+
+async function loadBoard(store) {
+  const entry = await store.getWithMetadata(BOARD_KEY, { type: 'json' });
+  if (entry === null) return { rows: [], etag: null };
+  const rows = Array.isArray(entry.data) ? entry.data : [];
+  return { rows, etag: entry.etag || null };
+}
+
+function formatMe(rows, playerId) {
   if (!isValidPlayerId(playerId)) return null;
-  const rows = await db.sql`
-    SELECT player_id, name, score, wave, ship, overclock, updated_at, rank
-    FROM (
-      SELECT
-        player_id,
-        name,
-        score,
-        wave,
-        ship,
-        overclock,
-        updated_at,
-        ROW_NUMBER() OVER (ORDER BY score DESC, updated_at ASC)::int AS rank
-      FROM leaderboard
-    ) ranked
-    WHERE player_id = ${playerId}
-    LIMIT 1
-  `;
-  return rows[0] || null;
+  const idx = rows.findIndex((r) => r.playerId === playerId);
+  if (idx < 0) return null;
+  const r = rows[idx];
+  return {
+    rank: idx + 1,
+    name: r.name,
+    score: r.score,
+    wave: r.wave,
+    ship: r.ship,
+    overclock: Boolean(r.overclock),
+  };
 }
 
 export default async (req) => {
-  const db = getDatabase();
+  const store = getStore({ name: STORE_NAME, consistency: 'strong' });
 
   if (req.method === 'GET') {
     try {
@@ -61,50 +89,26 @@ export default async (req) => {
       const offset = Math.max(0, Math.min(MAX_ENTRIES - 1, Number(url.searchParams.get('offset')) || 0));
       const playerId = url.searchParams.get('playerId') || '';
 
-      const [entries, countRows, cutoffRows, me] = await Promise.all([
-        db.sql`
-          SELECT player_id, name, score, wave, ship, overclock, updated_at
-          FROM leaderboard
-          ORDER BY score DESC, updated_at ASC
-          LIMIT ${limit} OFFSET ${offset}
-        `,
-        db.sql`SELECT COUNT(*)::int AS total FROM leaderboard`,
-        db.sql`
-          SELECT score
-          FROM leaderboard
-          ORDER BY score DESC, updated_at ASC
-          OFFSET ${MAX_ENTRIES - 1} LIMIT 1
-        `,
-        fetchPlayerRank(db, playerId),
-      ]);
-
-      const total = countRows[0]?.total ?? 0;
-      const cutoff = total >= MAX_ENTRIES ? (cutoffRows[0]?.score ?? 0) : 0;
+      const { rows } = await loadBoard(store);
+      const slice = rows.slice(offset, offset + limit);
+      const total = rows.length;
+      const cutoff = total >= MAX_ENTRIES ? (rows[MAX_ENTRIES - 1]?.score ?? 0) : 0;
 
       return Response.json(
         {
-          entries: entries.map((r, i) => ({
+          entries: slice.map((r, i) => ({
             rank: offset + i + 1,
             name: r.name,
             score: r.score,
             wave: r.wave,
             ship: r.ship,
             overclock: Boolean(r.overclock),
-            isMe: Boolean(playerId && r.player_id === playerId),
+            isMe: Boolean(playerId && r.playerId === playerId),
           })),
           total,
           maxEntries: MAX_ENTRIES,
           cutoff,
-          me: me
-            ? {
-                rank: me.rank,
-                name: me.name,
-                score: me.score,
-                wave: me.wave,
-                ship: me.ship,
-                overclock: Boolean(me.overclock),
-              }
-            : null,
+          me: formatMe(rows, playerId),
         },
         {
           headers: {
@@ -135,114 +139,84 @@ export default async (req) => {
       return Response.json({ error: 'Callsign must be 2-14 valid characters' }, { status: 400 });
     }
 
+    const score = Math.floor(Number(body?.score) || 0);
+    const wave = Math.floor(Number(body?.wave) || 1);
+    const kills = Math.floor(Number(body?.kills) || 0);
+    const durationSec = Number(body?.durationSec) || 0;
+    const ship = sanitizeShip(body?.ship);
+    const overclock = Boolean(body?.overclock);
+
+    if (body?.action !== 'rename' && !isPlausibleRun({ score, wave, kills, durationSec })) {
+      return Response.json({ error: 'Run failed validation' }, { status: 400 });
+    }
+
     try {
-      // Optional callsign rename without altering score
-      if (body?.action === 'rename') {
-        await db.sql`
-          UPDATE leaderboard
-          SET name = ${name}
-          WHERE player_id = ${playerId}
-        `;
-        const me = await fetchPlayerRank(db, playerId);
-        return Response.json({ ok: true, updatedName: true, me });
+      // Optimistic conditional write retry loop so concurrent submissions never clobber each other
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { rows, etag } = await loadBoard(store);
+        const idx = rows.findIndex((r) => r.playerId === playerId);
+        const existing = idx >= 0 ? rows[idx] : null;
+
+        if (body?.action === 'rename') {
+          if (!existing) return Response.json({ ok: true, updatedName: false, me: null });
+          rows[idx] = { ...existing, name };
+          const writeOpts = etag ? { onlyIfMatch: etag } : { onlyIfNew: true };
+          const res = await store.setJSON(BOARD_KEY, rows, writeOpts);
+          if (res.modified) {
+            return Response.json({ ok: true, updatedName: true, me: formatMe(rows, playerId) });
+          }
+          continue;
+        }
+
+        const totalBefore = rows.length;
+        const cutoff = totalBefore >= MAX_ENTRIES ? (rows[MAX_ENTRIES - 1]?.score ?? 0) : 0;
+
+        if (existing && score <= existing.score) {
+          return Response.json({
+            ok: true,
+            saved: false,
+            reason: 'not_best',
+            me: formatMe(rows, playerId),
+            total: totalBefore,
+          });
+        }
+        if (!existing && totalBefore >= MAX_ENTRIES && score <= cutoff) {
+          return Response.json({
+            ok: true,
+            saved: false,
+            reason: 'below_cutoff',
+            cutoff,
+            total: totalBefore,
+          });
+        }
+
+        const nextRow = {
+          playerId,
+          name,
+          score,
+          wave,
+          kills,
+          ship,
+          overclock,
+          updatedAt: Date.now(),
+        };
+        if (idx >= 0) rows[idx] = nextRow;
+        else rows.push(nextRow);
+
+        sortBoard(rows);
+        const trimmed = rows.slice(0, MAX_ENTRIES);
+        const writeOpts = etag ? { onlyIfMatch: etag } : { onlyIfNew: true };
+        const res = await store.setJSON(BOARD_KEY, trimmed, writeOpts);
+        if (res.modified) {
+          return Response.json({
+            ok: true,
+            saved: true,
+            me: formatMe(trimmed, playerId),
+            total: trimmed.length,
+          });
+        }
       }
-
-      const score = Math.floor(Number(body?.score) || 0);
-      const wave = Math.floor(Number(body?.wave) || 1);
-      const kills = Math.floor(Number(body?.kills) || 0);
-      const durationSec = Number(body?.durationSec) || 0;
-      const ship = VALID_SHIPS.has(body?.ship) ? body.ship : 'kestrel';
-      const overclock = Boolean(body?.overclock);
-
-      if (!isPlausibleRun({ score, wave, kills, durationSec })) {
-        return Response.json({ error: 'Run failed validation' }, { status: 400 });
-      }
-
-      const [existingRows, countRows, cutoffRows] = await Promise.all([
-        db.sql`SELECT score, updated_at FROM leaderboard WHERE player_id = ${playerId} LIMIT 1`,
-        db.sql`SELECT COUNT(*)::int AS total FROM leaderboard`,
-        db.sql`
-          SELECT score
-          FROM leaderboard
-          ORDER BY score DESC, updated_at ASC
-          OFFSET ${MAX_ENTRIES - 1} LIMIT 1
-        `,
-      ]);
-
-      const existing = existingRows[0] || null;
-      const totalBefore = countRows[0]?.total ?? 0;
-      const cutoff = totalBefore >= MAX_ENTRIES ? (cutoffRows[0]?.score ?? 0) : 0;
-
-      // Only save when strictly beating previous personal best!
-      if (existing && score <= existing.score) {
-        const me = await fetchPlayerRank(db, playerId);
-        return Response.json({
-          ok: true,
-          saved: false,
-          reason: 'not_best',
-          me,
-          total: totalBefore,
-        });
-      }
-
-      // Enforce 1,000-player cap before inserting a brand-new player
-      if (!existing && totalBefore >= MAX_ENTRIES && score <= cutoff) {
-        return Response.json({
-          ok: true,
-          saved: false,
-          reason: 'below_cutoff',
-          cutoff,
-          total: totalBefore,
-        });
-      }
-
-      // Atomic UPSERT: inserts new pilot or updates ONLY if new score beats saved score!
-      const [savedRow] = await db.sql`
-        INSERT INTO leaderboard (player_id, name, score, wave, kills, ship, overclock, updated_at)
-        VALUES (${playerId}, ${name}, ${score}, ${wave}, ${kills}, ${ship}, ${overclock}, NOW())
-        ON CONFLICT (player_id) DO UPDATE SET
-          name = EXCLUDED.name,
-          score = EXCLUDED.score,
-          wave = EXCLUDED.wave,
-          kills = EXCLUDED.kills,
-          ship = EXCLUDED.ship,
-          overclock = EXCLUDED.overclock,
-          updated_at = NOW()
-        WHERE EXCLUDED.score > leaderboard.score
-        RETURNING player_id, name, score, wave, ship, overclock
-      `;
-
-      // Trim leaderboard strictly to Top 1,000 entries
-      await db.sql`
-        DELETE FROM leaderboard
-        WHERE player_id IN (
-          SELECT player_id
-          FROM leaderboard
-          ORDER BY score DESC, updated_at ASC
-          OFFSET ${MAX_ENTRIES}
-        )
-      `;
-
-      const [me, afterCount] = await Promise.all([
-        fetchPlayerRank(db, playerId),
-        db.sql`SELECT COUNT(*)::int AS total FROM leaderboard`,
-      ]);
-
-      return Response.json({
-        ok: true,
-        saved: Boolean(savedRow),
-        me: me
-          ? {
-              rank: me.rank,
-              name: me.name,
-              score: me.score,
-              wave: me.wave,
-              ship: me.ship,
-              overclock: Boolean(me.overclock),
-            }
-          : null,
-        total: afterCount[0]?.total ?? totalBefore,
-      });
+      return Response.json({ error: 'Busy, please try again' }, { status: 409 });
     } catch (err) {
       console.error('Leaderboard POST error:', err);
       return Response.json({ error: 'Failed to save score' }, { status: 500 });

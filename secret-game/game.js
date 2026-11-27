@@ -3,6 +3,14 @@ import {
   PALETTE,
   SHIP_SKINS,
   getSkinAccent,
+  CUSTOM_MAX_POWER,
+  CUSTOM_PARTS,
+  DEFAULT_CUSTOM_BUILD,
+  computeCustomPower,
+  encodeCustomShip,
+  formatShareCode,
+  parseCustomCode,
+  computeCustomStats,
   drawSpaceBackdrop,
   drawPlanets,
   loadPlanets,
@@ -40,7 +48,7 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const formatScore = (value) => String(Math.floor(value)).padStart(6, '0');
 const TAU = Math.PI * 2;
 
-// Three genuinely distinct flight rigs
+// Four genuinely distinct flight rigs (3 presets + modular Custom Ship Forge!)
 const RIGS = {
   kestrel: {
     name: 'Kestrel',
@@ -53,6 +61,9 @@ const RIGS = {
     novaRadius: 260,
     fireRate: 0.16,
     accent: '#79e3d5',
+    weaponKind: 'kestrel',
+    perk: 'kestrel',
+    heatMult: 1,
   },
   falcon: {
     name: 'Falcon',
@@ -65,6 +76,9 @@ const RIGS = {
     novaRadius: 235,
     fireRate: 0.14,
     accent: '#ffd18a',
+    weaponKind: 'falcon',
+    perk: 'falcon',
+    heatMult: 1,
   },
   aegis: {
     name: 'Aegis',
@@ -77,6 +91,13 @@ const RIGS = {
     novaRadius: 320,
     fireRate: 0.2,
     accent: '#9be9ff',
+    weaponKind: 'aegis',
+    perk: 'aegis',
+    heatMult: 1,
+  },
+  custom: {
+    ...computeCustomStats(DEFAULT_CUSTOM_BUILD),
+    novaRadius: 270,
   },
 };
 
@@ -133,20 +154,24 @@ const emptyShipUpgrades = () => ({ weapon: 0, hull: 0, shield: 0, thruster: 0, n
 let meta = {
   coins: 0,
   overclock: false,
+  customBuild: { ...DEFAULT_CUSTOM_BUILD },
   ships: {
     kestrel: emptyShipUpgrades(),
     falcon: emptyShipUpgrades(),
     aegis: emptyShipUpgrades(),
+    custom: emptyShipUpgrades(),
   },
   skins: {
     kestrel: ['standard'],
     falcon: ['standard'],
     aegis: ['standard'],
+    custom: ['standard'],
   },
   equippedSkin: {
     kestrel: 'standard',
     falcon: 'standard',
     aegis: 'standard',
+    custom: 'standard',
   },
   records: {
     bestWave: 1,
@@ -161,6 +186,18 @@ try {
   if (raw && typeof raw === 'object') {
     meta.coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
     meta.overclock = Boolean(raw.overclock);
+    if (raw.customBuild && typeof raw.customBuild === 'object') {
+      const candidate = {
+        nose: Math.max(0, Math.min(2, Math.floor(Number(raw.customBuild.nose) || 0))),
+        wings: Math.max(0, Math.min(3, Math.floor(Number(raw.customBuild.wings) || 0))),
+        weapon: Math.max(0, Math.min(3, Math.floor(Number(raw.customBuild.weapon) || 0))),
+        engine: Math.max(0, Math.min(3, Math.floor(Number(raw.customBuild.engine) || 0))),
+        paint: Math.max(0, Math.min(5, Math.floor(Number(raw.customBuild.paint) || 0))),
+      };
+      if (computeCustomPower(candidate) <= CUSTOM_MAX_POWER) {
+        meta.customBuild = candidate;
+      }
+    }
     if (raw.ships && typeof raw.ships === 'object') {
       for (const shipKey of Object.keys(RIGS)) {
         for (const def of UPGRADE_DEFS) {
@@ -211,8 +248,16 @@ function saveMeta() {
   } catch {}
 }
 
+function getBaseRig(key = selectedRig) {
+  if (key === 'custom') {
+    return { ...computeCustomStats(meta.customBuild), novaRadius: 270 };
+  }
+  return RIGS[key] || RIGS.kestrel;
+}
+
 function getRigAccent(key = selectedRig) {
-  const base = RIGS[key] || RIGS.kestrel;
+  const base = getBaseRig(key);
+  if (key === 'custom') return base.accent;
   return getSkinAccent(meta.equippedSkin[key] || 'standard', base.accent);
 }
 
@@ -239,7 +284,7 @@ function completeMilestone(id) {
 }
 
 function getEffectiveRig(key = selectedRig) {
-  const base = RIGS[key] || RIGS.kestrel;
+  const base = getBaseRig(key);
   const u = meta.ships[key] || emptyShipUpgrades();
   const coolLvl = clamp(u.cooling || 0, 0, 4);
   return {
@@ -471,6 +516,8 @@ let introTime = 0;
 let introCursorX = 0.5;
 let introCursorY = 0.5;
 let introShip = { x: 0, y: 0, vx: 0, vy: 0, heading: 0.72, roll: 0, trails: [[], []], ready: false };
+let forgeActive = false;
+let forgeBlend = 0;
 let playerDying = 0;
 let deathTick = 0;
 let time = 0;
@@ -606,8 +653,9 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   ctx.scale(width / 94, width / 94);
   if (opts.pitch) ctx.scale(1, 1 - Math.abs(opts.pitch) * 0.12);
 
-  // Full 2.5D longitudinal roll with equipped livery skin!
-  drawBankedShip(ctx, variant, roll, opts.tier || 1, accent, skinId);
+  // Full 2.5D longitudinal roll with equipped livery skin (or modular Custom Ship!)
+  const drawVariant = variant === 'custom' ? encodeCustomShip(meta.customBuild) : variant;
+  drawBankedShip(ctx, drawVariant, roll, opts.tier || 1, accent, variant === 'custom' ? 'standard' : skinId);
 
   // Muzzle flash
   if (opts.muzzle > 0) {
@@ -737,38 +785,168 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
-  // Selected ship actively patrols and flies across the Main Menu space behind the centered UI!
-  if (intro) {
+  // Selected ship actively patrols across Main Menu space — and flies left into the live Blueprint Forge dock!
+  if (intro || forgeActive || forgeBlend > 0.01) {
     if (!introShip.ready && w && h) {
       introShip.x = w * 0.72;
       introShip.y = h * 0.24;
       introShip.ready = true;
     }
     const accent = getRigAccent(selectedRig);
-    const size = Math.min(w * (w < h ? 0.14 : 0.085), h * 0.125, 84);
+    const desktopForge = w >= 860;
+    const baseSize = Math.min(w * (w < h ? 0.14 : 0.085), h * 0.125, 84);
+    const forgeSize = desktopForge ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.3, 108);
+    const size = baseSize + (forgeSize - baseSize) * forgeBlend;
 
-    // Sweeping wingtip contrails trailing behind the patrolling ship
-    for (const trail of introShip.trails) {
-      if (trail.length < 2) continue;
-      for (let i = 1; i < trail.length; i++) {
-        const a = i / trail.length;
-        ctx.strokeStyle = accent;
-        ctx.globalAlpha = a * 0.34;
-        ctx.lineWidth = 1 + a * 2.4;
-        ctx.beginPath();
-        ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
-        ctx.lineTo(trail[i].x, trail[i].y);
-        ctx.stroke();
+    // Sweeping wingtip contrails (fade gently as the ship settles into holographic inspection dock)
+    const trailAlpha = clamp(1 - forgeBlend * 1.15, 0, 1);
+    if (trailAlpha > 0.02) {
+      for (const trail of introShip.trails) {
+        if (trail.length < 2) continue;
+        for (let i = 1; i < trail.length; i++) {
+          const a = i / trail.length;
+          ctx.strokeStyle = accent;
+          ctx.globalAlpha = a * 0.34 * trailAlpha;
+          ctx.lineWidth = 1 + a * 2.4;
+          ctx.beginPath();
+          ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.stroke();
+        }
       }
+      ctx.globalAlpha = 1;
     }
-    ctx.globalAlpha = 1;
 
-    paintShip(introShip.x, introShip.y, size, introShip.heading, 1.35, selectedRig, {
+    // Live holographic orbital reticle & scan rings around the docked ship
+    if (forgeBlend > 0.03) {
+      ctx.save();
+      ctx.translate(introShip.x, introShip.y);
+      const rOuter = size * 0.76 * (0.7 + 0.3 * forgeBlend);
+      const rInner = size * 0.56 * (0.7 + 0.3 * forgeBlend);
+
+      const halo = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, rOuter * 1.2);
+      halo.addColorStop(0, accent + '26');
+      halo.addColorStop(1, accent + '00');
+      ctx.globalAlpha = forgeBlend;
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(0, 0, rOuter * 1.2, 0, TAU);
+      ctx.fill();
+
+      // Rotating outer blueprint ring
+      ctx.save();
+      ctx.rotate(introTime * 0.22);
+      ctx.strokeStyle = `rgba(121, 227, 213, ${0.3 * forgeBlend})`;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([7, 6]);
+      ctx.beginPath();
+      ctx.arc(0, 0, rOuter, 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+
+      // Inner calibration ring + subtle crosshairs
+      ctx.strokeStyle = `rgba(121, 227, 213, ${0.18 * forgeBlend})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, rInner, 0, TAU);
+      ctx.moveTo(-rOuter * 1.08, 0);
+      ctx.lineTo(-rInner * 0.85, 0);
+      ctx.moveTo(rInner * 0.85, 0);
+      ctx.lineTo(rOuter * 1.08, 0);
+      ctx.moveTo(0, -rOuter * 1.08);
+      ctx.lineTo(0, -rInner * 0.85);
+      ctx.moveTo(0, rInner * 0.85);
+      ctx.lineTo(0, rOuter * 1.08);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    paintShip(introShip.x, introShip.y, size, introShip.heading, forgeBlend > 0.5 ? 1.15 : 1.35, selectedRig, {
       tier: getEffectiveRig().startWeapon,
       roll: introShip.roll,
     });
-    ctx.restore();
-    return;
+
+    // Progressive glowing schematic leader lines shooting OUT from the real ship into the right-hand Forge UI!
+    if (forgeBlend > 0.08 && desktopForge && forgeNodesEl) {
+      const cRect = canvas.getBoundingClientRect();
+      const sx = cRect.width ? w / cRect.width : 1;
+      const sy = cRect.height ? h / cRect.height : 1;
+      const slotOrder = ['nose', 'weapon', 'wings', 'engine'];
+      ctx.save();
+      for (let idx = 0; idx < slotOrder.length; idx++) {
+        const slotKey = slotOrder[idx];
+        const spec = FORGE_SLOTS[slotKey];
+        const nodeEl = forgeNodesEl.querySelector(`.forge-node[data-slot="${slotKey}"]`);
+        if (!spec || !nodeEl) continue;
+
+        const rawP = clamp((forgeBlend - 0.08 - idx * 0.055) / 0.58, 0, 1);
+        if (rawP <= 0) continue;
+        const p = 1 - Math.pow(1 - rawP, 3);
+
+        const isActive = slotKey === activeForgeSlot;
+        const nRect = nodeEl.getBoundingClientRect();
+        const x0 = introShip.x + spec.anchor[0] * size;
+        const y0 = introShip.y + spec.anchor[1] * size;
+        const x2 = (nRect.left - cRect.left) * sx - 3;
+        const y2 = (nRect.top - cRect.top + nRect.height * 0.5) * sy;
+        const elbowDx = Math.min(58, Math.max(22, Math.abs(y2 - y0) * 0.55));
+        const x1 = Math.min(x2 - 20, x0 + elbowDx + 32);
+        const y1 = y2;
+
+        const seg1 = Math.hypot(x1 - x0, y1 - y0);
+        const seg2 = Math.hypot(x2 - x1, y2 - y1);
+        const totalLen = seg1 + seg2;
+        const drawLen = totalLen * p;
+
+        ctx.save();
+        ctx.strokeStyle = isActive ? `rgba(121, 227, 213, ${0.95 * rawP})` : `rgba(121, 227, 213, ${0.34 * rawP})`;
+        ctx.lineWidth = isActive ? 2.0 : 1.25;
+        ctx.setLineDash(isActive ? [] : [5, 4]);
+        if (isActive) {
+          ctx.shadowColor = 'rgba(121, 227, 213, 0.75)';
+          ctx.shadowBlur = 10;
+        }
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        if (drawLen <= seg1) {
+          const t1 = seg1 > 0 ? drawLen / seg1 : 0;
+          ctx.lineTo(x0 + (x1 - x0) * t1, y0 + (y1 - y0) * t1);
+        } else {
+          ctx.lineTo(x1, y1);
+          const t2 = seg2 > 0 ? (drawLen - seg1) / seg2 : 1;
+          ctx.lineTo(x1 + (x2 - x1) * t2, y1 + (y2 - y1) * t2);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Target reticle dot locked onto the actual part of the live ship!
+        ctx.beginPath();
+        ctx.arc(x0, y0, isActive ? 7.5 : 5, 0, TAU);
+        ctx.strokeStyle = isActive ? `rgba(255, 214, 107, ${0.85 * rawP})` : `rgba(121, 227, 213, ${0.35 * rawP})`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x0, y0, isActive ? 3.5 : 2.6, 0, TAU);
+        ctx.fillStyle = isActive ? '#ffe18c' : '#0b1424';
+        ctx.fill();
+        ctx.strokeStyle = isActive ? '#fff7d6' : `rgba(121, 227, 213, ${0.75 * rawP})`;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        // Crisp square connector pin at the right-hand card edge once line arrives
+        if (p > 0.92) {
+          ctx.fillStyle = isActive ? '#79e3d5' : 'rgba(121, 227, 213, 0.55)';
+          ctx.fillRect(x2 - 2, y2 - 2.5, 5, 5);
+        }
+      }
+      ctx.restore();
+    }
+
+    if (intro) {
+      ctx.restore();
+      return;
+    }
   }
 
   // Sector 3 (Opal Expanse) subtle visual ion drift current streaks
@@ -1356,13 +1534,56 @@ function draw() {
     ctx.save();
     ctx.translate(s.x, s.y);
     if (s.cluster) {
-      // Glowing pulsing Cluster Shell with countdown ring so player knows it will burst into sub-shots!
-      const p = 0.5 + 0.5 * Math.sin(time * 26);
-      ctx.strokeStyle = `rgba(255, 186, 98, ${0.42 + p * 0.5})`;
+      // Telegraphed radial detonation trajectory lines matching exact sub-orb burst vectors!
+      const count = s.clusterCount || 6;
+      const baseA = Math.atan2(s.vx, s.vy);
+      const maxFuse = s.clusterMaxFuse || 1.05;
+      const prog = clamp(1 - (s.clusterFuse || 0) / maxFuse, 0, 1);
+      const p = 0.5 + 0.5 * Math.sin(time * (18 + prog * 20));
+      const rayLen = 40 + prog * 44;
+
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.lineDashOffset = -time * (28 + prog * 40);
+      ctx.lineWidth = 1.2 + prog * 0.7;
+      for (let i = 0; i < count; i++) {
+        const a = baseA + (i / count) * TAU;
+        const dx = Math.sin(a);
+        const dy = Math.cos(a);
+        const sx = dx * (s.r + 5);
+        const sy = dy * (s.r + 5);
+        const ex = dx * rayLen;
+        const ey = dy * rayLen;
+        const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+        grad.addColorStop(0, `rgba(255, 208, 128, ${0.42 + prog * 0.48})`);
+        grad.addColorStop(0.75, `rgba(255, 138, 76, ${0.26 + prog * 0.34})`);
+        grad.addColorStop(1, 'rgba(255, 118, 66, 0)');
+        ctx.strokeStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        // Crisp directional vector chevron near outer ray so exact outgoing lane is unmistakable
+        ctx.setLineDash([]);
+        const tipD = s.r + 14 + prog * 18;
+        const tx = dx * tipD;
+        const ty = dy * tipD;
+        ctx.fillStyle = `rgba(255, 224, 150, ${0.45 + prog * 0.5})`;
+        ctx.beginPath();
+        ctx.arc(tx, ty, 1.8 + prog * 0.8, 0, TAU);
+        ctx.fill();
+        ctx.setLineDash([5, 4]);
+      }
+      ctx.setLineDash([]);
+
+      // Countdown detonation ring around cluster shell
+      ctx.strokeStyle = `rgba(255, 186, 98, ${0.38 + p * 0.52})`;
       ctx.lineWidth = 1.6;
       ctx.beginPath();
-      ctx.arc(0, 0, s.r + 4 + p * 3, 0, TAU);
+      ctx.arc(0, 0, s.r + 4 + (1 - prog) * 3.5, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - prog));
       ctx.stroke();
+      ctx.restore();
     }
     ctx.fillStyle = '#0e0814';
     ctx.beginPath();
@@ -1591,8 +1812,8 @@ function triggerPhaseDash() {
   sound.effect('phaseDash');
   impacts.push({ x: player.x, y: player.y, radius: 14, color: getRigAccent(selectedRig), life: 0.3, maxLife: 0.3 });
 
-  // Falcon Signature Perk: Phase Dash triggers 0.6s Bullet-Time + fires a 4-missile micro-seeker burst!
-  if (selectedRig === 'falcon') {
+  // Falcon / Ion Afterburner Signature Perk: Phase Dash triggers 0.6s Bullet-Time + fires a 4-missile micro-seeker burst!
+  if (rig.perk === 'falcon') {
     bulletTime = Math.max(bulletTime, 0.6);
     for (const ox of [-20, -9, 9, 20]) {
       shots.push({
@@ -1622,7 +1843,7 @@ function triggerPhaseDash() {
 
 function triggerNovaPulse() {
   if (mode !== 'playing' || (warp && warp.phase !== 'collect') || novaCharge < 50) return;
-  const rig = RIGS[selectedRig];
+  const rig = getBaseRig(selectedRig);
   const power = novaCharge >= 98 ? 1.15 : 0.85;
   const radius = rig.novaRadius * power;
   novaCharge = 0;
@@ -1642,12 +1863,12 @@ function triggerNovaPulse() {
 
   // Distinct Ship Signature Nova Perks!
   let callout = 'OVERDRIVE';
-  if (selectedRig === 'kestrel') {
+  if (rig.perk === 'kestrel') {
     railBeamTime = 1.2 * power;
     railBeamTick = 0;
     sound.effect('beam');
     callout = 'RAIL-BEAM OVERDRIVE';
-  } else if (selectedRig === 'aegis') {
+  } else if (rig.perk === 'aegis') {
     reflectShieldTime = 3.4 * power;
     callout = 'REFLECT SHIELD';
   }
@@ -1655,7 +1876,7 @@ function triggerNovaPulse() {
     x: player.x,
     y: player.y - 24,
     text: callout,
-    color: selectedRig === 'aegis' ? '#9bf3f7' : PALETTE.gold,
+    color: rig.perk === 'aegis' ? '#9bf3f7' : PALETTE.gold,
     life: 0.95,
     maxLife: 0.95,
     size: 14,
@@ -2156,6 +2377,10 @@ function setMode(next) {
   hud.hidden = next !== 'playing';
 
   if (next === 'playing') {
+    forgeActive = false;
+    forgeBlend = 0;
+    delete document.body.dataset.forge;
+    forgeScreen?.setAttribute('aria-hidden', 'true');
     sound.start();
     canvas.focus({ preventScroll: true });
     frame = requestAnimationFrame(tick);
@@ -2224,7 +2449,7 @@ function launch() {
   score = 0;
   displayScore = 0;
   runIsNewBest = false;
-  runShip = selectedRig;
+  runShip = selectedRig === 'custom' ? encodeCustomShip(meta.customBuild) : selectedRig;
   runOverclock = Boolean(meta.overclock);
   runDuration = 0;
   runCoins = 0;
@@ -2443,7 +2668,8 @@ function firePlayerWeapons(focused) {
     });
   }
 
-  if (selectedRig === 'aegis') {
+  const wKind = rig.weaponKind || selectedRig;
+  if (wKind === 'aegis') {
     if (focused) {
       // Max 3 clean heavy plasma lances
       const outerPierce = weaponLevel >= 6 ? 1 : 0;
@@ -2463,7 +2689,7 @@ function firePlayerWeapons(focused) {
         shoot(19, -5, 0.28, 560, 0.9 * dmgBoost, { pierce: wingPierce });
       }
     }
-  } else if (selectedRig === 'falcon') {
+  } else if (wKind === 'falcon') {
     if (focused) {
       // Max 3 razor-tight needle bolts
       const outerPierce = weaponLevel >= 5 ? 1 : 0;
@@ -2483,6 +2709,23 @@ function firePlayerWeapons(focused) {
       }
       if (weaponLevel >= 6) {
         shoot(0, -21, 0, 720, 1.0 * dmgBoost, { pierce: 2 });
+      }
+    }
+  } else if (wKind === 'pulse') {
+    // Cool rapid twin/quad pulse cannons (low heat, smooth sustained DPS!)
+    if (focused) {
+      const p = weaponLevel >= 5 ? 1 : 0;
+      shoot(-6, -18, 0, 700, 0.88 * dmgBoost, { pierce: p });
+      shoot(6, -18, 0, 700, 0.88 * dmgBoost, { pierce: p });
+      if (weaponLevel >= 4) {
+        shoot(0, -22, 0, 730, 0.86 * dmgBoost, { pierce: weaponLevel >= 6 ? 2 : 0 });
+      }
+    } else {
+      shoot(-9, -15, -0.04, 650, 0.84 * dmgBoost);
+      shoot(9, -15, 0.04, 650, 0.84 * dmgBoost);
+      if (weaponLevel >= 2) {
+        shoot(-17, -8, -0.17, 620, 0.78 * dmgBoost, { pierce: weaponLevel >= 5 ? 1 : 0 });
+        shoot(17, -8, 0.17, 620, 0.78 * dmgBoost, { pierce: weaponLevel >= 5 ? 1 : 0 });
       }
     }
   } else {
@@ -2519,11 +2762,12 @@ function firePlayerWeapons(focused) {
 
   // Chicken Invaders Weapon Heat accumulation (exponential with weapon MK tier; Overdrive, Vent Boost & Maxed Cryo Core fire heat-free!)
   if (!od && !vb && !rig.noOverheat) {
-    const baseHeat = selectedRig === 'aegis' ? 3.5 : selectedRig === 'falcon' ? 2.45 : 2.85;
+    const baseHeat = wKind === 'aegis' ? 3.5 : wKind === 'falcon' ? 2.45 : wKind === 'pulse' ? 2.35 : 2.85;
     const expMult = Math.pow(1.135, weaponLevel - 1);
     const touchEase = pointer?.isTouch ? 0.88 : 1;
     const rfEase = rf ? 0.78 : 1;
-    weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * touchEase * rfEase);
+    const partHeat = rig.heatMult || 1;
+    weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * partHeat * touchEase * rfEase);
     heatCoolDelay = 0.15;
 
     if (weaponHeat >= 100) {
@@ -3016,11 +3260,12 @@ function update(dt) {
   }
 
   // Measured Homing Seeker Missiles (only fire when visible enemies are on-screen; never solo-clears waves!)
-  const hasMissiles = selectedRig === 'falcon' || weaponLevel >= 4 || (weaponLevel >= 3 && overdriveTime > 0);
+  const isSeekerRig = (rig.weaponKind || selectedRig) === 'falcon';
+  const hasMissiles = isSeekerRig || weaponLevel >= 4 || (weaponLevel >= 3 && overdriveTime > 0);
   const visibleEnemies = enemies.some((e) => !e.dead && e.y > 10);
   if (isFiring && hasMissiles && missileTimer <= 0 && visibleEnemies) {
-    const tripleSalvo = selectedRig === 'falcon' && weaponLevel >= 6;
-    const interval = selectedRig === 'falcon' ? (weaponLevel >= 5 ? 0.82 : 0.98) : weaponLevel >= 6 ? 1.05 : 1.28;
+    const tripleSalvo = isSeekerRig && weaponLevel >= 6;
+    const interval = isSeekerRig ? (weaponLevel >= 5 ? 0.82 : 0.98) : weaponLevel >= 6 ? 1.05 : 1.28;
     const launchers = tripleSalvo ? [-17, 0, 17] : [-15, 15];
     for (const ox of launchers) {
       const side = Math.sign(ox);
@@ -3030,7 +3275,7 @@ function update(dt) {
         r: 4.2,
         vx: side * 135,
         vy: -175,
-        dmg: selectedRig === 'falcon' ? 1.05 : 0.95,
+        dmg: isSeekerRig ? 1.05 : 0.95,
         hostile: false,
         homing: true,
         age: 0,
@@ -3708,30 +3953,53 @@ function update(dt) {
 function updateIntroFlight(dt) {
   introTime += dt;
   const portrait = w < h;
+  const desktopForge = w >= 860;
   if (!introShip.ready && w && h) {
     introShip.x = w * 0.74;
     introShip.y = h * (portrait ? 0.16 : 0.22);
     introShip.ready = true;
   }
-  // Calm, smooth autonomous outer orbit around planet & flanks — zero jittery mouse chasing!
+
+  // Smoothly blend between orbital patrol (0) and left-side live Forge dock (1)
+  const targetBlend = forgeActive ? 1 : 0;
+  forgeBlend += (targetBlend - forgeBlend) * (1 - Math.exp(-dt * 5.2));
+  if (Math.abs(targetBlend - forgeBlend) < 0.002) forgeBlend = targetBlend;
+
+  // Calm autonomous outer orbit vs crisp left-side holographic showcase dock
   const orbitA = introTime * 0.44;
-  const targetX = w * (0.5 + Math.cos(orbitA) * (portrait ? 0.35 : 0.39));
-  const targetY = portrait
+  const orbitX = w * (0.5 + Math.cos(orbitA) * (portrait ? 0.35 : 0.39));
+  const orbitY = portrait
     ? h * (0.17 + Math.sin(orbitA * 2) * 0.055)
     : h * (0.2 + Math.sin(orbitA * 2) * 0.08);
+  const dockX = desktopForge ? w * 0.23 : w * 0.5;
+  const dockY = desktopForge ? h * 0.45 + Math.sin(introTime * 1.9) * 5 : Math.max(128, h * 0.185) + Math.sin(introTime * 1.9) * 3;
+
+  const targetX = forgeActive ? dockX : orbitX;
+  const targetY = forgeActive ? dockY : orbitY;
 
   const dx = targetX - introShip.x;
   const dy = targetY - introShip.y;
-  const desiredVx = clamp(dx * 2.0, -240, 240);
-  const desiredVy = clamp(dy * 2.0, -180, 180);
+  const maxSpd = forgeActive ? 620 : 240;
+  const pull = forgeActive ? 5.6 : 2.0;
+  const desiredVx = clamp(dx * pull, -maxSpd, maxSpd);
+  const desiredVy = clamp(dy * pull, -maxSpd, maxSpd);
   const prevVx = introShip.vx;
-  introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * 3.0));
-  introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * 3.0));
+  introShip.vx += (desiredVx - introShip.vx) * (1 - Math.exp(-dt * (forgeActive ? 7.5 : 3.0)));
+  introShip.vy += (desiredVy - introShip.vy) * (1 - Math.exp(-dt * (forgeActive ? 7.5 : 3.0)));
   introShip.x = clamp(introShip.x + introShip.vx * dt, 24, w - 24);
   introShip.y = clamp(introShip.y + introShip.vy * dt, 30, h - 46);
 
   const spd = Math.hypot(introShip.vx, introShip.vy);
-  if (spd > 14) {
+  const distToDock = Math.hypot(dx, dy);
+  if (forgeActive && (forgeBlend > 0.35 || distToDock < 110)) {
+    // Smoothly straighten upright in the Forge dock & breathe with gentle 2.5D inspection sway
+    let diff = 0 - introShip.heading;
+    while (diff > Math.PI) diff -= TAU;
+    while (diff < -Math.PI) diff += TAU;
+    introShip.heading += diff * (1 - Math.exp(-dt * 11));
+    const inspectRoll = reducedMotion.matches ? 0 : Math.sin(introTime * 1.45) * 0.22;
+    introShip.roll += (inspectRoll - introShip.roll) * (1 - Math.exp(-dt * 6.0));
+  } else if (spd > 14) {
     const targetHeading = Math.atan2(introShip.vx, -introShip.vy);
     let diff = targetHeading - introShip.heading;
     while (diff > Math.PI) diff -= TAU;
@@ -3793,6 +4061,7 @@ function tick(now) {
     updateIntroFlight(dt);
   } else if (mode === 'over') {
     updateOverDrift(dt);
+    if (forgeActive || forgeBlend > 0.01) updateIntroFlight(dt);
   } else {
     update(dt);
   }
@@ -3808,16 +4077,20 @@ function syncRigButtons() {
   for (const btn of document.querySelectorAll('.rig-option')) {
     btn.setAttribute('aria-pressed', String(btn.dataset.rig === selectedRig));
   }
+  document.body.dataset.rig = selectedRig;
+  const sub = document.querySelector('#custom-rig-sub');
+  if (sub) sub.textContent = formatShareCode(meta.customBuild);
 }
 syncRigButtons();
 
-// Render crisp ship illustrations inside each ship picker button & hangar tab (reflecting equipped livery!)
+// Render crisp ship illustrations inside each ship picker button & hangar tab (reflecting equipped livery / custom build!)
 function renderShipPreviews() {
   for (const thumb of document.querySelectorAll('.rig-preview')) {
     const c = thumb.getContext('2d');
     const rigKey = thumb.dataset.ship;
     const accent = getRigAccent(rigKey);
-    const skinId = meta.equippedSkin[rigKey] || 'standard';
+    const drawKey = rigKey === 'custom' ? encodeCustomShip(meta.customBuild) : rigKey;
+    const skinId = rigKey === 'custom' ? 'standard' : meta.equippedSkin[rigKey] || 'standard';
     c.clearRect(0, 0, thumb.width, thumb.height);
     c.save();
     c.translate(56, 56);
@@ -3829,18 +4102,19 @@ function renderShipPreviews() {
     c.arc(0, 6, 44, 0, TAU);
     c.fill();
     c.scale(0.84, 0.84);
-    drawInterceptor(c, rigKey, skinId);
+    drawInterceptor(c, drawKey, skinId);
     c.restore();
   }
   for (const thumb of document.querySelectorAll('.tab-preview')) {
     const c = thumb.getContext('2d');
     const rigKey = thumb.dataset.ship;
-    const skinId = meta.equippedSkin[rigKey] || 'standard';
+    const drawKey = rigKey === 'custom' ? encodeCustomShip(meta.customBuild) : rigKey;
+    const skinId = rigKey === 'custom' ? 'standard' : meta.equippedSkin[rigKey] || 'standard';
     c.clearRect(0, 0, thumb.width, thumb.height);
     c.save();
     c.translate(32, 32);
     c.scale(0.5, 0.5);
-    drawInterceptor(c, rigKey, skinId);
+    drawInterceptor(c, drawKey, skinId);
     c.restore();
   }
 }
@@ -3848,9 +4122,10 @@ renderShipPreviews();
 
 for (const btn of document.querySelectorAll('.rig-option')) {
   btn.addEventListener('click', () => {
-    selectedRig = btn.dataset.rig;
+    const nextRig = btn.dataset.rig;
+    selectedRig = nextRig;
     hangarRig = selectedRig;
-    sound.uiShip(selectedRig);
+    sound.uiShip(selectedRig === 'custom' ? 'kestrel' : selectedRig);
     try {
       localStorage.setItem('low-orbit-rig', selectedRig);
     } catch {}
@@ -3858,6 +4133,7 @@ for (const btn of document.querySelectorAll('.rig-option')) {
     syncMetaUi();
     introShip.trails = [[], []];
     draw();
+    if (nextRig === 'custom') openForge();
   });
 }
 
@@ -3907,6 +4183,13 @@ const controls = new Set([
 
 window.addEventListener('keydown', (e) => {
   if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open) return;
+  if (forgeActive) {
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      closeForge();
+    }
+    return;
+  }
   if (e.target.closest?.('input, summary, button, a') && !['Escape', 'KeyP'].includes(e.code)) return;
 
   if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused') && playerDying <= 0) {
@@ -3969,6 +4252,32 @@ canvas.addEventListener('selectstart', (e) => e.preventDefault());
 let lastTouchDown = { time: 0, x: 0, y: 0 };
 
 canvas.addEventListener('pointerdown', (e) => {
+  if (forgeActive && e.button === 0) {
+    const bounds = canvas.getBoundingClientRect();
+    if (bounds.width && bounds.height) {
+      const cx = ((e.clientX - bounds.left) * w) / bounds.width;
+      const cy = ((e.clientY - bounds.top) * h) / bounds.height;
+      const size = w >= 860 ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.3, 108);
+      if (Math.hypot(cx - introShip.x, cy - introShip.y) <= size * 0.9) {
+        let nearest = activeForgeSlot;
+        let bestD = Infinity;
+        for (const [slotKey, spec] of Object.entries(FORGE_SLOTS)) {
+          const ax = introShip.x + spec.anchor[0] * size;
+          const ay = introShip.y + spec.anchor[1] * size;
+          const d = Math.hypot(cx - ax, cy - ay);
+          if (d < bestD) {
+            bestD = d;
+            nearest = slotKey;
+          }
+        }
+        activeForgeSlot = nearest;
+        sound.uiClick();
+        renderForge();
+        draw();
+      }
+    }
+    return;
+  }
   if (mode !== 'playing') return;
   if (e.button === 2) {
     e.preventDefault();
@@ -4088,6 +4397,23 @@ connectFlightPassage(document.querySelector('.back'));
 // --- MODAL DIALOGS (Field Guide + Hangar Upgrades with closedby & top-layer exit fallbacks) ---
 const manual = document.querySelector('#manual');
 const hangar = document.querySelector('#hangar');
+const forgeScreen = document.querySelector('#forge-screen');
+const forgeNodesEl = document.querySelector('#forge-nodes');
+const forgeBackBtn = document.querySelector('#forge-back');
+const forgePaintsEl = document.querySelector('#forge-paints');
+const forgeCodeVal = document.querySelector('#forge-code-val');
+const forgeCopyBtn = document.querySelector('#forge-copy-btn');
+const forgePwrText = document.querySelector('#forge-pwr-text');
+const forgePwrBars = document.querySelector('#forge-pwr-bars');
+const forgeStatsEl = document.querySelector('#forge-stats');
+const forgeTrayTitle = document.querySelector('#forge-tray-title');
+const forgeTrayHeadroom = document.querySelector('#forge-tray-headroom');
+const forgePartsEl = document.querySelector('#forge-parts');
+const forgeImportForm = document.querySelector('#forge-import-form');
+const forgeImportInput = document.querySelector('#forge-import-input');
+const forgeEquipBtn = document.querySelector('#forge-equip');
+const forgeStatusEl = document.querySelector('#forge-status');
+const skinSectionLabel = document.querySelector('#skin-section-label');
 const recordDialog = document.querySelector('#record-dialog');
 const leaderboardDialog = document.querySelector('#leaderboard');
 const lbListEl = document.querySelector('#lb-list');
@@ -4178,8 +4504,51 @@ wireModal(hangar);
 wireModal(recordDialog);
 wireModal(leaderboardDialog);
 
+async function copyBuildCode(code, buttonEl) {
+  let ok = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(code);
+      ok = true;
+    }
+  } catch {}
+  if (!ok) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = code;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.append(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      ta.remove();
+    } catch {}
+  }
+  sound.uiClick();
+  if (buttonEl) {
+    const prev = buttonEl.textContent;
+    buttonEl.classList.add('is-copied');
+    buttonEl.textContent = ok ? 'COPIED!' : code;
+    clearTimeout(buttonEl._copyTimer);
+    buttonEl._copyTimer = setTimeout(() => {
+      buttonEl.classList.remove('is-copied');
+      buttonEl.textContent = prev;
+    }, 1500);
+  }
+  return ok;
+}
+
+function getShipDisplayLabel(shipKey) {
+  if (typeof shipKey === 'string' && shipKey.startsWith('custom:')) {
+    const parsed = parseCustomCode(shipKey);
+    return parsed ? formatShareCode(parsed) : 'CUSTOM';
+  }
+  return RIGS[shipKey]?.name || 'Kestrel';
+}
+
 function openRecordDialog() {
-  recordShipTag.textContent = `${(RIGS[runShip]?.name || runShip).toUpperCase()}${runOverclock ? ' ⚡' : ''}`;
+  const isCustom = typeof runShip === 'string' && runShip.startsWith('custom:');
+  const label = isCustom ? `CUSTOM · ${getShipDisplayLabel(runShip)}` : (RIGS[runShip]?.name || runShip).toUpperCase();
+  recordShipTag.textContent = `${label}${runOverclock ? ' ⚡' : ''}`;
   recordWaveVal.textContent = String(currentWave).padStart(2, '0');
   recordScoreVal.textContent = Math.floor(score).toLocaleString();
   if (recordShipIcon) {
@@ -4188,7 +4557,9 @@ function openRecordDialog() {
     c.save();
     c.translate(24, 24);
     c.scale(0.42, 0.42);
-    drawInterceptor(c, RIGS[runShip] ? runShip : 'kestrel', meta.equippedSkin[runShip] || 'standard');
+    const drawKey = isCustom ? runShip : RIGS[runShip] ? runShip : 'kestrel';
+    const skinId = isCustom ? 'standard' : meta.equippedSkin[runShip] || 'standard';
+    drawInterceptor(c, drawKey, skinId);
     c.restore();
   }
   pilotNameInput.value = lbProfile.name || '';
@@ -4252,7 +4623,12 @@ function paintMiniShip(canvasEl, shipKey) {
   c.save();
   c.translate(20, 20);
   c.scale(0.34, 0.34);
-  drawInterceptor(c, RIGS[shipKey] ? shipKey : 'kestrel', 'standard');
+  const drawKey = typeof shipKey === 'string' && shipKey.startsWith('custom:') && parseCustomCode(shipKey)
+    ? shipKey
+    : RIGS[shipKey] && shipKey !== 'custom'
+      ? shipKey
+      : 'kestrel';
+  drawInterceptor(c, drawKey, 'standard');
   c.restore();
 }
 
@@ -4288,9 +4664,21 @@ function buildLbRow(entry) {
   icon.height = 40;
   icon.setAttribute('aria-hidden', 'true');
   paintMiniShip(icon, entry.ship);
-  const shipName = document.createElement('span');
-  shipName.textContent = RIGS[entry.ship]?.name || 'Kestrel';
-  shipEl.append(icon, shipName);
+  const parsedCustom = typeof entry.ship === 'string' && entry.ship.startsWith('custom:') ? parseCustomCode(entry.ship) : null;
+  if (parsedCustom) {
+    const code = formatShareCode(parsedCustom);
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'lb-code-btn';
+    copyBtn.title = `Copy build code ${code}`;
+    copyBtn.textContent = code;
+    copyBtn.addEventListener('click', () => copyBuildCode(code, copyBtn));
+    shipEl.append(icon, copyBtn);
+  } else {
+    const shipName = document.createElement('span');
+    shipName.textContent = RIGS[entry.ship]?.name || 'Kestrel';
+    shipEl.append(icon, shipName);
+  }
 
   const waveEl = document.createElement('span');
   waveEl.className = 'lb-wave';
@@ -4317,8 +4705,20 @@ function renderLbMe(me) {
   rankSpan.className = 'lb-me-rank';
   rankSpan.textContent = `YOUR RANK #${me.rank}`;
   const infoSpan = document.createElement('span');
-  infoSpan.textContent = `${me.name} · ${(RIGS[me.ship]?.name || 'Kestrel').toUpperCase()}${me.overclock ? ' ⚡' : ''}`;
+  const parsedCustom = typeof me.ship === 'string' && me.ship.startsWith('custom:') ? parseCustomCode(me.ship) : null;
+  const shipLabel = parsedCustom ? formatShareCode(parsedCustom) : (RIGS[me.ship]?.name || 'Kestrel').toUpperCase();
+  infoSpan.textContent = `${me.name} · ${shipLabel}${me.overclock ? ' ⚡' : ''}`;
   left.append(rankSpan, infoSpan);
+  if (parsedCustom) {
+    const code = formatShareCode(parsedCustom);
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'lb-code-btn';
+    copyBtn.title = `Copy your build code ${code}`;
+    copyBtn.textContent = 'COPY';
+    copyBtn.addEventListener('click', () => copyBuildCode(code, copyBtn));
+    left.append(copyBtn);
+  }
 
   const right = document.createElement('span');
   right.className = 'lb-me-score';
@@ -4599,68 +4999,290 @@ function renderUpgrades() {
   }
 
   // Render unlockable per-ship Liveries / Skins with actual live ship preview illustrations!
-  const ownedSkins = meta.skins[hangarRig] || ['standard'];
-  const equipped = meta.equippedSkin[hangarRig] || 'standard';
   skinListEl.innerHTML = '';
-  for (const skin of SHIP_SKINS) {
-    const isOwned = ownedSkins.includes(skin.id);
-    const isEquipped = equipped === skin.id;
-    const canBuy = !isOwned && meta.coins >= skin.cost;
+  if (hangarRig === 'custom') {
+    if (skinSectionLabel) skinSectionLabel.textContent = 'Custom Hull Paint';
+    skinListEl.style.display = 'block';
+    const note = document.createElement('div');
+    note.className = 'hangar-custom-note';
+    note.innerHTML = `<span>Custom hull parts &amp; paint (${formatShareCode(meta.customBuild)}) are configured in Ship Forge.</span>`;
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'skin-btn';
-    btn.setAttribute('aria-pressed', String(isEquipped));
-    btn.disabled = !isOwned && !canBuy;
-
-    const preview = document.createElement('canvas');
-    preview.className = 'skin-preview';
-    preview.width = 88;
-    preview.height = 88;
-    preview.setAttribute('aria-hidden', 'true');
-    const pc = preview.getContext('2d');
-    const accent = getSkinAccent(skin.id, RIGS[hangarRig].accent);
-    pc.save();
-    pc.translate(44, 44);
-    const glow = pc.createRadialGradient(0, 4, 3, 0, 4, 34);
-    glow.addColorStop(0, accent + '36');
-    glow.addColorStop(1, accent + '00');
-    pc.fillStyle = glow;
-    pc.beginPath();
-    pc.arc(0, 4, 34, 0, TAU);
-    pc.fill();
-    pc.scale(0.68, 0.68);
-    drawInterceptor(pc, hangarRig, skin.id);
-    pc.restore();
-
-    const nameEl = document.createElement('span');
-    nameEl.textContent = skin.name;
-    const costEl = document.createElement('span');
-    costEl.className = 'skin-cost' + (isOwned ? ' owned' : '');
-    costEl.textContent = isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : skin.cost.toLocaleString();
-
-    btn.append(preview, nameEl, costEl);
+    btn.textContent = 'OPEN FORGE';
     btn.addEventListener('click', () => {
-      const bought = !isOwned;
-      if (bought) {
-        if (meta.coins < skin.cost) return;
-        meta.coins -= skin.cost;
-        meta.skins[hangarRig].push(skin.id);
-      }
-      meta.equippedSkin[hangarRig] = skin.id;
-      saveMeta();
-      if (bought) sound.uiBuy();
-      else sound.uiClick();
-      renderShipPreviews();
-      syncMetaUi();
-      renderUpgrades();
-      draw();
+      hangar.close();
+      openForge();
     });
-    skinListEl.append(btn);
+    note.append(btn);
+    skinListEl.append(note);
+  } else {
+    if (skinSectionLabel) skinSectionLabel.textContent = 'Ship Livery';
+    skinListEl.style.display = '';
+    const ownedSkins = meta.skins[hangarRig] || ['standard'];
+    const equipped = meta.equippedSkin[hangarRig] || 'standard';
+    for (const skin of SHIP_SKINS) {
+      const isOwned = ownedSkins.includes(skin.id);
+      const isEquipped = equipped === skin.id;
+      const canBuy = !isOwned && meta.coins >= skin.cost;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'skin-btn';
+      btn.setAttribute('aria-pressed', String(isEquipped));
+      btn.disabled = !isOwned && !canBuy;
+
+      const preview = document.createElement('canvas');
+      preview.className = 'skin-preview';
+      preview.width = 88;
+      preview.height = 88;
+      preview.setAttribute('aria-hidden', 'true');
+      const pc = preview.getContext('2d');
+      const accent = getSkinAccent(skin.id, getBaseRig(hangarRig).accent);
+      pc.save();
+      pc.translate(44, 44);
+      const glow = pc.createRadialGradient(0, 4, 3, 0, 4, 34);
+      glow.addColorStop(0, accent + '36');
+      glow.addColorStop(1, accent + '00');
+      pc.fillStyle = glow;
+      pc.beginPath();
+      pc.arc(0, 4, 34, 0, TAU);
+      pc.fill();
+      pc.scale(0.68, 0.68);
+      drawInterceptor(pc, hangarRig, skin.id);
+      pc.restore();
+
+      const nameEl = document.createElement('span');
+      nameEl.textContent = skin.name;
+      const costEl = document.createElement('span');
+      costEl.className = 'skin-cost' + (isOwned ? ' owned' : '');
+      costEl.textContent = isEquipped ? 'ACTIVE' : isOwned ? 'EQUIP' : skin.cost.toLocaleString();
+
+      btn.append(preview, nameEl, costEl);
+      btn.addEventListener('click', () => {
+        const bought = !isOwned;
+        if (bought) {
+          if (meta.coins < skin.cost) return;
+          meta.coins -= skin.cost;
+          meta.skins[hangarRig].push(skin.id);
+        }
+        meta.equippedSkin[hangarRig] = skin.id;
+        saveMeta();
+        if (bought) sound.uiBuy();
+        else sound.uiClick();
+        renderShipPreviews();
+        syncMetaUi();
+        renderUpgrades();
+        draw();
+      });
+      skinListEl.append(btn);
+    }
   }
 
   refundBtn.disabled = totalSpent === 0;
-  refundBtn.textContent = `Refund ${RIGS[hangarRig].name} (${totalSpent.toLocaleString()} coins)`;
+  refundBtn.textContent = `Refund ${getBaseRig(hangarRig).name} (${totalSpent.toLocaleString()} coins)`;
 }
+
+// --- LIVE FULL-SCREEN ORBITAL SHIP FORGE (SHIP DOCKS LEFT + ANIMATED LEADER LINES TO UI) ---
+const FORGE_SLOTS = {
+  nose: { label: 'Nose / Hull', full: 'Nose / Hull Frame', items: CUSTOM_PARTS.nose, cols: 'cols-3', anchor: [0, -0.44] },
+  weapon: { label: 'Weapon System', full: 'Primary Weapon System', items: CUSTOM_PARTS.weapon, cols: '', anchor: [0.24, -0.13] },
+  wings: { label: 'Wings / Shield', full: 'Wings / Shield Array', items: CUSTOM_PARTS.wings, cols: '', anchor: [0.37, 0.14] },
+  engine: { label: 'Engine / Perk', full: 'Engine Core / Perk', items: CUSTOM_PARTS.engine, cols: '', anchor: [0, 0.36] },
+};
+let activeForgeSlot = 'nose';
+
+function renderForge() {
+  const b = meta.customBuild;
+  const stats = computeCustomStats(b);
+  const pwr = stats.power;
+  const freePwr = CUSTOM_MAX_POWER - pwr;
+  const shareCode = formatShareCode(b);
+
+  forgeCodeVal.textContent = shareCode;
+  forgePwrText.textContent = `${pwr} / ${CUSTOM_MAX_POWER} PWR`;
+  forgePwrText.classList.toggle('is-max', pwr >= CUSTOM_MAX_POWER);
+
+  forgePwrBars.innerHTML = '';
+  for (let i = 0; i < CUSTOM_MAX_POWER; i++) {
+    const seg = document.createElement('i');
+    if (i < pwr) {
+      seg.classList.add('on');
+      if (i >= CUSTOM_MAX_POWER - 2) seg.classList.add('hot');
+    }
+    forgePwrBars.append(seg);
+  }
+
+  const statChips = [
+    { label: 'HULL', val: `${stats.hull} HP`, cls: 'hp' },
+    { label: 'SHIELD', val: `${stats.shields} SP`, cls: '' },
+    { label: 'SPEED', val: `${stats.speed}`, cls: '' },
+    { label: 'FIRE', val: `${(1 / stats.fireRate).toFixed(1)}/s`, cls: 'gold' },
+    { label: 'COOL', val: `${Math.round((1 / stats.heatMult) * 100)}%`, cls: '' },
+  ];
+  forgeStatsEl.innerHTML = '';
+  for (const s of statChips) {
+    const chip = document.createElement('div');
+    chip.className = `forge-stat-chip ${s.cls}`.trim();
+    chip.innerHTML = `<small>${s.label}</small><b>${s.val}</b>`;
+    forgeStatsEl.append(chip);
+  }
+
+  // Update the 4 connected schematic nodes (order matches Nose -> Weapon -> Wings -> Engine top-to-bottom!)
+  for (const [slotKey, spec] of Object.entries(FORGE_SLOTS)) {
+    const node = forgeNodesEl.querySelector(`.forge-node[data-slot="${slotKey}"]`);
+    if (!node) continue;
+    const part = spec.items[b[slotKey]] || spec.items[0];
+    node.setAttribute('aria-pressed', String(slotKey === activeForgeSlot));
+    node.innerHTML = `<span class="forge-node-left"><span class="forge-node-kicker">${spec.label}</span><strong>${part.name}</strong><small>${part.desc}</small></span><span class="forge-node-right"><span class="forge-pwr-tag">${part.pwr} PWR</span></span>`;
+  }
+
+  // Paint swatches docked right below the live hovering ship (0 PWR)
+  forgePaintsEl.innerHTML = '';
+  for (const p of CUSTOM_PARTS.paint) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'forge-paint-chip';
+    btn.title = `${p.name} Paint (0 PWR)`;
+    btn.setAttribute('aria-label', `${p.name} paint`);
+    btn.setAttribute('aria-pressed', String(b.paint === p.id));
+    btn.dataset.partKey = 'paint';
+    btn.dataset.partId = String(p.id);
+    btn.innerHTML = `<i style="background:${p.swatch[0]}"></i><i style="background:${p.swatch[1]}"></i><i style="background:${p.swatch[2]}"></i>`;
+    btn.addEventListener('click', () => {
+      if (b.paint === p.id) return;
+      meta.customBuild = { ...meta.customBuild, paint: p.id };
+      saveMeta();
+      sound.uiClick();
+      renderForge();
+      syncRigButtons();
+      renderShipPreviews();
+      draw();
+    });
+    forgePaintsEl.append(btn);
+  }
+
+  // Active slot's swappable modules tray
+  const activeSpec = FORGE_SLOTS[activeForgeSlot] || FORGE_SLOTS.nose;
+  const currentPart = activeSpec.items[b[activeForgeSlot]] || activeSpec.items[0];
+  forgeTrayTitle.textContent = `${activeSpec.full} · Select Module`;
+  forgeTrayHeadroom.textContent = freePwr > 0 ? `${freePwr} PWR FREE` : 'MAX REACTOR LOAD';
+
+  forgePartsEl.className = `forge-options ${activeSpec.cols}`.trim();
+  forgePartsEl.innerHTML = '';
+  for (const part of activeSpec.items) {
+    const selected = b[activeForgeSlot] === part.id;
+    const nextPwr = pwr - currentPart.pwr + part.pwr;
+    const overBudget = !selected && nextPwr > CUSTOM_MAX_POWER;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'forge-opt' + (overBudget ? ' over-budget' : '');
+    btn.setAttribute('aria-pressed', String(selected));
+    btn.disabled = overBudget;
+    btn.dataset.partKey = activeForgeSlot;
+    btn.dataset.partId = String(part.id);
+    btn.innerHTML = `<span class="forge-opt-top"><strong>${part.name}</strong><span class="forge-pwr-tag">${part.pwr} PWR</span></span><small>${part.desc}</small>`;
+    btn.addEventListener('click', () => {
+      if (overBudget || selected) return;
+      meta.customBuild = { ...meta.customBuild, [activeForgeSlot]: part.id };
+      saveMeta();
+      sound.uiClick();
+      forgeStatusEl.textContent = '';
+      forgeStatusEl.classList.remove('is-error');
+      renderForge();
+      syncRigButtons();
+      renderShipPreviews();
+      syncMetaUi();
+      draw();
+    });
+    forgePartsEl.append(btn);
+  }
+}
+
+for (const node of forgeNodesEl.querySelectorAll('.forge-node')) {
+  node.addEventListener('click', () => {
+    activeForgeSlot = node.dataset.slot;
+    sound.uiClick();
+    renderForge();
+    draw();
+  });
+}
+
+function openForge() {
+  selectedRig = 'custom';
+  hangarRig = 'custom';
+  try {
+    localStorage.setItem('low-orbit-rig', 'custom');
+  } catch {}
+  syncRigButtons();
+  syncMetaUi();
+  forgeActive = true;
+  if (reducedMotion.matches) forgeBlend = 1;
+  document.body.dataset.forge = 'true';
+  forgeScreen.setAttribute('aria-hidden', 'false');
+  forgeStatusEl.textContent = '';
+  forgeStatusEl.classList.remove('is-error');
+  forgeImportInput.value = '';
+  renderForge();
+  if (!frame && (mode === 'intro' || mode === 'over') && !reducedMotion.matches) {
+    lastTime = 0;
+    frame = requestAnimationFrame(tick);
+  }
+  draw();
+}
+
+function closeForge() {
+  if (!forgeActive) return;
+  sound.uiClose();
+  forgeActive = false;
+  if (reducedMotion.matches) forgeBlend = 0;
+  delete document.body.dataset.forge;
+  forgeScreen.setAttribute('aria-hidden', 'true');
+  draw();
+}
+
+forgeBackBtn?.addEventListener('click', closeForge);
+
+forgeCopyBtn?.addEventListener('click', () => {
+  const code = formatShareCode(meta.customBuild);
+  copyBuildCode(code, forgeCopyBtn);
+  forgeStatusEl.textContent = `Copied ${code} — share it with friends to import your ship!`;
+  forgeStatusEl.classList.remove('is-error');
+});
+
+forgeImportForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const parsed = parseCustomCode(forgeImportInput.value);
+  if (!parsed) {
+    sound.uiClose();
+    forgeStatusEl.textContent = 'Invalid code or exceeds 10 PWR limit (example: LO-11200).';
+    forgeStatusEl.classList.add('is-error');
+    return;
+  }
+  meta.customBuild = parsed;
+  saveMeta();
+  sound.uiBuy();
+  const code = formatShareCode(parsed);
+  forgeImportInput.value = '';
+  forgeStatusEl.textContent = `Loaded custom blueprint ${code} (${computeCustomPower(parsed)} / ${CUSTOM_MAX_POWER} PWR)!`;
+  forgeStatusEl.classList.remove('is-error');
+  renderForge();
+  syncRigButtons();
+  renderShipPreviews();
+  syncMetaUi();
+  draw();
+});
+
+forgeEquipBtn?.addEventListener('click', () => {
+  selectedRig = 'custom';
+  hangarRig = 'custom';
+  try {
+    localStorage.setItem('low-orbit-rig', 'custom');
+  } catch {}
+  syncRigButtons();
+  syncMetaUi();
+  renderShipPreviews();
+  sound.uiLaunch(meta.overclock);
+  launch();
+});
 
 function syncMetaUi() {
   coinBankEl.textContent = meta.coins.toLocaleString();
