@@ -515,9 +515,11 @@ let distance = 0;
 let introTime = 0;
 let introCursorX = 0.5;
 let introCursorY = 0.5;
-let introShip = { x: 0, y: 0, vx: 0, vy: 0, heading: 0.72, roll: 0, trails: [[], []], ready: false };
+let introShip = { x: 0, y: 0, vx: 0, vy: 0, heading: 0.72, roll: 0, muzzle: 0, recoil: 0, trails: [[], []], ready: false };
 let forgeActive = false;
 let forgeBlend = 0;
+let forgeDemoShots = [];
+let forgeDemoTimer = 0;
 let playerDying = 0;
 let deathTick = 0;
 let time = 0;
@@ -861,9 +863,62 @@ function draw() {
       ctx.restore();
     }
 
+    // Live Forge weapon test-fire projectiles shooting straight out of the docked ship!
+    if (forgeDemoShots.length > 0) {
+      for (const s of forgeDemoShots) {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(Math.atan2(s.vx, -s.vy));
+        if (s.homing) {
+          // Glowing thruster streak behind seeker missile
+          ctx.globalCompositeOperation = 'lighter';
+          const mg = ctx.createLinearGradient(0, 4, 0, 26);
+          mg.addColorStop(0, 'rgba(255, 210, 138, 0.85)');
+          mg.addColorStop(1, 'rgba(255, 160, 88, 0)');
+          ctx.fillStyle = mg;
+          ctx.fillRect(-2.2, 4, 4.4, 22);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = '#ffd18a';
+          ctx.beginPath();
+          ctx.moveTo(0, -10);
+          ctx.lineTo(4, 5);
+          ctx.lineTo(0, 2.5);
+          ctx.lineTo(-4, 5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#fff9e6';
+          ctx.fillRect(-1.2, -7.5, 2.4, 7.5);
+        } else if (s.pierce > 0) {
+          ctx.globalAlpha = 0.92;
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = 'rgba(255, 212, 112, 0.36)';
+          ctx.fillRect(-5.6, -18, 11.2, 36);
+          ctx.fillStyle = '#ffcb6b';
+          ctx.fillRect(-2.6, -15, 5.2, 30);
+          ctx.fillStyle = '#fffdf2';
+          ctx.fillRect(-1.2, -12, 2.4, 20);
+        } else {
+          ctx.globalAlpha = 0.9;
+          ctx.globalCompositeOperation = 'lighter';
+          const bw = s.heavy ? 5.4 : 2.8;
+          const bh = s.heavy ? 22 : 18;
+          ctx.fillStyle = s.heavy ? 'rgba(155, 233, 255, 0.36)' : 'rgba(121, 227, 213, 0.34)';
+          ctx.fillRect(-bw * 1.5, -bh * 0.55, bw * 3.0, bh * 1.15);
+          ctx.fillStyle = s.heavy ? '#9be9ff' : '#7ae2f2';
+          ctx.fillRect(-bw * 0.68, -bh * 0.5, bw * 1.36, bh);
+          ctx.fillStyle = '#fffaf0';
+          ctx.fillRect(-bw * 0.3, -bh * 0.42, bw * 0.6, bh * 0.54);
+        }
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1;
+    }
+
     paintShip(introShip.x, introShip.y, size, introShip.heading, forgeBlend > 0.5 ? 1.15 : 1.35, selectedRig, {
       tier: getEffectiveRig().startWeapon,
       roll: introShip.roll,
+      muzzle: introShip.muzzle,
+      recoil: introShip.recoil,
     });
 
     // Progressive glowing schematic leader lines radiating OUT FROM THE SHIP to visible callout cards!
@@ -2381,6 +2436,8 @@ function setMode(next) {
   if (next === 'playing') {
     forgeActive = false;
     forgeBlend = 0;
+    forgeDemoShots = [];
+    clearTimeout(forgeDemoTimer);
     delete document.body.dataset.forge;
     forgeScreen?.setAttribute('aria-hidden', 'true');
     sound.start();
@@ -4015,6 +4072,25 @@ function updateIntroFlight(dt) {
     introShip.roll += (turnRoll - introShip.roll) * (1 - Math.exp(-dt * 6.5));
   }
 
+  // Decay test-fire muzzle flash & recoil, and advance live Forge weapon demo shots
+  if (introShip.muzzle > 0) introShip.muzzle = Math.max(0, introShip.muzzle - dt * 1.1);
+  if (introShip.recoil > 0) introShip.recoil = Math.max(0, introShip.recoil - dt * 28);
+  if (forgeDemoShots.length > 0) {
+    for (const s of forgeDemoShots) {
+      s.age = (s.age || 0) + dt;
+      if (s.homing) {
+        // Authentic side-eject then curve gracefully upward like Falcon Seekers!
+        const targetVx = Math.sin(s.age * 7 + s.side) * 28;
+        s.vx += (targetVx - s.vx) * (1 - Math.exp(-dt * 6.5));
+        s.vy += (-560 - s.vy) * (1 - Math.exp(-dt * 4.2));
+      }
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      s.life -= dt;
+    }
+    forgeDemoShots = forgeDemoShots.filter((s) => s.life > 0 && s.y > -60 && s.x > -60 && s.x < w + 60);
+  }
+
   // Record wingtip contrails behind the flying ship
   const cos = Math.cos(introShip.heading);
   const sin = Math.sin(introShip.heading);
@@ -5207,10 +5283,18 @@ function renderForge() {
       btn.dataset.partId = String(opt.id);
       btn.innerHTML = `<span class="forge-opt-top"><strong>${opt.name}</strong><span class="forge-pwr-tag">${opt.pwr} PWR</span></span><small>${opt.desc}</small>`;
       btn.addEventListener('click', () => {
-        if (overBudget || selected) return;
+        if (overBudget) return;
+        if (selected) {
+          if (slotKey === 'weapon') fireForgeWeaponDemo(opt.kind);
+          return;
+        }
         meta.customBuild = { ...meta.customBuild, [slotKey]: opt.id };
         saveMeta();
-        sound.uiClick();
+        if (slotKey === 'weapon') {
+          fireForgeWeaponDemo(opt.kind);
+        } else {
+          sound.uiClick();
+        }
         forgeStatusEl.textContent = '';
         forgeStatusEl.classList.remove('is-error');
         renderForge();
@@ -5261,10 +5345,73 @@ for (const node of forgeNodesEl.querySelectorAll('.forge-node')) {
   });
 }
 
+function fireForgeWeaponDemo(kind) {
+  if (!forgeActive) return;
+  clearTimeout(forgeDemoTimer);
+  const desktopForge = w >= 860;
+  const size = desktopForge ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.3, 108);
+  const sc = size / 94;
+  const ox0 = introShip.x;
+  const oy0 = introShip.y;
+
+  const emit = (ox, oy, angle, speed, opts = {}) => {
+    forgeDemoShots.push({
+      x: ox0 + ox * sc,
+      y: oy0 + oy * sc,
+      vx: Math.sin(angle) * speed,
+      vy: -Math.cos(angle) * speed,
+      life: 1.4,
+      age: 0,
+      ...opts,
+    });
+  };
+
+  introShip.muzzle = 0.14;
+  introShip.recoil = kind === 'aegis' ? 6.5 : 4.2;
+
+  if (kind === 'aegis') {
+    // Heavy Tri-Plasma spread
+    emit(0, -48, 0, 620, { heavy: true });
+    emit(-24, -26, -0.15, 585, { heavy: true });
+    emit(24, -26, 0.15, 585, { heavy: true });
+    sound.effect('fire');
+  } else if (kind === 'falcon') {
+    // Fast twin needles + curving twin homing seekers!
+    emit(-14, -44, -0.04, 680);
+    emit(14, -44, 0.04, 680);
+    emit(-28, -10, -0.82, 270, { homing: true, side: -1 });
+    emit(28, -10, 0.82, 270, { homing: true, side: 1 });
+    sound.effect('fire');
+    sound.effect('missile');
+  } else if (kind === 'pulse') {
+    // Crisp rapid double-tap Twin Pulse salvo!
+    emit(-16, -42, -0.03, 660);
+    emit(16, -42, 0.03, 660);
+    sound.effect('fire');
+    forgeDemoTimer = setTimeout(() => {
+      if (!forgeActive) return;
+      introShip.muzzle = 0.12;
+      introShip.recoil = 3.2;
+      forgeDemoShots.push(
+        { x: introShip.x - 16 * sc, y: introShip.y - 42 * sc, vx: -20, vy: -660, life: 1.4, age: 0 },
+        { x: introShip.x + 16 * sc, y: introShip.y - 42 * sc, vx: 20, vy: -660, life: 1.4, age: 0 },
+      );
+      sound.effect('fire');
+    }, 115);
+  } else {
+    // High-velocity piercing Rail-Lance!
+    emit(0, -52, 0, 790, { pierce: 2 });
+    emit(-22, -32, -0.09, 690, { pierce: 1 });
+    emit(22, -32, 0.09, 690, { pierce: 1 });
+    sound.effect('focusFire');
+  }
+}
 function openForge() {
   selectedRig = 'custom';
   hangarRig = 'custom';
   activeForgeSlot = null;
+  forgeDemoShots = [];
+  clearTimeout(forgeDemoTimer);
   try {
     localStorage.setItem('low-orbit-rig', 'custom');
   } catch {}
@@ -5290,6 +5437,8 @@ function closeForge() {
   sound.uiClose();
   forgeActive = false;
   activeForgeSlot = null;
+  forgeDemoShots = [];
+  clearTimeout(forgeDemoTimer);
   if (reducedMotion.matches) forgeBlend = 0;
   delete document.body.dataset.forge;
   delete forgeScreen.dataset.activeSide;
