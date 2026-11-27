@@ -2179,7 +2179,7 @@ function setMode(next) {
     title.textContent = 'Low Orbit';
     message.hidden = false;
     document.querySelector('#debrief').hidden = true;
-    document.querySelector('#record-submit').hidden = true;
+    if (recordDialog.open) recordDialog.close();
     document.querySelector('#action-text').textContent = 'Play';
     syncMetaUi();
     action.focus({ preventScroll: true });
@@ -2197,26 +2197,11 @@ function setMode(next) {
     document.querySelector('#run-kills').textContent = kills;
     document.querySelector('#run-combo').textContent = `×${peakMultiplier.toFixed(1)}`;
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
-    const recForm = document.querySelector('#record-submit');
-    if (lost && runIsNewBest && Math.floor(score) > 0) {
-      recForm.hidden = false;
-      const nameInput = document.querySelector('#pilot-name');
-      const saveBtn = document.querySelector('#save-record-btn');
-      const statusEl = document.querySelector('#record-status');
-      const shipTag = document.querySelector('#record-ship-tag');
-      shipTag.textContent = `${(RIGS[runShip]?.name || runShip).toUpperCase()}${runOverclock ? ' · ⚡ OVERCLOCK' : ''}`;
-      nameInput.value = lbProfile.name || '';
-      nameInput.disabled = false;
-      saveBtn.disabled = false;
-      saveBtn.textContent = 'SAVE RANK';
-      statusEl.textContent = '';
-      statusEl.classList.remove('is-error');
-    } else {
-      recForm.hidden = true;
-    }
     syncMetaUi();
-    if (!recForm.hidden) document.querySelector('#pilot-name').focus({ preventScroll: true });
-    else action.focus({ preventScroll: true });
+    action.focus({ preventScroll: true });
+    if (lost && runIsNewBest && Math.floor(score) > 0) {
+      openRecordDialog();
+    }
     // Keep live ambient drifting space running smoothly on Ship lost!
     if (lost && !document.hidden && !reducedMotion.matches) {
       frame = requestAnimationFrame(tick);
@@ -3921,7 +3906,7 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (manual.open || hangar.open || leaderboardDialog.open) return;
+  if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open) return;
   if (e.target.closest?.('input, summary, button, a') && !['Escape', 'KeyP'].includes(e.code)) return;
 
   if ((e.code === 'KeyP' || e.code === 'Escape') && (mode === 'playing' || mode === 'paused') && playerDying <= 0) {
@@ -4103,6 +4088,7 @@ connectFlightPassage(document.querySelector('.back'));
 // --- MODAL DIALOGS (Field Guide + Hangar Upgrades with closedby & top-layer exit fallbacks) ---
 const manual = document.querySelector('#manual');
 const hangar = document.querySelector('#hangar');
+const recordDialog = document.querySelector('#record-dialog');
 const leaderboardDialog = document.querySelector('#leaderboard');
 const lbListEl = document.querySelector('#lb-list');
 const lbMeEl = document.querySelector('#lb-me');
@@ -4110,6 +4096,10 @@ const lbSubEl = document.querySelector('#lb-sub');
 const lbCountEl = document.querySelector('#lb-count');
 const lbMoreBtn = document.querySelector('#lb-more');
 const recordSubmitForm = document.querySelector('#record-submit');
+const recordShipIcon = document.querySelector('#record-ship-icon');
+const recordShipTag = document.querySelector('#record-ship-tag');
+const recordWaveVal = document.querySelector('#record-wave-val');
+const recordScoreVal = document.querySelector('#record-score-val');
 const pilotNameInput = document.querySelector('#pilot-name');
 const saveRecordBtn = document.querySelector('#save-record-btn');
 const recordStatusEl = document.querySelector('#record-status');
@@ -4185,7 +4175,36 @@ function wireModal(dialog) {
 }
 wireModal(manual);
 wireModal(hangar);
+wireModal(recordDialog);
 wireModal(leaderboardDialog);
+
+function openRecordDialog() {
+  recordShipTag.textContent = `${(RIGS[runShip]?.name || runShip).toUpperCase()}${runOverclock ? ' ⚡' : ''}`;
+  recordWaveVal.textContent = String(currentWave).padStart(2, '0');
+  recordScoreVal.textContent = Math.floor(score).toLocaleString();
+  if (recordShipIcon) {
+    const c = recordShipIcon.getContext('2d');
+    c.clearRect(0, 0, recordShipIcon.width, recordShipIcon.height);
+    c.save();
+    c.translate(24, 24);
+    c.scale(0.42, 0.42);
+    drawInterceptor(c, RIGS[runShip] ? runShip : 'kestrel', meta.equippedSkin[runShip] || 'standard');
+    c.restore();
+  }
+  pilotNameInput.value = lbProfile.name || '';
+  pilotNameInput.disabled = false;
+  saveRecordBtn.disabled = false;
+  saveRecordBtn.textContent = 'SAVE RANK';
+  recordStatusEl.textContent = '';
+  recordStatusEl.classList.remove('is-error');
+  setTimeout(() => {
+    if (mode !== 'over' || !runIsNewBest || recordDialog.open) return;
+    recordDialog.removeAttribute('data-closing');
+    recordDialog.showModal();
+    pilotNameInput.focus({ preventScroll: true });
+    pilotNameInput.select();
+  }, 240);
+}
 
 // --- GLOBAL LEADERBOARD CLIENT (Netlify DB /api/leaderboard + Local Dev Preview Fallback) ---
 let lbOffset = 0;
@@ -4307,7 +4326,8 @@ function renderLbMe(me) {
   lbMeEl.append(left, right);
 }
 
-async function fetchLeaderboardPage(append = false) {
+async function fetchLeaderboardPage(append = false, opts = {}) {
+  const { highlightMe = false } = opts;
   if (!append) {
     lbOffset = 0;
     lbListEl.innerHTML = '<div class="lb-empty">CONNECTING TO ORBITAL RANKINGS...</div>';
@@ -4352,6 +4372,7 @@ async function fetchLeaderboardPage(append = false) {
     ? 'Local preview mode · Live DB activates on Netlify deploy'
     : 'Top 1,000 pilots worldwide · Personal bests only';
   renderLbMe(data.me);
+  lbMeEl.classList.toggle('is-just-saved', Boolean(highlightMe && data.me));
 
   if (data.entries?.length) {
     const frag = document.createDocumentFragment();
@@ -4362,20 +4383,28 @@ async function fetchLeaderboardPage(append = false) {
     lbListEl.innerHTML = '<div class="lb-empty">NO PILOTS RECORDED YET — SET A NEW RECORD TO CLAIM #1!</div>';
   }
 
+  if (highlightMe) {
+    const myRow = lbListEl.querySelector('.lb-row.is-me');
+    if (myRow) {
+      myRow.classList.add('is-just-saved');
+      requestAnimationFrame(() => myRow.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    }
+  }
+
   lbCountEl.textContent = `${lbTotal.toLocaleString()} / 1,000 PILOTS`;
   lbMoreBtn.hidden = lbOffset >= lbTotal || lbOffset >= 1000;
   lbMoreBtn.disabled = false;
 }
 
-function openLeaderboard() {
-  sound.uiClick();
+function openLeaderboard(opts = {}) {
+  if (!opts.silent) sound.uiClick();
   leaderboardDialog.removeAttribute('data-closing');
-  leaderboardDialog.showModal();
-  fetchLeaderboardPage(false);
+  if (!leaderboardDialog.open) leaderboardDialog.showModal();
+  fetchLeaderboardPage(false, opts);
 }
 
-document.querySelector('#ranks-open')?.addEventListener('click', openLeaderboard);
-document.querySelector('#ranks-open-top')?.addEventListener('click', openLeaderboard);
+document.querySelector('#ranks-open')?.addEventListener('click', () => openLeaderboard());
+document.querySelector('#ranks-open-top')?.addEventListener('click', () => openLeaderboard());
 lbMoreBtn?.addEventListener('click', () => {
   sound.uiClick();
   fetchLeaderboardPage(true);
@@ -4436,14 +4465,16 @@ recordSubmitForm?.addEventListener('submit', async (e) => {
     }
     saveLbProfile();
     sound.uiBuy();
-    saveRecordBtn.textContent = 'SAVED';
+
     if (data.reason === 'below_cutoff') {
+      saveRecordBtn.textContent = 'OUT OF TOP 1K';
       recordStatusEl.textContent = `Score below Top 1,000 cutoff (${(data.cutoff || 0).toLocaleString()}).`;
-    } else if (data.me?.rank) {
-      recordStatusEl.textContent = `RECORD LOGGED // GLOBAL RANK #${data.me.rank} (${(RIGS[runShip]?.name || runShip).toUpperCase()})${data.local ? ' [LOCAL PREVIEW]' : ''}`;
-    } else {
-      recordStatusEl.textContent = 'RECORD SAVED TO LEADERBOARD.';
+      return;
     }
+
+    // Close the compact popup and immediately open the Leaderboard with your rank lit up!
+    if (recordDialog.open) recordDialog.close();
+    openLeaderboard({ highlightMe: true, silent: true });
   } catch (err) {
     saveRecordBtn.disabled = false;
     pilotNameInput.disabled = false;

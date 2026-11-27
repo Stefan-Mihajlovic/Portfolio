@@ -184,28 +184,6 @@
             </div>
           </dl>
 
-          <form id="record-submit" class="record-submit" hidden>
-            <div class="record-submit-head">
-              <span class="record-kicker">NEW BEST RECORD</span>
-              <span id="record-ship-tag" class="record-ship-tag">KESTREL</span>
-            </div>
-            <div class="record-submit-row">
-              <label for="pilot-name" class="sr-only">Pilot callsign</label>
-              <input
-                id="pilot-name"
-                type="text"
-                minlength="2"
-                maxlength="14"
-                placeholder="ENTER CALLSIGN"
-                autocomplete="nickname"
-                spellcheck="false"
-                required
-              />
-              <button id="save-record-btn" type="submit" class="record-save-btn">SAVE RANK</button>
-            </div>
-            <p id="record-status" class="record-status" aria-live="polite"></p>
-          </form>
-
           <fieldset id="rig-select" class="rig-select">
             <legend class="sr-only">Choose your ship</legend>
             <button type="button" class="rig-option" data-rig="kestrel" aria-pressed="true">
@@ -322,6 +300,47 @@
           </div>
         </div>
       </section>
+
+      <dialog id="record-dialog" class="modal-sheet record-dialog" closedby="any" aria-labelledby="record-dialog-title">
+        <form method="dialog" class="modal-head record-modal-head">
+          <div>
+            <span class="record-kicker">NEW PERSONAL BEST</span>
+            <h2 id="record-dialog-title">Log Your Rank</h2>
+          </div>
+          <button type="submit" class="modal-close" aria-label="Skip saving score">×</button>
+        </form>
+        <div class="record-summary">
+          <span class="record-summary-ship">
+            <canvas id="record-ship-icon" width="48" height="48" aria-hidden="true"></canvas>
+            <b id="record-ship-tag">KESTREL</b>
+          </span>
+          <span class="record-summary-stat">
+            <small>WAVE</small>
+            <b id="record-wave-val">01</b>
+          </span>
+          <span class="record-summary-stat">
+            <small>SCORE</small>
+            <b id="record-score-val" class="record-score-num">0</b>
+          </span>
+        </div>
+        <form id="record-submit" class="record-submit">
+          <label for="pilot-name" class="record-field-label">Pilot Callsign</label>
+          <div class="record-submit-row">
+            <input
+              id="pilot-name"
+              type="text"
+              minlength="2"
+              maxlength="14"
+              placeholder="ENTER CALLSIGN"
+              autocomplete="nickname"
+              spellcheck="false"
+              required
+            />
+            <button id="save-record-btn" type="submit" class="record-save-btn">SAVE RANK</button>
+          </div>
+          <p id="record-status" class="record-status" aria-live="polite"></p>
+        </form>
+      </dialog>
 
       <dialog id="leaderboard" class="modal-sheet lb-sheet" closedby="any" aria-labelledby="lb-title">
         <form method="dialog" class="modal-head">
