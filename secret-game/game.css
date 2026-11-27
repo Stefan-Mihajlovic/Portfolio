@@ -1098,8 +1098,33 @@ h1 {
   color: #101b27;
   background: linear-gradient(180deg, #f7eed6, #dfd1b0);
   box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.65);
+  filter: drop-shadow(0 0 10px rgb(247 238 214 / 0.16));
   overflow: hidden;
   isolation: isolate;
+}
+#action::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: repeating-linear-gradient(-52deg, rgb(16 27 39 / 0.065) 0 10px, transparent 10px 22px);
+  pointer-events: none;
+}
+#action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    108deg,
+    transparent 24%,
+    rgb(255 255 255 / 0.34) 47%,
+    rgb(255 255 255 / 0.68) 50%,
+    rgb(255 255 255 / 0.24) 53%,
+    transparent 74%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
 }
 #action .play-icon {
   color: #101b27;
@@ -1115,6 +1140,27 @@ h1 {
 }
 #action:is(:hover, :focus-visible) {
   background: linear-gradient(180deg, #b8fff0, #79e3d5);
+  filter: drop-shadow(0 0 16px rgb(121 227 213 / 0.42));
+}
+@media (prefers-reduced-motion: no-preference) {
+  #action {
+    animation: play-glow 3.2s ease-in-out infinite;
+  }
+  #action::before {
+    animation: hazard-march 4.4s linear infinite;
+  }
+  #action::after {
+    animation: heat-sweep 4.2s ease-in-out infinite;
+  }
+}
+@keyframes play-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgb(247 238 214 / 0.14));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgb(247 238 214 / 0.32));
+  }
 }
 
 /* Overclock Engaged — Fierce Crimson Hazard Chamfered Armor Plate! */
