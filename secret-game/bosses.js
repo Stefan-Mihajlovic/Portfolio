@@ -640,9 +640,13 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     b.hp = Math.min(b.maxHp, b.hp + dt * repairNodes.length * b.maxHp * 0.011);
   }
 
-  // Active Rail-Lance subsystem lock-on countdowns
+  // Active Rail-Lance subsystem lock-on countdowns (tracks player briefly, then freezes lock before firing!)
   for (const p of liveParts) {
     if (p.role === 'lance' && p.aimLock > 0) {
+      if (p.aimLock > 0.28) {
+        const desired = Math.max(-0.9, Math.min(0.9, Math.atan2(player.x - p.x, Math.max(70, player.y - p.y))));
+        p.aimAngle = (p.aimAngle || 0) + (desired - (p.aimAngle || 0)) * (1 - Math.exp(-dt * 7));
+      }
       p.aimLock -= dt;
       if (p.aimLock <= 0) {
         const spd = Math.min(440, 355 + b.rank * 12);
@@ -1795,13 +1799,16 @@ export function drawBoss(ctx, b, w, h) {
     if (p.role === 'lance' && p.aimLock > 0) {
       ctx.save();
       ctx.translate(p.x, p.y);
-      ctx.rotate(p.aimAngle || 0);
-      ctx.strokeStyle = 'rgba(255, 78, 92, 0.85)';
-      ctx.lineWidth = 1.8;
+      ctx.rotate(-(p.aimAngle || 0));
+      const locked = p.aimLock <= 0.28;
+      ctx.strokeStyle = locked ? 'rgba(255, 72, 88, 0.94)' : 'rgba(255, 110, 118, 0.58)';
+      ctx.lineWidth = locked ? 2.4 : 1.4;
+      if (!locked) ctx.setLineDash([7, 6]);
       ctx.beginPath();
-      ctx.moveTo(0, 8);
+      ctx.moveTo(0, 10);
       ctx.lineTo(0, 1200);
       ctx.stroke();
+      ctx.setLineDash([]);
       ctx.restore();
     }
   }

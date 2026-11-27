@@ -686,7 +686,7 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
 
   if (e.kind === 'sniper' && (e.aimLock > 0 || e.fireIn < 1.2)) {
     ctx.save();
-    ctx.rotate(e.aimAngle || 0);
+    ctx.rotate(-(e.aimAngle || 0));
     const locked = (e.aimLock || 0) > 0;
     const p = locked ? 1 - e.aimLock / 0.55 : 0.35;
     ctx.strokeStyle = locked

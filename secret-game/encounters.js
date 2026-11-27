@@ -40,9 +40,9 @@ const phrases = [
   ['echelon', 'laserLink', 'orbiterRing', 'sniperRun', 'courier', 'anchorBattery'],
   ['vanguardWall', 'blinkAmbush', 'swarmDrop', 'railSniper', 'courier', 'clusterSiege'],
   ['healerPhalanx', 'laserLink', 'orbiterRing', 'mineSweep', 'courier', 'phantomSniper'],
-  ['clusterSiege', 'crossLaserGate', 'blinkAmbush', 'vanguardWall', 'courier', 'swarmDrop'],
-  ['healerPhalanx', 'phantomSniper', 'crossLaserGate', 'clusterSiege', 'courier', 'pincerStrike'],
-  ['crossLaserGate', 'healerPhalanx', 'blinkAmbush', 'orbiterRing', 'courier', 'clusterSiege'],
+  ['clusterSiege', 'crossLaserGate', 'mineSweep', 'vanguardWall', 'courier', 'swarmDrop'],
+  ['healerPhalanx', 'phantomSniper', 'crossLaserGate', 'mineSweep', 'courier', 'clusterSiege'],
+  ['crossLaserGate', 'healerPhalanx', 'mineSweep', 'blinkAmbush', 'courier', 'clusterSiege'],
 ];
 
 export const waveLength = 15.5;
@@ -300,10 +300,15 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
     add('prism', 0.76, 0.25, -1, { holdY: 0.21, fireIn: 2.35 });
     add('raider', 0.5, 0.75, side, { fireIn: 1.7 });
   } else if (kind === 'mineSweep') {
-    // One armored minelayer sweeping across mid-field with 2 agile wingmen
+    // Armored minelayer sweeping across mid-field (twin staggered sweepers from Wave 8+!)
     add('minelayer', side > 0 ? 0.18 : 0.82, 0, side);
-    add('raider', side > 0 ? 0.78 : 0.22, 0.45, -side, { fireIn: 1.5 });
-    if (wave >= 4) add('kite', 0.5, 0.9, side, { fireIn: 1.8 });
+    if (wave >= 8) {
+      add('minelayer', side > 0 ? 0.82 : 0.18, 0.75, -side);
+      add('kite', 0.5, 0.5, side, { fireIn: 1.7 });
+    } else {
+      add('raider', side > 0 ? 0.78 : 0.22, 0.45, -side, { fireIn: 1.5 });
+      if (wave >= 4) add('kite', 0.5, 0.9, side, { fireIn: 1.8 });
+    }
   } else if (kind === 'pincerStrike') {
     // Outer flankers + staggered dive team
     add('raider', 0.16, 0, 1, { fireIn: 1.2 });
@@ -738,7 +743,7 @@ export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0
     if (e.y > 25 && e.age < 6.8) {
       e.fireIn -= dt;
       if (e.fireIn <= 0) {
-        e.beamAngle = Math.max(-0.5, Math.min(0.5, Math.atan2(player.x - e.x, Math.max(120, player.y - e.y))));
+        e.beamAngle = -Math.max(-0.5, Math.min(0.5, Math.atan2(player.x - e.x, Math.max(120, player.y - e.y))));
         e.beamWarn = 0.88;
         e.fireIn = Math.max(2.0, 2.75 / e.threat);
       }
