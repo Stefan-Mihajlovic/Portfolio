@@ -2654,9 +2654,10 @@ function hitPlayer() {
       shockwaves.push({ x: player.x, y: player.y, radius: 220, color: '#ff9c6e', life: 0.55, maxLife: 0.55 });
       runDuration = Math.max(2, Math.round(time));
       const finalScore = Math.floor(score);
-      // Prompt leaderboard submission ONLY when achieving a new personal best (or first-ever submitted best >= local best)
-      runIsNewBest = finalScore > 0 && (finalScore > best || (lbProfile.submittedBest === 0 && finalScore >= best));
-      if (finalScore > best) {
+      // Prompt leaderboard submission whenever this run beats either local best OR the player's current leaderboard best (including unranked players)!
+      const isLocalBest = finalScore > best;
+      runIsNewBest = finalScore > 0 && (isLocalBest || finalScore > (lbProfile.submittedBest || 0));
+      if (isLocalBest) {
         best = finalScore;
         bestLabel.textContent = formatScore(best);
         try {
@@ -4656,6 +4657,15 @@ function getShipDisplayLabel(shipKey) {
 function openRecordDialog() {
   const isCustom = typeof runShip === 'string' && runShip.startsWith('custom:');
   const label = isCustom ? `CUSTOM · ${getShipDisplayLabel(runShip)}` : (RIGS[runShip]?.name || runShip).toUpperCase();
+  const kickerEl = recordDialog.querySelector('.record-kicker');
+  if (kickerEl) {
+    kickerEl.textContent =
+      Math.floor(score) >= best
+        ? 'NEW PERSONAL BEST'
+        : lbProfile.submittedBest === 0
+          ? 'JOIN GLOBAL LEADERBOARD'
+          : 'NEW LEADERBOARD BEST';
+  }
   recordShipTag.textContent = `${label}${runOverclock ? ' ⚡' : ''}`;
   recordWaveVal.textContent = String(currentWave).padStart(2, '0');
   recordScoreVal.textContent = Math.floor(score).toLocaleString();
@@ -4853,6 +4863,12 @@ async function fetchLeaderboardPage(append = false, opts = {}) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     data = await res.json();
     lbOffline = false;
+    // Keep local submittedBest synced with the live global leaderboard so unranked players can always submit!
+    const liveMyScore = data.me ? Math.max(0, Math.floor(Number(data.me.score) || 0)) : 0;
+    if (liveMyScore !== lbProfile.submittedBest) {
+      lbProfile.submittedBest = liveMyScore;
+      saveLbProfile();
+    }
   } catch {
     // Clean local fallback when previewing statically without `netlify dev`
     lbOffline = true;
