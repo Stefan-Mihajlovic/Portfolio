@@ -919,15 +919,20 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
       const spd = Math.min(185, 136 + b.rank * 5);
       for (let i = 0; i < shells; i++) {
         const a = ((i - (shells - 1) / 2) / Math.max(1, shells - 1)) * 0.72;
+        const vx = Math.sin(a) * spd;
+        const vy = Math.cos(a) * spd;
+        const fuse = 1.2 + (i % 2) * 0.24;
         shots.push({
           x: b.x + Math.sin(a) * 28,
           y: b.y + 20,
           r: 7.4,
-          vx: Math.sin(a) * spd,
-          vy: Math.cos(a) * spd,
+          vx,
+          vy,
           hostile: true,
           cluster: true,
-          clusterFuse: 0.95 + (i % 2) * 0.22,
+          clusterFuse: fuse,
+          clusterMaxFuse: fuse,
+          clusterAngle: Math.atan2(vx, vy),
           clusterCount: b.isFinalPhase ? 7 : 6,
           color: '#ffaa54',
         });
@@ -1143,15 +1148,19 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     else if (activeSub.role === 'pylon') fire(activeSub.x, activeSub.y + 10, pAim, velocity * 0.88, '#ffd287');
     else if (activeSub.role === 'prism') fire(activeSub.x, activeSub.y, pAim, velocity * 1.0, b.palette.light);
     else if (activeSub.role === 'mortar') {
+      const vx = Math.sin(pAim * 0.65) * 145;
+      const vy = Math.cos(pAim * 0.65) * 145;
       shots.push({
         x: activeSub.x,
         y: activeSub.y + 12,
         r: 6.8,
-        vx: Math.sin(pAim * 0.65) * 145,
-        vy: Math.cos(pAim * 0.65) * 145,
+        vx,
+        vy,
         hostile: true,
         cluster: true,
-        clusterFuse: 1.0,
+        clusterFuse: 1.25,
+        clusterMaxFuse: 1.25,
+        clusterAngle: Math.atan2(vx, vy),
         clusterCount: b.isFinalPhase ? 7 : 5,
         color: '#ffb05c',
       });

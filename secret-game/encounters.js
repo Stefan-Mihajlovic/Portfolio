@@ -419,15 +419,19 @@ export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0
       if (e.fireIn <= 0) {
         const aim = Math.atan2(player.x - e.x, Math.max(80, player.y - e.y)) * 0.55;
         const spd = Math.min(185, 138 * e.threat);
+        const vx = Math.sin(aim) * spd;
+        const vy = Math.cos(aim) * spd;
         shots.push({
           x: e.x,
           y: e.y + 16,
           r: 7.2,
-          vx: Math.sin(aim) * spd,
-          vy: Math.cos(aim) * spd,
+          vx,
+          vy,
           hostile: true,
           cluster: true,
-          clusterFuse: 1.05,
+          clusterFuse: 1.32,
+          clusterMaxFuse: 1.32,
+          clusterAngle: Math.atan2(vx, vy),
           clusterCount: wv >= 6 ? 7 : 6,
           color: '#ffb45c',
         });

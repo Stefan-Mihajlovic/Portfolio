@@ -890,12 +890,57 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
 export function drawMine(ctx, m) {
   ctx.save();
   ctx.translate(m.x, m.y);
-  const pulse = 0.5 + 0.5 * Math.sin(m.age * (m.fuse < 1.2 ? 22 : 8));
-  ctx.strokeStyle = `rgba(255, 134, 88, ${0.22 + pulse * 0.45})`;
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(0, 0, m.r + 5 + pulse * 4, 0, TAU);
-  ctx.stroke();
+  const pulse = 0.5 + 0.5 * Math.sin(m.age * (m.fuse < 1.5 ? 20 : 8));
+
+  // Exact 6-vector burst trajectory lines during the final 1.5s before proximity mine detonation!
+  if (m.fuse > 0 && m.fuse < 1.5) {
+    const prog = Math.max(0, Math.min(1, 1 - m.fuse / 1.5));
+    const rayLen = 48 + prog * 78;
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    ctx.lineDashOffset = -m.age * (26 + prog * 36);
+    ctx.lineWidth = 1.2 + prog * 0.7;
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * TAU + m.angle;
+      const dx = Math.sin(a);
+      const dy = Math.cos(a);
+      const sx = dx * (m.r + 5);
+      const sy = dy * (m.r + 5);
+      const ex = dx * rayLen;
+      const ey = dy * rayLen;
+      const grad = ctx.createLinearGradient(sx, sy, ex, ey);
+      grad.addColorStop(0, `rgba(255, 198, 122, ${0.42 + prog * 0.52})`);
+      grad.addColorStop(0.75, `rgba(255, 124, 72, ${0.26 + prog * 0.36})`);
+      grad.addColorStop(1, 'rgba(255, 110, 62, 0)');
+      ctx.strokeStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      const tipD = m.r + 14 + prog * 28;
+      ctx.fillStyle = `rgba(255, 224, 152, ${0.46 + prog * 0.52})`;
+      ctx.beginPath();
+      ctx.arc(dx * tipD, dy * tipD, 1.8 + prog * 0.8, 0, TAU);
+      ctx.fill();
+      ctx.setLineDash([5, 4]);
+    }
+    ctx.setLineDash([]);
+    // Synchronized detonation ring filling 0 -> 100% right as fuse hits 0!
+    ctx.strokeStyle = `rgba(255, 206, 124, ${0.48 + prog * 0.48})`;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(0, 0, m.r + 6, -Math.PI / 2, -Math.PI / 2 + TAU * prog);
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    ctx.strokeStyle = `rgba(255, 134, 88, ${0.22 + pulse * 0.45})`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, m.r + 5 + pulse * 4, 0, TAU);
+    ctx.stroke();
+  }
 
   ctx.rotate(m.age * 1.3);
   ctx.fillStyle = ink;

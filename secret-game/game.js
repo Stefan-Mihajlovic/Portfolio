@@ -866,7 +866,7 @@ function draw() {
       roll: introShip.roll,
     });
 
-    // Progressive glowing schematic leader lines shooting OUT from the real ship into the right-hand Forge UI!
+    // Progressive glowing schematic leader lines radiating OUT FROM THE SHIP to visible callout cards!
     if (forgeBlend > 0.08 && desktopForge && forgeNodesEl) {
       const cRect = canvas.getBoundingClientRect();
       const sx = cRect.width ? w / cRect.width : 1;
@@ -876,21 +876,23 @@ function draw() {
       for (let idx = 0; idx < slotOrder.length; idx++) {
         const slotKey = slotOrder[idx];
         const spec = FORGE_SLOTS[slotKey];
+        if (activeForgeSlot && slotKey !== activeForgeSlot) continue;
         const nodeEl = forgeNodesEl.querySelector(`.forge-node[data-slot="${slotKey}"]`);
         if (!spec || !nodeEl) continue;
 
-        const rawP = clamp((forgeBlend - 0.08 - idx * 0.055) / 0.58, 0, 1);
+        const rawP = clamp((forgeBlend - 0.08 - idx * 0.055) / 0.56, 0, 1);
         if (rawP <= 0) continue;
         const p = 1 - Math.pow(1 - rawP, 3);
 
         const isActive = slotKey === activeForgeSlot;
+        const isLeft = spec.side === 'left';
         const nRect = nodeEl.getBoundingClientRect();
         const x0 = introShip.x + spec.anchor[0] * size;
         const y0 = introShip.y + spec.anchor[1] * size;
-        const x2 = (nRect.left - cRect.left) * sx - 3;
+        const x2 = isLeft ? (nRect.right - cRect.left) * sx + 3 : (nRect.left - cRect.left) * sx - 3;
         const y2 = (nRect.top - cRect.top + nRect.height * 0.5) * sy;
-        const elbowDx = Math.min(58, Math.max(22, Math.abs(y2 - y0) * 0.55));
-        const x1 = Math.min(x2 - 20, x0 + elbowDx + 32);
+        const elbowStep = Math.min(62, Math.max(24, Math.abs(y2 - y0) * 0.72));
+        const x1 = isLeft ? Math.max(x2 + 22, x0 - elbowStep - 24) : Math.min(x2 - 22, x0 + elbowStep + 24);
         const y1 = y2;
 
         const seg1 = Math.hypot(x1 - x0, y1 - y0);
@@ -899,11 +901,11 @@ function draw() {
         const drawLen = totalLen * p;
 
         ctx.save();
-        ctx.strokeStyle = isActive ? `rgba(121, 227, 213, ${0.95 * rawP})` : `rgba(121, 227, 213, ${0.34 * rawP})`;
-        ctx.lineWidth = isActive ? 2.0 : 1.25;
+        ctx.strokeStyle = isActive ? `rgba(121, 227, 213, ${0.95 * rawP})` : `rgba(121, 227, 213, ${0.42 * rawP})`;
+        ctx.lineWidth = isActive ? 2.1 : 1.3;
         ctx.setLineDash(isActive ? [] : [5, 4]);
         if (isActive) {
-          ctx.shadowColor = 'rgba(121, 227, 213, 0.75)';
+          ctx.shadowColor = 'rgba(121, 227, 213, 0.78)';
           ctx.shadowBlur = 10;
         }
         ctx.beginPath();
@@ -922,22 +924,22 @@ function draw() {
         // Target reticle dot locked onto the actual part of the live ship!
         ctx.beginPath();
         ctx.arc(x0, y0, isActive ? 7.5 : 5, 0, TAU);
-        ctx.strokeStyle = isActive ? `rgba(255, 214, 107, ${0.85 * rawP})` : `rgba(121, 227, 213, ${0.35 * rawP})`;
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = isActive ? `rgba(255, 214, 107, ${0.88 * rawP})` : `rgba(121, 227, 213, ${0.4 * rawP})`;
+        ctx.lineWidth = 1.25;
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(x0, y0, isActive ? 3.5 : 2.6, 0, TAU);
+        ctx.arc(x0, y0, isActive ? 3.6 : 2.7, 0, TAU);
         ctx.fillStyle = isActive ? '#ffe18c' : '#0b1424';
         ctx.fill();
-        ctx.strokeStyle = isActive ? '#fff7d6' : `rgba(121, 227, 213, ${0.75 * rawP})`;
+        ctx.strokeStyle = isActive ? '#fff7d6' : `rgba(121, 227, 213, ${0.8 * rawP})`;
         ctx.lineWidth = 1.4;
         ctx.stroke();
 
-        // Crisp square connector pin at the right-hand card edge once line arrives
+        // Crisp square connector pin at the callout card edge once line arrives
         if (p > 0.92) {
-          ctx.fillStyle = isActive ? '#79e3d5' : 'rgba(121, 227, 213, 0.55)';
-          ctx.fillRect(x2 - 2, y2 - 2.5, 5, 5);
+          ctx.fillStyle = isActive ? '#79e3d5' : 'rgba(121, 227, 213, 0.62)';
+          ctx.fillRect(x2 - 2.5, y2 - 2.5, 5, 5);
         }
       }
       ctx.restore();
@@ -1534,18 +1536,18 @@ function draw() {
     ctx.save();
     ctx.translate(s.x, s.y);
     if (s.cluster) {
-      // Telegraphed radial detonation trajectory lines matching exact sub-orb burst vectors!
+      // Exact locked radial detonation trajectory lines synchronized 1:1 with sub-orb burst angles & fuse!
       const count = s.clusterCount || 6;
-      const baseA = Math.atan2(s.vx, s.vy);
-      const maxFuse = s.clusterMaxFuse || 1.05;
-      const prog = clamp(1 - (s.clusterFuse || 0) / maxFuse, 0, 1);
-      const p = 0.5 + 0.5 * Math.sin(time * (18 + prog * 20));
-      const rayLen = 40 + prog * 44;
+      if (s.clusterAngle === undefined) s.clusterAngle = Math.atan2(s.vx, s.vy);
+      if (s.clusterMaxFuse === undefined) s.clusterMaxFuse = Math.max(0.1, s.clusterFuse || 1.25);
+      const baseA = s.clusterAngle;
+      const prog = clamp(1 - (s.clusterFuse || 0) / s.clusterMaxFuse, 0, 1);
+      const rayLen = 58 + prog * 96;
 
       ctx.save();
-      ctx.setLineDash([5, 4]);
-      ctx.lineDashOffset = -time * (28 + prog * 40);
-      ctx.lineWidth = 1.2 + prog * 0.7;
+      ctx.setLineDash([6, 4]);
+      ctx.lineDashOffset = -time * (30 + prog * 44);
+      ctx.lineWidth = 1.25 + prog * 0.75;
       for (let i = 0; i < count; i++) {
         const a = baseA + (i / count) * TAU;
         const dx = Math.sin(a);
@@ -1555,8 +1557,8 @@ function draw() {
         const ex = dx * rayLen;
         const ey = dy * rayLen;
         const grad = ctx.createLinearGradient(sx, sy, ex, ey);
-        grad.addColorStop(0, `rgba(255, 208, 128, ${0.42 + prog * 0.48})`);
-        grad.addColorStop(0.75, `rgba(255, 138, 76, ${0.26 + prog * 0.34})`);
+        grad.addColorStop(0, `rgba(255, 212, 134, ${0.46 + prog * 0.5})`);
+        grad.addColorStop(0.75, `rgba(255, 138, 76, ${0.28 + prog * 0.38})`);
         grad.addColorStop(1, 'rgba(255, 118, 66, 0)');
         ctx.strokeStyle = grad;
         ctx.beginPath();
@@ -1564,24 +1566,22 @@ function draw() {
         ctx.lineTo(ex, ey);
         ctx.stroke();
 
-        // Crisp directional vector chevron near outer ray so exact outgoing lane is unmistakable
+        // Crisp directional indicator dot moving outward along exact burst lane
         ctx.setLineDash([]);
-        const tipD = s.r + 14 + prog * 18;
-        const tx = dx * tipD;
-        const ty = dy * tipD;
-        ctx.fillStyle = `rgba(255, 224, 150, ${0.45 + prog * 0.5})`;
+        const tipD = s.r + 16 + prog * 34;
+        ctx.fillStyle = `rgba(255, 228, 158, ${0.5 + prog * 0.48})`;
         ctx.beginPath();
-        ctx.arc(tx, ty, 1.8 + prog * 0.8, 0, TAU);
+        ctx.arc(dx * tipD, dy * tipD, 1.9 + prog * 0.85, 0, TAU);
         ctx.fill();
-        ctx.setLineDash([5, 4]);
+        ctx.setLineDash([6, 4]);
       }
       ctx.setLineDash([]);
 
-      // Countdown detonation ring around cluster shell
-      ctx.strokeStyle = `rgba(255, 186, 98, ${0.38 + p * 0.52})`;
-      ctx.lineWidth = 1.6;
+      // Synchronized detonation countdown ring filling 0 -> 100% right when shell explodes!
+      ctx.strokeStyle = `rgba(255, 204, 118, ${0.48 + prog * 0.5})`;
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
-      ctx.arc(0, 0, s.r + 4 + (1 - prog) * 3.5, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - prog));
+      ctx.arc(0, 0, s.r + 5.5, -Math.PI / 2, -Math.PI / 2 + TAU * prog);
       ctx.stroke();
       ctx.restore();
     }
@@ -2236,9 +2236,11 @@ function killEnemy(e) {
     p.linkPartner = null;
   }
 
-  // Supply courier always drops a tactical cell; heavy craft drop at measured 12% so MK progression stays rewarding!
+  // Supply courier always drops a tactical cell; Repair Drones can drop Shield cells (34%); heavy craft 12%!
   if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
+  } else if (e.kind === 'healer' && Math.random() < 0.34) {
+    dropTacticalCell(e.x, e.y, 'shield');
   } else if (heavy && Math.random() < 0.12) {
     dropTacticalCell(e.x, e.y);
   }
@@ -3580,11 +3582,13 @@ function update(dt) {
       }
     }
     if (s.hostile && s.cluster) {
+      if (s.clusterAngle === undefined) s.clusterAngle = Math.atan2(s.vx, s.vy);
+      if (s.clusterMaxFuse === undefined) s.clusterMaxFuse = Math.max(0.1, s.clusterFuse || 1.25);
       s.clusterFuse -= stepDt;
       if (s.clusterFuse <= 0) {
         s.dead = true;
         const count = s.clusterCount || 6;
-        const baseA = Math.atan2(s.vx, s.vy);
+        const baseA = s.clusterAngle;
         burst({ x: s.x, y: s.y, r: 10 }, '#ffb45c', false);
         sound.effect('volley');
         for (let i = 0; i < count; i++) {
@@ -3971,8 +3975,9 @@ function updateIntroFlight(dt) {
   const orbitY = portrait
     ? h * (0.17 + Math.sin(orbitA * 2) * 0.055)
     : h * (0.2 + Math.sin(orbitA * 2) * 0.08);
-  const dockX = desktopForge ? w * 0.23 : w * 0.5;
-  const dockY = desktopForge ? h * 0.45 + Math.sin(introTime * 1.9) * 5 : Math.max(128, h * 0.185) + Math.sin(introTime * 1.9) * 3;
+  const activeSide = activeForgeSlot ? FORGE_SLOTS[activeForgeSlot]?.side : null;
+  const dockX = desktopForge ? w * (activeSide === 'left' ? 0.68 : activeSide === 'right' ? 0.32 : 0.5) : w * 0.5;
+  const dockY = desktopForge ? h * 0.48 + Math.sin(introTime * 1.9) * 4.5 : h * 0.25 + Math.sin(introTime * 1.9) * 3;
 
   const targetX = forgeActive ? dockX : orbitX;
   const targetY = forgeActive ? dockY : orbitY;
@@ -3992,13 +3997,14 @@ function updateIntroFlight(dt) {
   const spd = Math.hypot(introShip.vx, introShip.vy);
   const distToDock = Math.hypot(dx, dy);
   if (forgeActive && (forgeBlend > 0.35 || distToDock < 110)) {
-    // Smoothly straighten upright in the Forge dock & breathe with gentle 2.5D inspection sway
+    // Keep nose smoothly upright while gracefully banking sideways as ship slides left/right!
     let diff = 0 - introShip.heading;
     while (diff > Math.PI) diff -= TAU;
     while (diff < -Math.PI) diff += TAU;
     introShip.heading += diff * (1 - Math.exp(-dt * 11));
-    const inspectRoll = reducedMotion.matches ? 0 : Math.sin(introTime * 1.45) * 0.22;
-    introShip.roll += (inspectRoll - introShip.roll) * (1 - Math.exp(-dt * 6.0));
+    const slideBank = clamp(introShip.vx * 0.0018, -0.55, 0.55);
+    const inspectRoll = reducedMotion.matches ? 0 : Math.sin(introTime * 1.45) * 0.2 + slideBank;
+    introShip.roll += (inspectRoll - introShip.roll) * (1 - Math.exp(-dt * 7.5));
   } else if (spd > 14) {
     const targetHeading = Math.atan2(introShip.vx, -introShip.vy);
     let diff = targetHeading - introShip.heading;
@@ -4186,7 +4192,14 @@ window.addEventListener('keydown', (e) => {
   if (forgeActive) {
     if (e.code === 'Escape') {
       e.preventDefault();
-      closeForge();
+      if (activeForgeSlot) {
+        activeForgeSlot = null;
+        sound.uiClose();
+        renderForge();
+        draw();
+      } else {
+        closeForge();
+      }
     }
     return;
   }
@@ -4259,7 +4272,7 @@ canvas.addEventListener('pointerdown', (e) => {
       const cy = ((e.clientY - bounds.top) * h) / bounds.height;
       const size = w >= 860 ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.3, 108);
       if (Math.hypot(cx - introShip.x, cy - introShip.y) <= size * 0.9) {
-        let nearest = activeForgeSlot;
+        let nearest = 'nose';
         let bestD = Infinity;
         for (const [slotKey, spec] of Object.entries(FORGE_SLOTS)) {
           const ax = introShip.x + spec.anchor[0] * size;
@@ -4272,6 +4285,11 @@ canvas.addEventListener('pointerdown', (e) => {
         }
         activeForgeSlot = nearest;
         sound.uiClick();
+        renderForge();
+        draw();
+      } else if (activeForgeSlot) {
+        activeForgeSlot = null;
+        sound.uiClose();
         renderForge();
         draw();
       }
@@ -4406,9 +4424,6 @@ const forgeCopyBtn = document.querySelector('#forge-copy-btn');
 const forgePwrText = document.querySelector('#forge-pwr-text');
 const forgePwrBars = document.querySelector('#forge-pwr-bars');
 const forgeStatsEl = document.querySelector('#forge-stats');
-const forgeTrayTitle = document.querySelector('#forge-tray-title');
-const forgeTrayHeadroom = document.querySelector('#forge-tray-headroom');
-const forgePartsEl = document.querySelector('#forge-parts');
 const forgeImportForm = document.querySelector('#forge-import-form');
 const forgeImportInput = document.querySelector('#forge-import-input');
 const forgeEquipBtn = document.querySelector('#forge-equip');
@@ -5081,14 +5096,14 @@ function renderUpgrades() {
   refundBtn.textContent = `Refund ${getBaseRig(hangarRig).name} (${totalSpent.toLocaleString()} coins)`;
 }
 
-// --- LIVE FULL-SCREEN ORBITAL SHIP FORGE (SHIP DOCKS LEFT + ANIMATED LEADER LINES TO UI) ---
+// --- LIVE CENTERED EXPLODED-VIEW SHIP FORGE (SHIP IN CENTER + 4 RADIAL CALLOUTS AROUND IT!) ---
 const FORGE_SLOTS = {
-  nose: { label: 'Nose / Hull', full: 'Nose / Hull Frame', items: CUSTOM_PARTS.nose, cols: 'cols-3', anchor: [0, -0.44] },
-  weapon: { label: 'Weapon System', full: 'Primary Weapon System', items: CUSTOM_PARTS.weapon, cols: '', anchor: [0.24, -0.13] },
-  wings: { label: 'Wings / Shield', full: 'Wings / Shield Array', items: CUSTOM_PARTS.wings, cols: '', anchor: [0.37, 0.14] },
-  engine: { label: 'Engine / Perk', full: 'Engine Core / Perk', items: CUSTOM_PARTS.engine, cols: '', anchor: [0, 0.36] },
+  nose: { label: 'Nose / Hull', full: 'Nose / Hull Frame', items: CUSTOM_PARTS.nose, cols: 'cols-3', anchor: [0, -0.44], side: 'left' },
+  wings: { label: 'Wings / Shield', full: 'Wings / Shield Array', items: CUSTOM_PARTS.wings, cols: '', anchor: [-0.37, 0.14], side: 'left' },
+  weapon: { label: 'Weapon System', full: 'Primary Weapon System', items: CUSTOM_PARTS.weapon, cols: '', anchor: [0.24, -0.13], side: 'right' },
+  engine: { label: 'Engine / Perk', full: 'Engine Core / Perk', items: CUSTOM_PARTS.engine, cols: '', anchor: [0, 0.36], side: 'right' },
 };
-let activeForgeSlot = 'nose';
+let activeForgeSlot = null;
 
 function renderForge() {
   const b = meta.customBuild;
@@ -5126,16 +5141,91 @@ function renderForge() {
     forgeStatsEl.append(chip);
   }
 
-  // Update the 4 connected schematic nodes (order matches Nose -> Weapon -> Wings -> Engine top-to-bottom!)
+  // Tell CSS which side is expanded so ship shifts opposite & opposite cards glide away!
+  const activeSide = activeForgeSlot ? FORGE_SLOTS[activeForgeSlot]?.side || '' : '';
+  if (activeSide) forgeScreen.dataset.activeSide = activeSide;
+  else delete forgeScreen.dataset.activeSide;
+
+  // Update the 4 surrounding callout nodes; when one is selected, hide its sibling & place a prominent X button ABOVE it!
   for (const [slotKey, spec] of Object.entries(FORGE_SLOTS)) {
+    const wrap = forgeNodesEl.querySelector(`.forge-slot-wrap[data-slot="${slotKey}"]`);
     const node = forgeNodesEl.querySelector(`.forge-node[data-slot="${slotKey}"]`);
-    if (!node) continue;
+    const picker = forgeNodesEl.querySelector(`.forge-inline-picker[data-picker="${slotKey}"]`);
+    if (!wrap || !node || !picker) continue;
     const part = spec.items[b[slotKey]] || spec.items[0];
-    node.setAttribute('aria-pressed', String(slotKey === activeForgeSlot));
-    node.innerHTML = `<span class="forge-node-left"><span class="forge-node-kicker">${spec.label}</span><strong>${part.name}</strong><small>${part.desc}</small></span><span class="forge-node-right"><span class="forge-pwr-tag">${part.pwr} PWR</span></span>`;
+    const isSelected = slotKey === activeForgeSlot;
+    wrap.dataset.state = !activeForgeSlot ? 'idle' : isSelected ? 'active' : 'hidden';
+
+    // Remove any previous topbar close button before re-rendering
+    wrap.querySelector('.forge-slot-topbar')?.remove();
+
+    node.setAttribute('aria-pressed', String(isSelected));
+    node.innerHTML = `<span class="forge-node-left"><span class="forge-node-kicker">${spec.label}</span><strong>${part.name}</strong><small>${part.desc}</small></span><span class="forge-node-right"><span class="forge-pwr-tag">${part.pwr} PWR</span>${isSelected ? '' : '<span class="forge-node-edit">EDIT</span>'}</span>`;
+
+    if (!isSelected) {
+      picker.hidden = true;
+      picker.innerHTML = '';
+      continue;
+    }
+
+    // Prominent, high-visibility Close (×) button directly ABOVE the active part card!
+    const topbar = document.createElement('div');
+    topbar.className = 'forge-slot-topbar';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'forge-slot-close';
+    closeBtn.setAttribute('aria-label', 'Close module picker');
+    closeBtn.innerHTML = '<span aria-hidden="true">×</span> CLOSE';
+    closeBtn.addEventListener('click', () => {
+      activeForgeSlot = null;
+      sound.uiClose();
+      renderForge();
+      draw();
+    });
+    topbar.append(closeBtn);
+    wrap.prepend(topbar);
+
+    picker.hidden = false;
+    picker.innerHTML = '';
+
+    const head = document.createElement('div');
+    head.className = 'forge-tray-head';
+    head.innerHTML = `<span>Select Module</span><b>${freePwr > 0 ? `${freePwr} PWR FREE` : 'MAX REACTOR'}</b>`;
+
+    const grid = document.createElement('div');
+    grid.className = `forge-options ${spec.cols}`.trim();
+    for (const opt of spec.items) {
+      const selected = b[slotKey] === opt.id;
+      const nextPwr = pwr - part.pwr + opt.pwr;
+      const overBudget = !selected && nextPwr > CUSTOM_MAX_POWER;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'forge-opt' + (overBudget ? ' over-budget' : '');
+      btn.setAttribute('aria-pressed', String(selected));
+      btn.disabled = overBudget;
+      btn.dataset.partKey = slotKey;
+      btn.dataset.partId = String(opt.id);
+      btn.innerHTML = `<span class="forge-opt-top"><strong>${opt.name}</strong><span class="forge-pwr-tag">${opt.pwr} PWR</span></span><small>${opt.desc}</small>`;
+      btn.addEventListener('click', () => {
+        if (overBudget || selected) return;
+        meta.customBuild = { ...meta.customBuild, [slotKey]: opt.id };
+        saveMeta();
+        sound.uiClick();
+        forgeStatusEl.textContent = '';
+        forgeStatusEl.classList.remove('is-error');
+        renderForge();
+        syncRigButtons();
+        renderShipPreviews();
+        syncMetaUi();
+        draw();
+      });
+      grid.append(btn);
+    }
+
+    picker.append(head, grid);
   }
 
-  // Paint swatches docked right below the live hovering ship (0 PWR)
+  // Paint swatches in the bottom dock (0 PWR)
   forgePaintsEl.innerHTML = '';
   for (const p of CUSTOM_PARTS.paint) {
     const btn = document.createElement('button');
@@ -5159,47 +5249,12 @@ function renderForge() {
     });
     forgePaintsEl.append(btn);
   }
-
-  // Active slot's swappable modules tray
-  const activeSpec = FORGE_SLOTS[activeForgeSlot] || FORGE_SLOTS.nose;
-  const currentPart = activeSpec.items[b[activeForgeSlot]] || activeSpec.items[0];
-  forgeTrayTitle.textContent = `${activeSpec.full} · Select Module`;
-  forgeTrayHeadroom.textContent = freePwr > 0 ? `${freePwr} PWR FREE` : 'MAX REACTOR LOAD';
-
-  forgePartsEl.className = `forge-options ${activeSpec.cols}`.trim();
-  forgePartsEl.innerHTML = '';
-  for (const part of activeSpec.items) {
-    const selected = b[activeForgeSlot] === part.id;
-    const nextPwr = pwr - currentPart.pwr + part.pwr;
-    const overBudget = !selected && nextPwr > CUSTOM_MAX_POWER;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'forge-opt' + (overBudget ? ' over-budget' : '');
-    btn.setAttribute('aria-pressed', String(selected));
-    btn.disabled = overBudget;
-    btn.dataset.partKey = activeForgeSlot;
-    btn.dataset.partId = String(part.id);
-    btn.innerHTML = `<span class="forge-opt-top"><strong>${part.name}</strong><span class="forge-pwr-tag">${part.pwr} PWR</span></span><small>${part.desc}</small>`;
-    btn.addEventListener('click', () => {
-      if (overBudget || selected) return;
-      meta.customBuild = { ...meta.customBuild, [activeForgeSlot]: part.id };
-      saveMeta();
-      sound.uiClick();
-      forgeStatusEl.textContent = '';
-      forgeStatusEl.classList.remove('is-error');
-      renderForge();
-      syncRigButtons();
-      renderShipPreviews();
-      syncMetaUi();
-      draw();
-    });
-    forgePartsEl.append(btn);
-  }
 }
 
 for (const node of forgeNodesEl.querySelectorAll('.forge-node')) {
   node.addEventListener('click', () => {
-    activeForgeSlot = node.dataset.slot;
+    const slot = node.dataset.slot;
+    activeForgeSlot = activeForgeSlot === slot ? null : slot;
     sound.uiClick();
     renderForge();
     draw();
@@ -5209,6 +5264,7 @@ for (const node of forgeNodesEl.querySelectorAll('.forge-node')) {
 function openForge() {
   selectedRig = 'custom';
   hangarRig = 'custom';
+  activeForgeSlot = null;
   try {
     localStorage.setItem('low-orbit-rig', 'custom');
   } catch {}
@@ -5233,8 +5289,10 @@ function closeForge() {
   if (!forgeActive) return;
   sound.uiClose();
   forgeActive = false;
+  activeForgeSlot = null;
   if (reducedMotion.matches) forgeBlend = 0;
   delete document.body.dataset.forge;
+  delete forgeScreen.dataset.activeSide;
   forgeScreen.setAttribute('aria-hidden', 'true');
   draw();
 }
