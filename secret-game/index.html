@@ -213,14 +213,21 @@
                 <span class="rig-pips" data-pips="aegis"></span>
               </span>
             </button>
-            <button type="button" class="rig-option rig-custom" data-rig="custom" aria-pressed="false">
-              <canvas class="rig-preview" data-ship="custom" width="112" height="112" aria-hidden="true"></canvas>
-              <span class="rig-meta">
-                <strong>Custom</strong>
-                <small id="custom-rig-sub">LO-11200</small>
-                <span class="rig-pips" data-pips="custom"></span>
-              </span>
-            </button>
+            <div class="rig-custom-wrap">
+              <button type="button" class="rig-option rig-custom" data-rig="custom" aria-pressed="false">
+                <canvas class="rig-preview" data-ship="custom" width="112" height="112" aria-hidden="true"></canvas>
+                <span class="rig-meta">
+                  <strong>Custom</strong>
+                  <small id="custom-rig-sub">LO-11200</small>
+                  <span class="rig-pips" data-pips="custom"></span>
+                </span>
+              </button>
+              <button id="custom-edit-btn" type="button" class="rig-edit-btn" aria-label="Customize ship" title="Customize ship">
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z" />
+                </svg>
+              </button>
+            </div>
           </fieldset>
 
           <div class="launch-row">
@@ -376,6 +383,22 @@
           <p id="forge-status" class="forge-status" aria-live="polite"></p>
         </div>
       </section>
+
+      <dialog id="forge-unsaved" class="modal-sheet unsaved-dialog" closedby="any" aria-labelledby="unsaved-title">
+        <form method="dialog" class="modal-head unsaved-head">
+          <div>
+            <span class="unsaved-kicker">UNSAVED MODULE</span>
+            <h2 id="unsaved-title">Apply Changes?</h2>
+          </div>
+          <button type="submit" class="modal-close" aria-label="Keep editing">×</button>
+        </form>
+        <p class="unsaved-body">You changed this module without applying. Apply your changes before closing?</p>
+        <div class="unsaved-actions">
+          <button id="unsaved-apply" type="button" class="unsaved-btn primary">APPLY</button>
+          <button id="unsaved-discard" type="button" class="unsaved-btn danger">DISCARD</button>
+          <button id="unsaved-cancel" type="button" class="unsaved-btn">CANCEL</button>
+        </div>
+      </dialog>
 
       <dialog id="record-dialog" class="modal-sheet record-dialog" closedby="any" aria-labelledby="record-dialog-title">
         <form method="dialog" class="modal-head record-modal-head">

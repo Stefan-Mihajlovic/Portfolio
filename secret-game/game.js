@@ -248,9 +248,13 @@ function saveMeta() {
   } catch {}
 }
 
+function getActiveCustomBuild() {
+  return forgeActive && forgeDraft ? forgeDraft : meta.customBuild;
+}
+
 function getBaseRig(key = selectedRig) {
   if (key === 'custom') {
-    return { ...computeCustomStats(meta.customBuild), novaRadius: 270 };
+    return { ...computeCustomStats(getActiveCustomBuild()), novaRadius: 270 };
   }
   return RIGS[key] || RIGS.kestrel;
 }
@@ -518,6 +522,9 @@ let introCursorY = 0.5;
 let introShip = { x: 0, y: 0, vx: 0, vy: 0, heading: 0.72, roll: 0, muzzle: 0, recoil: 0, trails: [[], []], ready: false };
 let forgeActive = false;
 let forgeBlend = 0;
+let forgeDraft = null;
+let forgePushedHistory = false;
+let suppressNextForgePop = false;
 let forgeDemoShots = [];
 let forgeDemoTimer = 0;
 let playerDying = 0;
@@ -656,7 +663,7 @@ function paintShip(x, y, width, angle = 0, thrust = 1, variant = selectedRig, op
   if (opts.pitch) ctx.scale(1, 1 - Math.abs(opts.pitch) * 0.12);
 
   // Full 2.5D longitudinal roll with equipped livery skin (or modular Custom Ship!)
-  const drawVariant = variant === 'custom' ? encodeCustomShip(meta.customBuild) : variant;
+  const drawVariant = variant === 'custom' ? encodeCustomShip(getActiveCustomBuild()) : variant;
   drawBankedShip(ctx, drawVariant, roll, opts.tier || 1, accent, variant === 'custom' ? 'standard' : skinId);
 
   // Muzzle flash
@@ -2436,10 +2443,16 @@ function setMode(next) {
   if (next === 'playing') {
     forgeActive = false;
     forgeBlend = 0;
+    forgeDraft = null;
     forgeDemoShots = [];
     clearTimeout(forgeDemoTimer);
     delete document.body.dataset.forge;
+    delete forgeScreen?.dataset.activeSide;
     forgeScreen?.setAttribute('aria-hidden', 'true');
+    if (location.hash === '#forge') {
+      history.replaceState(null, '', location.pathname + location.search);
+      forgePushedHistory = false;
+    }
     sound.start();
     canvas.focus({ preventScroll: true });
     frame = requestAnimationFrame(tick);
@@ -4215,9 +4228,14 @@ for (const btn of document.querySelectorAll('.rig-option')) {
     syncMetaUi();
     introShip.trails = [[], []];
     draw();
-    if (nextRig === 'custom') openForge();
   });
 }
+
+document.querySelector('#custom-edit-btn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  sound.uiClick();
+  openForge();
+});
 
 action.addEventListener('click', () => {
   sound.uiLaunch(meta.overclock && mode !== 'paused');
@@ -4264,17 +4282,14 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open) return;
+  if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open || unsavedDialog.open) return;
   if (forgeActive) {
     if (e.code === 'Escape') {
       e.preventDefault();
       if (activeForgeSlot) {
-        activeForgeSlot = null;
-        sound.uiClose();
-        renderForge();
-        draw();
+        requestCloseSlot();
       } else {
-        closeForge();
+        requestCloseForge();
       }
     }
     return;
@@ -4364,10 +4379,7 @@ canvas.addEventListener('pointerdown', (e) => {
         renderForge();
         draw();
       } else if (activeForgeSlot) {
-        activeForgeSlot = null;
-        sound.uiClose();
-        renderForge();
-        draw();
+        requestCloseSlot();
       }
     }
     return;
@@ -4504,6 +4516,10 @@ const forgeImportForm = document.querySelector('#forge-import-form');
 const forgeImportInput = document.querySelector('#forge-import-input');
 const forgeEquipBtn = document.querySelector('#forge-equip');
 const forgeStatusEl = document.querySelector('#forge-status');
+const unsavedDialog = document.querySelector('#forge-unsaved');
+const unsavedApplyBtn = document.querySelector('#unsaved-apply');
+const unsavedDiscardBtn = document.querySelector('#unsaved-discard');
+const unsavedCancelBtn = document.querySelector('#unsaved-cancel');
 const skinSectionLabel = document.querySelector('#skin-section-label');
 const recordDialog = document.querySelector('#record-dialog');
 const leaderboardDialog = document.querySelector('#leaderboard');
@@ -4594,6 +4610,7 @@ wireModal(manual);
 wireModal(hangar);
 wireModal(recordDialog);
 wireModal(leaderboardDialog);
+wireModal(unsavedDialog);
 
 async function copyBuildCode(code, buttonEl) {
   let ok = false;
@@ -5181,12 +5198,56 @@ const FORGE_SLOTS = {
 };
 let activeForgeSlot = null;
 
+let pendingForgeExitAction = null;
+
+function hasForgeChanges() {
+  if (!forgeDraft) return false;
+  const saved = meta.customBuild;
+  return (
+    forgeDraft.nose !== saved.nose ||
+    forgeDraft.wings !== saved.wings ||
+    forgeDraft.weapon !== saved.weapon ||
+    forgeDraft.engine !== saved.engine ||
+    forgeDraft.paint !== saved.paint
+  );
+}
+
+function applyForgeDraft(silent = false) {
+  if (!forgeDraft) return;
+  meta.customBuild = { ...forgeDraft };
+  saveMeta();
+  if (!silent) sound.uiBuy();
+  syncRigButtons();
+  renderShipPreviews();
+  syncMetaUi();
+}
+
+function discardForgeDraft() {
+  forgeDraft = { ...meta.customBuild };
+}
+
+function requestCloseSlot() {
+  if (!activeForgeSlot) return;
+  if (hasForgeChanges()) {
+    pendingForgeExitAction = 'slot';
+    sound.uiClick();
+    unsavedDialog.removeAttribute('data-closing');
+    if (!unsavedDialog.open) unsavedDialog.showModal();
+    return;
+  }
+  activeForgeSlot = null;
+  sound.uiClose();
+  renderForge();
+  draw();
+}
+
 function renderForge() {
-  const b = meta.customBuild;
+  const b = getActiveCustomBuild();
   const stats = computeCustomStats(b);
   const pwr = stats.power;
   const freePwr = CUSTOM_MAX_POWER - pwr;
   const shareCode = formatShareCode(b);
+  const dirty = hasForgeChanges();
 
   forgeCodeVal.textContent = shareCode;
   forgePwrText.textContent = `${pwr} / ${CUSTOM_MAX_POWER} PWR`;
@@ -5222,7 +5283,7 @@ function renderForge() {
   if (activeSide) forgeScreen.dataset.activeSide = activeSide;
   else delete forgeScreen.dataset.activeSide;
 
-  // Update the 4 surrounding callout nodes; when one is selected, hide its sibling & place a prominent X button ABOVE it!
+  // Update the 4 surrounding callout nodes; when one is selected, hide its sibling & place X above + red APPLY below!
   for (const [slotKey, spec] of Object.entries(FORGE_SLOTS)) {
     const wrap = forgeNodesEl.querySelector(`.forge-slot-wrap[data-slot="${slotKey}"]`);
     const node = forgeNodesEl.querySelector(`.forge-node[data-slot="${slotKey}"]`);
@@ -5232,7 +5293,6 @@ function renderForge() {
     const isSelected = slotKey === activeForgeSlot;
     wrap.dataset.state = !activeForgeSlot ? 'idle' : isSelected ? 'active' : 'hidden';
 
-    // Remove any previous topbar close button before re-rendering
     wrap.querySelector('.forge-slot-topbar')?.remove();
 
     node.setAttribute('aria-pressed', String(isSelected));
@@ -5244,7 +5304,6 @@ function renderForge() {
       continue;
     }
 
-    // Prominent, high-visibility Close (×) button directly ABOVE the active part card!
     const topbar = document.createElement('div');
     topbar.className = 'forge-slot-topbar';
     const closeBtn = document.createElement('button');
@@ -5252,12 +5311,7 @@ function renderForge() {
     closeBtn.className = 'forge-slot-close';
     closeBtn.setAttribute('aria-label', 'Close module picker');
     closeBtn.innerHTML = '<span aria-hidden="true">×</span> CLOSE';
-    closeBtn.addEventListener('click', () => {
-      activeForgeSlot = null;
-      sound.uiClose();
-      renderForge();
-      draw();
-    });
+    closeBtn.addEventListener('click', () => requestCloseSlot());
     topbar.append(closeBtn);
     wrap.prepend(topbar);
 
@@ -5288,8 +5342,7 @@ function renderForge() {
           if (slotKey === 'weapon') fireForgeWeaponDemo(opt.kind);
           return;
         }
-        meta.customBuild = { ...meta.customBuild, [slotKey]: opt.id };
-        saveMeta();
+        forgeDraft = { ...b, [slotKey]: opt.id };
         if (slotKey === 'weapon') {
           fireForgeWeaponDemo(opt.kind);
         } else {
@@ -5298,18 +5351,36 @@ function renderForge() {
         forgeStatusEl.textContent = '';
         forgeStatusEl.classList.remove('is-error');
         renderForge();
-        syncRigButtons();
-        renderShipPreviews();
-        syncMetaUi();
         draw();
       });
       grid.append(btn);
     }
 
     picker.append(head, grid);
+
+    // Vivid red APPLY button right beneath the module options when changed!
+    if (dirty) {
+      const actions = document.createElement('div');
+      actions.className = 'forge-picker-actions';
+      const applyBtn = document.createElement('button');
+      applyBtn.type = 'button';
+      applyBtn.id = 'forge-apply';
+      applyBtn.className = 'forge-apply-btn';
+      applyBtn.textContent = 'APPLY';
+      applyBtn.addEventListener('click', () => {
+        applyForgeDraft();
+        activeForgeSlot = null;
+        forgeStatusEl.textContent = `Applied ${formatShareCode(meta.customBuild)}!`;
+        forgeStatusEl.classList.remove('is-error');
+        renderForge();
+        draw();
+      });
+      actions.append(applyBtn);
+      picker.append(actions);
+    }
   }
 
-  // Paint swatches in the bottom dock (0 PWR)
+  // Paint swatches in the bottom dock (0 PWR — applies immediately!)
   forgePaintsEl.innerHTML = '';
   for (const p of CUSTOM_PARTS.paint) {
     const btn = document.createElement('button');
@@ -5324,6 +5395,7 @@ function renderForge() {
     btn.addEventListener('click', () => {
       if (b.paint === p.id) return;
       meta.customBuild = { ...meta.customBuild, paint: p.id };
+      if (forgeDraft) forgeDraft.paint = p.id;
       saveMeta();
       sound.uiClick();
       renderForge();
@@ -5338,7 +5410,11 @@ function renderForge() {
 for (const node of forgeNodesEl.querySelectorAll('.forge-node')) {
   node.addEventListener('click', () => {
     const slot = node.dataset.slot;
-    activeForgeSlot = activeForgeSlot === slot ? null : slot;
+    if (activeForgeSlot === slot) {
+      requestCloseSlot();
+      return;
+    }
+    activeForgeSlot = slot;
     sound.uiClick();
     renderForge();
     draw();
@@ -5368,26 +5444,20 @@ function fireForgeWeaponDemo(kind) {
 
   introShip.muzzle = 0.14;
   introShip.recoil = kind === 'aegis' ? 6.5 : 4.2;
+  sound.uiWeaponPreview(kind);
 
   if (kind === 'aegis') {
-    // Heavy Tri-Plasma spread
     emit(0, -48, 0, 620, { heavy: true });
     emit(-24, -26, -0.15, 585, { heavy: true });
     emit(24, -26, 0.15, 585, { heavy: true });
-    sound.effect('fire');
   } else if (kind === 'falcon') {
-    // Fast twin needles + curving twin homing seekers!
     emit(-14, -44, -0.04, 680);
     emit(14, -44, 0.04, 680);
     emit(-28, -10, -0.82, 270, { homing: true, side: -1 });
     emit(28, -10, 0.82, 270, { homing: true, side: 1 });
-    sound.effect('fire');
-    sound.effect('missile');
   } else if (kind === 'pulse') {
-    // Crisp rapid double-tap Twin Pulse salvo!
     emit(-16, -42, -0.03, 660);
     emit(16, -42, 0.03, 660);
-    sound.effect('fire');
     forgeDemoTimer = setTimeout(() => {
       if (!forgeActive) return;
       introShip.muzzle = 0.12;
@@ -5396,20 +5466,19 @@ function fireForgeWeaponDemo(kind) {
         { x: introShip.x - 16 * sc, y: introShip.y - 42 * sc, vx: -20, vy: -660, life: 1.4, age: 0 },
         { x: introShip.x + 16 * sc, y: introShip.y - 42 * sc, vx: 20, vy: -660, life: 1.4, age: 0 },
       );
-      sound.effect('fire');
     }, 115);
   } else {
-    // High-velocity piercing Rail-Lance!
     emit(0, -52, 0, 790, { pierce: 2 });
     emit(-22, -32, -0.09, 690, { pierce: 1 });
     emit(22, -32, 0.09, 690, { pierce: 1 });
-    sound.effect('focusFire');
   }
 }
-function openForge() {
+
+function openForge(opts = {}) {
   selectedRig = 'custom';
   hangarRig = 'custom';
   activeForgeSlot = null;
+  forgeDraft = { ...meta.customBuild };
   forgeDemoShots = [];
   clearTimeout(forgeDemoTimer);
   try {
@@ -5424,6 +5493,12 @@ function openForge() {
   forgeStatusEl.textContent = '';
   forgeStatusEl.classList.remove('is-error');
   forgeImportInput.value = '';
+  if (!opts.fromPopstate && location.hash !== '#forge') {
+    try {
+      history.pushState({ forge: true }, '', '#forge');
+      forgePushedHistory = true;
+    } catch {}
+  }
   renderForge();
   if (!frame && (mode === 'intro' || mode === 'over') && !reducedMotion.matches) {
     lastTime = 0;
@@ -5432,24 +5507,108 @@ function openForge() {
   draw();
 }
 
-function closeForge() {
+function closeForge(opts = {}) {
   if (!forgeActive) return;
-  sound.uiClose();
+  if (!opts.silent) sound.uiClose();
   forgeActive = false;
   activeForgeSlot = null;
+  forgeDraft = null;
   forgeDemoShots = [];
   clearTimeout(forgeDemoTimer);
   if (reducedMotion.matches) forgeBlend = 0;
   delete document.body.dataset.forge;
   delete forgeScreen.dataset.activeSide;
   forgeScreen.setAttribute('aria-hidden', 'true');
+  syncRigButtons();
+  renderShipPreviews();
+  syncMetaUi();
+  if (!opts.fromPopstate && location.hash === '#forge') {
+    try {
+      if (forgePushedHistory) {
+        forgePushedHistory = false;
+        suppressNextForgePop = true;
+        history.back();
+      } else {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    } catch {}
+  } else if (opts.fromPopstate) {
+    forgePushedHistory = false;
+  }
   draw();
 }
 
-forgeBackBtn?.addEventListener('click', closeForge);
+function requestCloseForge(opts = {}) {
+  if (!forgeActive) return;
+  if (hasForgeChanges()) {
+    pendingForgeExitAction = 'forge';
+    if (opts.fromPopstate && location.hash !== '#forge') {
+      try {
+        history.pushState({ forge: true }, '', '#forge');
+        forgePushedHistory = true;
+      } catch {}
+    }
+    sound.uiClick();
+    unsavedDialog.removeAttribute('data-closing');
+    if (!unsavedDialog.open) unsavedDialog.showModal();
+    return;
+  }
+  closeForge(opts);
+}
+
+window.addEventListener('popstate', () => {
+  if (suppressNextForgePop) {
+    suppressNextForgePop = false;
+    return;
+  }
+  if (forgeActive && location.hash !== '#forge') {
+    requestCloseForge({ fromPopstate: true });
+  } else if (!forgeActive && location.hash === '#forge' && mode !== 'playing') {
+    openForge({ fromPopstate: true });
+  }
+});
+
+forgeBackBtn?.addEventListener('click', () => requestCloseForge());
+
+unsavedApplyBtn?.addEventListener('click', () => {
+  const actionKind = pendingForgeExitAction;
+  pendingForgeExitAction = null;
+  applyForgeDraft();
+  if (unsavedDialog.open) unsavedDialog.close();
+  if (actionKind === 'slot') {
+    activeForgeSlot = null;
+    forgeStatusEl.textContent = `Applied ${formatShareCode(meta.customBuild)}!`;
+    forgeStatusEl.classList.remove('is-error');
+    renderForge();
+    draw();
+  } else {
+    closeForge({ silent: true });
+  }
+});
+
+unsavedDiscardBtn?.addEventListener('click', () => {
+  const actionKind = pendingForgeExitAction;
+  pendingForgeExitAction = null;
+  discardForgeDraft();
+  if (unsavedDialog.open) unsavedDialog.close();
+  if (actionKind === 'slot') {
+    activeForgeSlot = null;
+    sound.uiClose();
+    renderForge();
+    draw();
+  } else {
+    closeForge();
+  }
+});
+
+unsavedCancelBtn?.addEventListener('click', () => {
+  pendingForgeExitAction = null;
+  sound.uiClose();
+  closeTopLayer(unsavedDialog);
+});
 
 forgeCopyBtn?.addEventListener('click', () => {
-  const code = formatShareCode(meta.customBuild);
+  const code = formatShareCode(getActiveCustomBuild());
   copyBuildCode(code, forgeCopyBtn);
   forgeStatusEl.textContent = `Copied ${code} — share it with friends to import your ship!`;
   forgeStatusEl.classList.remove('is-error');
@@ -5465,11 +5624,12 @@ forgeImportForm?.addEventListener('submit', (e) => {
     return;
   }
   meta.customBuild = parsed;
+  forgeDraft = { ...parsed };
   saveMeta();
   sound.uiBuy();
   const code = formatShareCode(parsed);
   forgeImportInput.value = '';
-  forgeStatusEl.textContent = `Loaded custom blueprint ${code} (${computeCustomPower(parsed)} / ${CUSTOM_MAX_POWER} PWR)!`;
+  forgeStatusEl.textContent = `Loaded & applied blueprint ${code} (${computeCustomPower(parsed)} / ${CUSTOM_MAX_POWER} PWR)!`;
   forgeStatusEl.classList.remove('is-error');
   renderForge();
   syncRigButtons();
@@ -5479,6 +5639,7 @@ forgeImportForm?.addEventListener('submit', (e) => {
 });
 
 forgeEquipBtn?.addEventListener('click', () => {
+  if (hasForgeChanges()) applyForgeDraft(true);
   selectedRig = 'custom';
   hangarRig = 'custom';
   try {
@@ -5552,3 +5713,4 @@ for (const preview of manual.querySelectorAll('[data-craft]')) {
 loadPlanets(true, draw);
 resize();
 startIntro();
+if (location.hash === '#forge') openForge({ fromPopstate: true });

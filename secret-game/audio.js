@@ -1598,6 +1598,89 @@ export function createFlightAudio() {
     }, 620);
   }
 
+  // Distinct live test-fire weapon previews inside Ship Forge (plays without needing an active gameplay session!)
+  function uiWeaponPreview(kind = 'kestrel') {
+    if (!volume || !init()) return;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const t = ctx.currentTime;
+    const tempNodes = [];
+
+    const tone = (start, len, type, f0, f1, cut0, cut1, lvl, panVal = 0) => {
+      const osc = ctx.createOscillator();
+      const filt = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+      const pan = ctx.createStereoPanner();
+      osc.type = type;
+      osc.frequency.setValueAtTime(f0, start);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(24, f1), start + len);
+      filt.type = 'lowpass';
+      filt.frequency.setValueAtTime(cut0, start);
+      filt.frequency.exponentialRampToValueAtTime(Math.max(80, cut1), start + len);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(lvl, start + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + len);
+      pan.pan.value = panVal;
+      osc.connect(filt).connect(gain).connect(pan).connect(compressor);
+      osc.start(start);
+      osc.stop(start + len + 0.02);
+      tempNodes.push(osc, filt, gain, pan);
+    };
+
+    const burstNoise = (start, len, f0, f1, q, lvl, panVal = 0) => {
+      const src = ctx.createBufferSource();
+      src.buffer = noise;
+      const filt = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+      const pan = ctx.createStereoPanner();
+      filt.type = 'bandpass';
+      filt.Q.value = q;
+      filt.frequency.setValueAtTime(f0, start);
+      filt.frequency.exponentialRampToValueAtTime(Math.max(90, f1), start + len);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(lvl, start + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + len);
+      pan.pan.value = panVal;
+      src.connect(filt).connect(gain).connect(pan).connect(compressor);
+      src.start(start);
+      src.stop(start + len + 0.02);
+      tempNodes.push(src, filt, gain, pan);
+    };
+
+    if (kind === 'aegis') {
+      // Heavy Tri-Plasma blast: deep punchy sub + resonant plasma roar
+      tone(t, 0.18, 'sine', 240, 48, 900, 140, 0.42, 0);
+      tone(t, 0.16, 'sawtooth', 720, 115, 3600, 420, 0.24, -0.18);
+      tone(t + 0.012, 0.16, 'sawtooth', 680, 108, 3400, 380, 0.22, 0.18);
+      burstNoise(t, 0.11, 1600, 380, 1.4, 0.22, 0);
+    } else if (kind === 'falcon') {
+      // Fast needle fire + twin whistling seeker rocket ignition!
+      tone(t, 0.08, 'triangle', 1080, 220, 4600, 900, 0.24, -0.1);
+      tone(t, 0.06, 'sine', 240, 68, 1800, 300, 0.2, 0.1);
+      burstNoise(t + 0.02, 0.22, 900, 3200, 1.8, 0.22, -0.25);
+      burstNoise(t + 0.035, 0.22, 950, 3400, 1.8, 0.22, 0.25);
+      tone(t + 0.025, 0.18, 'triangle', 420, 940, 3200, 4200, 0.14, 0);
+    } else if (kind === 'pulse') {
+      // Crisp double-tap Pulse Twin salvo
+      for (const off of [0, 0.115]) {
+        tone(t + off, 0.085, 'sawtooth', 980, 185, 4200, 750, 0.2, off ? 0.12 : -0.12);
+        tone(t + off, 0.055, 'sine', 220, 66, 1600, 320, 0.22, 0);
+      }
+    } else {
+      // Piercing Rail-Lance high-velocity electromagnetic crack
+      tone(t, 0.12, 'sawtooth', 1420, 290, 5600, 920, 0.24, 0);
+      tone(t, 0.09, 'sine', 380, 92, 2400, 340, 0.3, 0);
+      burstNoise(t, 0.075, 4200, 1100, 2.2, 0.24, 0);
+    }
+
+    setTimeout(() => {
+      for (const n of tempNodes) {
+        try {
+          n.disconnect();
+        } catch {}
+      }
+    }, 520);
+  }
+
   // Subtle, lush orbital synth-pad ambient drone for Main Menu (starts softly after first user gesture!)
   let ambientTimer = 0;
   let ambientBus = null;
@@ -1681,6 +1764,7 @@ export function createFlightAudio() {
     uiLaunch,
     uiRefund,
     uiShip,
+    uiWeaponPreview,
     overclockOn,
     overclockOff,
     setWave(value) {

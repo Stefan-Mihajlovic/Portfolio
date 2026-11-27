@@ -1021,6 +1021,44 @@ h1 {
   height: 50px;
   flex: none;
 }
+.rig-custom-wrap {
+  position: relative;
+  display: flex;
+}
+.rig-custom-wrap .rig-option {
+  width: 100%;
+  padding-right: 36px;
+}
+.rig-edit-btn {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 28px;
+  height: 28px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  clip-path: var(--chamfer-sm);
+  color: var(--teal);
+  background: rgb(14 30 48 / 0.88);
+  box-shadow: inset 0 0 0 1px rgb(121 227 213 / 0.42);
+  transition:
+    color 0.14s ease,
+    background-color 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.14s ease;
+}
+.rig-edit-btn:hover {
+  color: #101b27;
+  background: var(--teal);
+  box-shadow:
+    inset 0 0 0 1px #d8fff8,
+    0 0 14px rgb(121 227 213 / 0.55);
+  transform: scale(1.06);
+}
+body[data-rig='custom'] .rig-edit-btn {
+  box-shadow: inset 0 0 0 1.5px var(--teal);
+}
 .rig-meta {
   display: grid;
   gap: 3px;
@@ -3015,6 +3053,7 @@ body[data-forge='true'] .forge-node[aria-pressed='true'] {
 
 /* INLINE MODULE PICKER OPENING DIRECTLY BELOW THE CLICKED PART CARD! */
 .forge-inline-picker {
+  position: relative;
   display: grid;
   gap: 8px;
   margin-top: 6px;
@@ -3280,6 +3319,52 @@ body[data-forge='true'] .forge-bottom-dock {
   background: rgb(22 48 70 / 0.96);
   color: #ebfffb;
 }
+.forge-picker-actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: auto;
+  animation: forge-inline-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (max-width: 859px) {
+  .forge-picker-actions {
+    position: static;
+    padding-top: 8px;
+    margin-top: 2px;
+    border-top: 1px solid rgb(146 188 202 / 0.16);
+  }
+}
+.forge-apply-btn {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 18px;
+  clip-path: var(--chamfer-sm);
+  font:
+    800 12px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff7ef;
+  background: linear-gradient(135deg, #ff5844 0%, #db2138 62%, #ab142d 100%);
+  box-shadow: inset 0 0 0 1.5px rgb(255 190 152 / 0.72);
+  filter: drop-shadow(0 0 12px rgb(255 54 54 / 0.52));
+  white-space: nowrap;
+  transition:
+    filter 0.15s ease,
+    transform 0.14s ease,
+    background 0.15s ease;
+}
+.forge-apply-btn[hidden] {
+  display: none;
+}
+.forge-apply-btn:hover {
+  background: linear-gradient(135deg, #ff6c58 0%, #f02840 62%, #c21834 100%);
+  filter: drop-shadow(0 0 18px rgb(255 68 62 / 0.78));
+  transform: translateY(-1px);
+}
 .forge-equip-btn {
   min-height: 34px;
   padding: 0 18px;
@@ -3294,6 +3379,77 @@ body[data-forge='true'] .forge-bottom-dock {
 }
 .forge-equip-btn:hover {
   background: linear-gradient(180deg, #b8fff0, #79e3d5);
+}
+
+/* UNSAVED CHANGES CONFIRMATION DIALOG */
+.modal-sheet.unsaved-dialog {
+  width: min(420px, 92vw);
+  border-color: rgb(255 92 78 / 0.48);
+  border-top: 3px solid #ff5644;
+  padding: 20px 22px 18px;
+}
+.unsaved-head {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+}
+.unsaved-head h2 {
+  font-size: 22px;
+  margin-top: 4px;
+}
+.unsaved-kicker {
+  display: block;
+  font:
+    700 10px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.14em;
+  color: #ff8070;
+}
+.unsaved-body {
+  margin: 0 0 16px;
+  font:
+    500 12.5px/1.45 ui-monospace,
+    monospace;
+  color: #c4d2dc;
+}
+.unsaved-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.unsaved-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  clip-path: var(--chamfer-sm);
+  font:
+    700 11px/1 ui-monospace,
+    monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #cfe0ea;
+  background: rgb(16 28 46 / 0.85);
+  box-shadow: inset 0 0 0 1px rgb(146 188 202 / 0.34);
+}
+.unsaved-btn:hover {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--teal);
+}
+.unsaved-btn.primary {
+  color: #fff7ef;
+  background: linear-gradient(135deg, #ff5844, #d61f35);
+  box-shadow: inset 0 0 0 1px rgb(255 190 152 / 0.72);
+}
+.unsaved-btn.primary:hover {
+  background: linear-gradient(135deg, #ff6c58, #ec263d);
+}
+.unsaved-btn.danger {
+  color: #ff9c8e;
+  background: rgb(56 16 22 / 0.72);
+  box-shadow: inset 0 0 0 1px rgb(255 96 84 / 0.45);
+}
+.unsaved-btn.danger:hover {
+  color: #fff2ef;
+  box-shadow: inset 0 0 0 1px #ff6e62;
 }
 .forge-status {
   flex-basis: 100%;
