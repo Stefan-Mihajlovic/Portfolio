@@ -18,12 +18,11 @@ const BOSS_PALETTES = [
   { armor: '#4c9e9b', secondary: '#245863', trim: '#162836', light: '#9effef', bullet: '#6ef5e8' },
 ];
 
-// 10 genuinely distinct flagship chassis archetypes — each with its own phase structure & signature mechanic!
+// 10 genuinely distinct flagship chassis archetypes — concise 2-word classes (3 words max with callsign!)
 const CHASSIS_TYPES = [
   {
     id: 'catamaran',
-    label: 'TWIN-HULL DREADNOUGHT',
-    trait: 'SCISSOR RAIL-BEAMS',
+    label: 'TWIN DREADNOUGHT',
     defaultRole: 'turret',
     phases: 3,
     signature: 'beam',
@@ -31,8 +30,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'citadel',
-    label: 'ORBITAL RING CITADEL',
-    trait: 'ROTATING LASER CAGE',
+    label: 'RING CITADEL',
     defaultRole: 'prism',
     phases: 3,
     signature: 'ringburst',
@@ -41,7 +39,6 @@ const CHASSIS_TYPES = [
   {
     id: 'monolith',
     label: 'PRISM MONOLITH',
-    trait: 'PHASE-BLINK // 2-PHASE',
     defaultRole: 'lance',
     phases: 2,
     signature: 'blink',
@@ -49,8 +46,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'carrier',
-    label: 'SIEGE FLEET CARRIER',
-    trait: 'SQUADRON COMMAND',
+    label: 'SIEGE CARRIER',
     defaultRole: 'bay',
     phases: 3,
     signature: 'escortWave',
@@ -58,8 +54,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'scythe',
-    label: 'BLADE INTERCEPTOR',
-    trait: 'APEX SLASH // 2-PHASE',
+    label: 'BLADE HUNTER',
     defaultRole: 'lance',
     phases: 2,
     signature: 'dive',
@@ -67,8 +62,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'leviathan',
-    label: 'CRESCENT LEVIATHAN',
-    trait: 'TIDAL WAVE CURTAINS',
+    label: 'VOID LEVIATHAN',
     defaultRole: 'pylon',
     phases: 3,
     signature: 'waveCurtain',
@@ -76,8 +70,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'hive',
-    label: 'HEX SWARM CORE',
-    trait: 'BIO-SWARM MOTHER',
+    label: 'SWARM MOTHER',
     defaultRole: 'prism',
     phases: 3,
     signature: 'swarmSurge',
@@ -85,8 +78,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'eclipse',
-    label: 'CORONA SINGULARITY',
-    trait: 'GRAVITY WELL // 2-PHASE',
+    label: 'SOLAR ECLIPSE',
     defaultRole: 'pylon',
     phases: 2,
     signature: 'gravity',
@@ -94,8 +86,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'seraph',
-    label: 'SERAPHIM HALO CRUISER',
-    trait: 'X-CROSS HALO // 4-PHASE',
+    label: 'HALO CRUISER',
     defaultRole: 'repair',
     phases: 4,
     signature: 'crossBeam',
@@ -103,8 +94,7 @@ const CHASSIS_TYPES = [
   },
   {
     id: 'kraken',
-    label: 'LEVIATHAN KRAKEN',
-    trait: 'CLUSTER TENTACLES // 4-PHASE',
+    label: 'ABYSSAL TITAN',
     defaultRole: 'mortar',
     phases: 4,
     signature: 'clusterRain',
@@ -388,14 +378,13 @@ export function createBoss(rank, w, runSeed = 1, overclock = false) {
     rank,
     seed: rank * 1301 + runSeed * 53,
     chassis: chassis.id,
-    trait: chassis.trait,
     palette,
     moveStyle,
     volleyStyle,
     primarySpecial,
     secondarySpecial,
     name: CALLSIGNS[nameIdx],
-    designation: `${chassis.label} // ${chassis.trait}`,
+    designation: chassis.label,
     scale,
     r: Math.round(chassis.r * scale),
     x: w / 2,

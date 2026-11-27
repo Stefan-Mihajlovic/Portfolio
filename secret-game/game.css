@@ -367,39 +367,60 @@ summary {
     monospace;
   pointer-events: none;
 }
-#boss-hud label {
+#boss-hud .boss-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   letter-spacing: 0.1em;
 }
-#boss-armor {
-  display: block;
-  appearance: none;
+#boss-phase:empty {
+  display: none;
+}
+#boss-phase.is-final {
+  color: #ff6e5e;
+  font-weight: 700;
+}
+.boss-bars {
+  display: flex;
+  gap: 5px;
   width: 100%;
-  height: 8px;
+  height: 9px;
+}
+.boss-bar-seg {
+  position: relative;
+  flex: 1;
+  height: 100%;
   transform: skew(-16deg);
-  mask-image: linear-gradient(
-    to right,
-    #000 0 calc(33.333% - 2.5px),
-    transparent 0 calc(33.333% + 2.5px),
-    #000 0 calc(66.667% - 2.5px),
-    transparent 0 calc(66.667% + 2.5px),
-    #000 0
-  );
-  border: 0;
-  background: rgb(52 60 80 / 0.72);
-  color: #ffab7c;
+  background: rgb(36 44 62 / 0.78);
+  border: 1px solid rgb(255 216 176 / 0.24);
+  overflow: hidden;
 }
-#boss-armor::-webkit-progress-bar {
-  background: rgb(52 60 80 / 0.72);
+.boss-bar-seg i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transition: width 0.08s linear;
 }
-#boss-armor::-webkit-progress-value {
-  background: linear-gradient(to right, #fa5440, #ffcf8a);
+.boss-bar-seg[data-tier='0'] i {
+  background: linear-gradient(90deg, #e8323e, #ff6c52);
 }
-#boss-armor::-moz-progress-bar {
-  background: linear-gradient(to right, #fa5440, #ffcf8a);
+.boss-bar-seg[data-tier='1'] i {
+  background: linear-gradient(90deg, #f5683d, #ffaa5e);
+}
+.boss-bar-seg[data-tier='2'] i {
+  background: linear-gradient(90deg, #f29d41, #ffd778);
+}
+.boss-bar-seg[data-tier='3'] i {
+  background: linear-gradient(90deg, #79e3d5, #c8fff4);
+}
+.boss-bar-seg.is-empty {
+  background: rgb(22 28 40 / 0.52);
+  border-color: rgb(146 188 202 / 0.14);
+}
+.boss-bar-seg.is-enraged {
+  border-color: rgb(255 104 88 / 0.85);
+  box-shadow: 0 0 12px rgb(255 68 58 / 0.45);
 }
 .boss-parts {
   margin-top: 6px;
@@ -452,6 +473,15 @@ summary {
   color: #1c1308;
   background: var(--gold);
   border-left-color: #fff6d4;
+}
+.rapid-badge {
+  padding: 3px 7px;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: #091d14;
+  background: #8eff85;
+  border-left: 2px solid #e4ffe0;
 }
 .heat-label {
   margin-left: auto;

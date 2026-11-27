@@ -742,6 +742,7 @@ export function drawPickup(ctx, p) {
 
   const palette = {
     weapon: { rim: '#88f0de', core: '#16343d', label: 'W+' },
+    rapid: { rim: '#8eff85', core: '#163826', label: 'RF' },
     shield: { rim: '#99dcff', core: '#172d44', label: '+S' },
     nova: { rim: '#ffd485', core: '#3c2918', label: 'NV' },
     overshield: { rim: '#ffe27a', core: '#3a224d', label: 'OS' },
@@ -750,12 +751,17 @@ export function drawPickup(ctx, p) {
   const scale = 1 + bob;
   ctx.scale(scale, scale);
 
-  if (p.kind === 'overshield') {
+  if (p.kind === 'overshield' || p.kind === 'rapid') {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
-    g.addColorStop(0, 'rgba(255, 230, 130, 0.48)');
-    g.addColorStop(1, 'rgba(180, 120, 255, 0)');
+    if (p.kind === 'rapid') {
+      g.addColorStop(0, 'rgba(142, 255, 133, 0.45)');
+      g.addColorStop(1, 'rgba(84, 224, 175, 0)');
+    } else {
+      g.addColorStop(0, 'rgba(255, 230, 130, 0.48)');
+      g.addColorStop(1, 'rgba(180, 120, 255, 0)');
+    }
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, 22, 0, TAU);

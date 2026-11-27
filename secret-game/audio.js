@@ -1230,18 +1230,53 @@ export function createFlightAudio() {
         sfxVoice(t, 0.42, 'plasma', 142, 40, 0.44, 0.004, 1900, 0, 0.3);
         sfxVoice(t + 0.08, 0.24, 'triangle', 640, 980, 0.16, 0.01, 2400, 0.22, 0.4);
         break;
-      case 'overheat':
-        // Chicken Invaders-style thermal lockout: sharp steam hiss + power-down whine + warning chirp!
-        sfxVoice(t, 0.52, 'noise', 0, 0, 0.36, 0.004, 3600, 0, 0.25);
-        sfxVoice(t, 0.36, 'sawtooth', 540, 130, 0.2, 0.005, 1900, 0, 0.2);
-        sfxVoice(t + 0.02, 0.09, 'square', 820, 620, 0.14, 0.002, 2600, -0.2, 0.15);
-        sfxVoice(t + 0.13, 0.1, 'square', 720, 520, 0.14, 0.002, 2400, 0.2, 0.15);
+      case 'overheat': {
+        // Visceral thermal jam: heavy mechanical breech slam + scalding pressurized steam blowoff + turbine groan!
+        const src = ctx.createBufferSource();
+        src.buffer = noise;
+        src.loop = true;
+        const bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.Q.value = 1.65;
+        bp.frequency.setValueAtTime(4800, t);
+        bp.frequency.exponentialRampToValueAtTime(920, t + 0.62);
+        const env = ctx.createGain();
+        env.gain.setValueAtTime(0.0001, t);
+        env.gain.exponentialRampToValueAtTime(0.42, t + 0.014);
+        env.gain.exponentialRampToValueAtTime(0.0001, t + 0.64);
+        src.connect(bp).connect(env).connect(session.sfxBus);
+        src.start(t);
+        src.stop(t + 0.68);
+        src.onended = () => {
+          src.disconnect();
+          bp.disconnect();
+          env.disconnect();
+        };
+        // Heavy breech jam thud + metallic clunk
+        sfxVoice(t, 0.19, 'sine', 165, 42, 0.46, 0.003, 720, 0, 0.15);
+        sfxVoice(t, 0.05, 'noise', 0, 0, 0.28, 0.002, 2200, 0, 0.1);
+        // Dark power-down turbine groan (zero beepy square chirps!)
+        sfxVoice(t + 0.015, 0.46, 'sawtooth', 260, 56, 0.19, 0.008, 1100, 0, 0.2);
         break;
+      }
       case 'heatWarn':
         sfxVoice(t, 0.045, 'triangle', 920 + detail * 240, 760 + detail * 180, 0.08, 0.002, 3400, 0, 0.08);
         break;
       case 'coolReady':
-        sfxVoice(t, 0.085, 'triangle', 540, 860, 0.13, 0.003, 3800, 0, 0.15);
+        // Unmistakable "De-Heated / Weapons Online" release: cryo shutoff puff + bolt re-lock + bright crystal fifth chime!
+        sfxVoice(t, 0.08, 'noise', 0, 0, 0.22, 0.002, 4600, 0, 0.18);
+        sfxVoice(t, 0.055, 'triangle', 220, 92, 0.24, 0.002, 1400, 0, 0.1);
+        sfxVoice(t + 0.035, 0.17, 'triangle', 784, 792, 0.24, 0.003, 5200, -0.18, 0.3);
+        sfxVoice(t + 0.105, 0.26, 'triangle', 1174.66, 1182, 0.28, 0.003, 5800, 0.18, 0.38);
+        sfxVoice(t + 0.105, 0.22, 'sine', 1567.98, 1567.98, 0.14, 0.004, 6200, 0, 0.35);
+        break;
+      case 'rapidFire':
+        // Energetic turbo spin-up + bright emerald speed-boost chord!
+        sfxVoice(t, 0.24, 'noise', 0, 0, 0.2, 0.015, 3800, 0, 0.2);
+        sfxVoice(t, 0.28, 'sawtooth', 180, 520, 0.16, 0.01, 2800, 0, 0.25);
+        [76, 81, 88].forEach((n, i) =>
+          sfxVoice(t + i * 0.045, 0.22, 'triangle', hz(n), hz(n) * 1.015, 0.16, 0.004, 4800, (i - 1) * 0.22, 0.35),
+        );
         break;
       case 'perfectVent':
         // Crisp active-cooling flush: airy frost hiss + triumphant rising harmonic chime!

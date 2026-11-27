@@ -322,6 +322,7 @@ const bossArmor = document.querySelector('#boss-armor');
 const bossPartsEl = document.querySelector('#boss-parts');
 const weaponTierEl = document.querySelector('#weapon-tier');
 const fireModeEl = document.querySelector('#fire-mode');
+const rapidBadgeEl = document.querySelector('#rapid-badge');
 const heatLabelEl = document.querySelector('#heat-label');
 const heatBlockEl = document.querySelector('#heat-block');
 const heatFillEl = document.querySelector('#heat-fill');
@@ -409,6 +410,8 @@ let comboTimer = 0;
 let peakMultiplier = 1;
 let novaCharge = 0;
 let overdriveTime = 0;
+let rapidFireTime = 0;
+let weaponDropCooldown = 0;
 let overshieldTime = 0;
 let overshieldBossRammed = false;
 let railBeamTime = 0;
@@ -1500,10 +1503,21 @@ function dropTacticalCell(x, y, forcedKind = null) {
   let kind = forcedKind;
   if (!kind) {
     const roll = Math.random();
-    if (roll < 0.25) kind = 'overshield';
-    else if (weaponLevel < 7) kind = 'weapon';
-    else if (shields < maxShields) kind = 'shield';
-    else kind = roll < 0.65 ? 'overshield' : 'nova';
+    // Rarer MK weapon progression: diminishing chance per MK tier + pacing cooldown between W+ cells!
+    const canDropWeapon = weaponLevel < 7 && weaponDropCooldown <= 0;
+    const weaponChance = weaponLevel <= 2 ? 0.3 : weaponLevel <= 4 ? 0.22 : 0.16;
+    if (canDropWeapon && roll < weaponChance) {
+      kind = 'weapon';
+      weaponDropCooldown = 12 + weaponLevel * 3.5;
+    } else if (roll < 0.56) {
+      kind = 'rapid';
+    } else if (roll < 0.74) {
+      kind = 'overshield';
+    } else if (shields < maxShields && roll < 0.9) {
+      kind = 'shield';
+    } else {
+      kind = 'nova';
+    }
   }
   pickups.push({
     kind,
@@ -1654,30 +1668,49 @@ function beginBoss() {
   boss = createBoss(nextBossRank++, w, runSeed, meta.overclock);
   enemies = [boss, ...enemies.filter((e) => e.kind === 'rock')];
   for (const s of shots) if (s.hostile) s.dead = true;
-  document.querySelector('#boss-name').textContent =
-    `${boss.name} // ${String(boss.rank).padStart(2, '0')}`;
-  bossArmor.max = boss.maxHp;
+  document.querySelector('#boss-name').textContent = `${boss.name} // ${boss.designation}`;
+  // Dynamically construct 2, 3, or 4 distinct visual armor bars matching this flagship!
+  const totalBars = boss.maxPhases || 3;
+  bossArmor.innerHTML = '';
+  for (let i = 0; i < totalBars; i++) {
+    const seg = document.createElement('span');
+    seg.className = 'boss-bar-seg';
+    seg.dataset.tier = String(i);
+    seg.append(document.createElement('i'));
+    bossArmor.append(seg);
+  }
+  bossArmor.setAttribute('aria-valuemax', String(boss.maxHp));
   updateBossArmor();
   bossHud.hidden = false;
   sound.effect('warning');
   sound.setBoss(boss.rank);
-  showBanner('WARNING // FLAGSHIP DETECTED', `${boss.name} — ${boss.designation}`, 'warn', 2.8);
+  showBanner('WARNING // FLAGSHIP', `${boss.name} — ${boss.designation}`, 'warn', 2.6);
 }
 
 function updateBossArmor() {
   if (!boss) return;
-  bossArmor.value = boss.hp;
-  const totalPhases = boss.maxPhases || 3;
-  const phaseText = `PHASE ${boss.phase}/${totalPhases}${boss.isFinalPhase ? ' // FINAL' : ''}`;
-  document.querySelector('#boss-phase').textContent = phaseText;
+  const totalBars = boss.maxPhases || 3;
+  const segHp = boss.maxHp / totalBars;
+  const segs = bossArmor.querySelectorAll('.boss-bar-seg');
+  segs.forEach((seg, i) => {
+    const fill = clamp((boss.hp - i * segHp) / segHp, 0, 1);
+    const bar = seg.firstElementChild;
+    if (bar) bar.style.width = `${(fill * 100).toFixed(1)}%`;
+    seg.classList.toggle('is-empty', fill <= 0.001);
+    seg.classList.toggle('is-enraged', i === 0 && boss.isFinalPhase && fill > 0);
+  });
+  const phaseEl = document.querySelector('#boss-phase');
+  phaseEl.textContent = boss.isFinalPhase ? 'ENRAGED' : '';
+  phaseEl.classList.toggle('is-final', Boolean(boss.isFinalPhase));
   const live = aliveBossParts(boss);
   bossPartsEl.textContent =
     boss.exposedFor > 0
       ? 'CORE EXPOSED — DOUBLE DAMAGE'
       : live.length > 0
-        ? `${live.length} SUBSYSTEM${live.length > 1 ? 'S' : ''} ONLINE${boss.trait ? ' · ' + boss.trait : ''}`
-        : `SUBSYSTEMS CLEARED${boss.trait ? ' · ' + boss.trait : ''}`;
-  bossArmor.setAttribute('aria-valuetext', `${boss.hp} armor remaining. ${phaseText}`);
+        ? `${live.length} SUBSYSTEM${live.length > 1 ? 'S' : ''} ONLINE`
+        : 'SUBSYSTEMS CLEARED';
+  bossArmor.setAttribute('aria-valuenow', String(Math.ceil(boss.hp)));
+  bossArmor.setAttribute('aria-valuetext', `${Math.ceil(boss.hp)} armor remaining across ${totalBars} bars`);
 }
 
 function damageBossPart(b, part, dmg) {
@@ -1758,7 +1791,7 @@ function damageBossCore(b, dmg) {
       popups.push({
         x: b.x,
         y: b.y - b.r - 12,
-        text: b.maxPhases === 2 ? 'FINAL PHASE — BERSERK!' : 'ARMOR SHED — FINAL PHASE',
+        text: 'FINAL BAR — ENRAGED!',
         color: '#ff9668',
         life: 1.35,
         maxLife: 1.35,
@@ -1768,7 +1801,7 @@ function damageBossCore(b, dmg) {
       popups.push({
         x: b.x,
         y: b.y - b.r - 12,
-        text: `PHASE ${b.phase}/${b.maxPhases || 3}`,
+        text: 'ARMOR BAR BROKEN',
         color: '#ffe099',
         life: 1.05,
         maxLife: 1.05,
@@ -1949,10 +1982,10 @@ function killEnemy(e) {
     p.linkPartner = null;
   }
 
-  // Supply courier always drops a tactical upgrade cell (including Overshield!)
+  // Supply courier always drops a tactical cell; heavy craft drop at measured 12% so MK progression stays rewarding!
   if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
-  } else if (heavy && Math.random() < 0.28) {
+  } else if (heavy && Math.random() < 0.12) {
     dropTacticalCell(e.x, e.y);
   }
 
@@ -2028,6 +2061,8 @@ function updateHud() {
   fireModeEl.textContent = weaponOverheated ? 'LOCKED' : overdriveTime > 0 ? 'OVERDRIVE' : focused ? 'LANCE' : 'WIDE';
   fireModeEl.classList.toggle('focus-on', focused && overdriveTime <= 0 && !weaponOverheated);
   fireModeEl.classList.toggle('overdrive-on', overdriveTime > 0 && !weaponOverheated);
+  rapidBadgeEl.hidden = rapidFireTime <= 0;
+  if (rapidFireTime > 0) rapidBadgeEl.textContent = `RAPID ${rapidFireTime.toFixed(1)}s`;
   focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
 
@@ -2099,6 +2134,8 @@ function setMode(next) {
     sectorIndex = 0;
     hitFlash = 0;
     overshieldTime = 0;
+    rapidFireTime = 0;
+    weaponDropCooldown = 0;
     railBeamTime = 0;
     reflectShieldTime = 0;
     bulletTime = 0;
@@ -2157,6 +2194,8 @@ function launch() {
   peakMultiplier = 1;
   novaCharge = rig.startNova;
   overdriveTime = 0;
+  rapidFireTime = 0;
+  weaponDropCooldown = 0;
   overshieldTime = 0;
   overshieldBossRammed = false;
   railBeamTime = 0;
@@ -2430,14 +2469,16 @@ function firePlayerWeapons(focused) {
   player.muzzle = 0.08;
   player.recoil = 2.4;
   sound.effect(focused ? 'focusFire' : 'fire');
-  nextShot = rig.fireRate * (od ? 0.74 : vb ? 0.8 : 1);
+  const rf = rapidFireTime > 0;
+  nextShot = rig.fireRate * (od ? 0.74 : vb ? 0.8 : 1) * (rf ? 0.67 : 1);
 
   // Chicken Invaders Weapon Heat accumulation (exponential with weapon MK tier; Overdrive, Vent Boost & Maxed Cryo Core fire heat-free!)
   if (!od && !vb && !rig.noOverheat) {
     const baseHeat = selectedRig === 'aegis' ? 3.5 : selectedRig === 'falcon' ? 2.45 : 2.85;
     const expMult = Math.pow(1.135, weaponLevel - 1);
     const touchEase = pointer?.isTouch ? 0.88 : 1;
-    weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * touchEase);
+    const rfEase = rf ? 0.78 : 1;
+    weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * touchEase * rfEase);
     heatCoolDelay = 0.15;
 
     if (weaponHeat >= 100) {
@@ -2574,6 +2615,12 @@ function update(dt) {
 
   if (overdriveTime > 0) {
     overdriveTime = Math.max(0, overdriveTime - dt);
+  }
+  if (rapidFireTime > 0) {
+    rapidFireTime = Math.max(0, rapidFireTime - dt);
+  }
+  if (weaponDropCooldown > 0) {
+    weaponDropCooldown = Math.max(0, weaponDropCooldown - dt);
   }
   if (overshieldTime > 0) {
     overshieldTime = Math.max(0, overshieldTime - dt);
@@ -3485,6 +3532,19 @@ function update(dt) {
         meta.coins += value;
         saveMeta();
         sound.effect('coin');
+      } else if (p.kind === 'rapid') {
+        rapidFireTime = Math.min(11, rapidFireTime + 7.5);
+        shockwaves.push({ x: player.x, y: player.y, radius: 105, color: '#8eff85', life: 0.32, maxLife: 0.32 });
+        popups.push({
+          x: player.x,
+          y: player.y - 26,
+          text: 'RAPID FIRE!',
+          color: '#8eff85',
+          life: 1.0,
+          maxLife: 1.0,
+          size: 14,
+        });
+        sound.effect('rapidFire');
       } else if (p.kind === 'overshield') {
         overshieldTime = 6.5;
         overshieldBossRammed = false;

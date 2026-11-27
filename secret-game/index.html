@@ -38,11 +38,11 @@
           </span>
           <span id="overclock-hud-badge" class="overclock-hud-badge" hidden>OVERCLOCK</span>
           <div id="boss-hud" hidden>
-            <label for="boss-armor">
+            <div class="boss-head">
               <b id="boss-name"></b>
               <span id="boss-phase"></span>
-            </label>
-            <progress id="boss-armor" value="1" max="1"></progress>
+            </div>
+            <div id="boss-armor" class="boss-bars" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1"></div>
             <div id="boss-parts" class="boss-parts"></div>
           </div>
 
@@ -50,6 +50,7 @@
             <div class="weapon-head">
               <b id="weapon-tier" class="tier-tag">MK I</b>
               <span id="fire-mode" class="mode-tag">WIDE</span>
+              <span id="rapid-badge" class="rapid-badge" hidden>RAPID 7.5s</span>
               <span id="heat-label" class="heat-label">HEAT</span>
             </div>
             <div id="heat-block" class="heat-block" data-state="cool" data-vent="false">
@@ -428,7 +429,7 @@
           <div>
             <canvas data-craft="courier" aria-hidden="true" width="88" height="88"></canvas>
             <dt>Supply Courier</dt>
-            <dd>Drops Weapon, Shield, Overshield, or Nova cells plus bonus coins.</dd>
+            <dd>Drops Rapid Fire (RF), Shield, Overshield, Nova, or rare Weapon (W+) cells.</dd>
           </div>
         </dl>
       </dialog>
