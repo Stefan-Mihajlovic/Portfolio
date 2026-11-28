@@ -2606,6 +2606,9 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
     padding: 4px 6px;
     font-size: 9.5px;
   }
+  .hud-bottom-right .gauge-block {
+    display: none;
+  }
   .touch-pad {
     display: flex;
   }
@@ -2662,11 +2665,17 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
     width: min(260px, 84vw);
   }
 
-  /* Clean 2-tier mobile bottom HUD — ZERO overlap! */
+  /* Clean unified mobile bottom cockpit: Weapon/Heat strip directly above HULL/SHIELD! */
   .hud-bottom-center {
     bottom: max(10px, env(safe-area-inset-bottom));
-    padding: 7px 14px 9px;
+    padding: 6px 14px 8px;
     max-width: calc(100vw - 24px);
+  }
+  .overshield-badge {
+    bottom: calc(100% + 46px);
+  }
+  #hud:has(#rapid-badge:not([hidden])) .overshield-badge {
+    bottom: calc(100% + 72px);
   }
   .vitals {
     gap: 3.5px;
@@ -2676,13 +2685,55 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
     height: 11px;
   }
   .hud-bottom-left {
-    left: max(12px, env(safe-area-inset-left));
-    bottom: max(74px, calc(env(safe-area-inset-bottom) + 66px));
+    left: 50%;
+    right: auto;
+    bottom: max(68px, calc(env(safe-area-inset-bottom) + 60px));
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: calc(100vw - 24px);
+    padding: 4px 10px;
+    background: none;
+    border: 0;
+  }
+  .hud-bottom-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgb(8 14 24 / 0.58);
+    box-shadow: inset 0 0 0 1px rgb(146 188 202 / 0.22);
+    clip-path: var(--chamfer-sm);
+    pointer-events: none;
+  }
+  .hud-bottom-left #rapid-badge {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 4px 10px;
+    clip-path: var(--chamfer-sm);
+  }
+  .hud-bottom-left .weapon-head {
+    flex: none;
     gap: 5px;
   }
+  .hud-bottom-left .tier-tag {
+    font-size: 13px;
+    white-space: nowrap;
+  }
   .hud-bottom-left .heat-block {
-    min-width: 96px;
+    min-width: 92px;
+    width: 108px;
     gap: 5px;
+  }
+  .hud-bottom-left #heat-pct {
+    min-width: 28px;
+    font-size: 10px;
   }
   .hud-bottom-left .heat-label {
     display: none;
@@ -2696,9 +2747,14 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
   .hud-bottom-left .mode-tag.overdrive-on {
     display: inline-flex;
   }
+  .hud-bottom-left .dock-keys {
+    flex: none;
+  }
   .hud-bottom-left #autofire {
-    padding: 6px 12px;
-    background: rgb(11 19 32 / 0.72);
+    min-height: 24px;
+    padding: 4px 9px;
+    font-size: 10px;
+    background: rgb(11 19 32 / 0.78);
     box-shadow: inset 0 0 0 1px rgb(146 188 202 / 0.34);
     clip-path: var(--chamfer-sm);
   }
