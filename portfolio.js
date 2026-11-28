@@ -1,4 +1,4 @@
-import { createScrollStars, flightDistance, homeFlightFocusY } from "/assets/sky/scroll-stars.js?v=20261023-1";
+import { createScrollStars } from "/assets/sky/scroll-stars.js?v=20261023-1";
 
 import { scheduleShipVisit } from './assets/sky/visitor.js';
 
@@ -73,7 +73,7 @@ const motionEnabled = () => !reduced.matches;
 
 const identity = header.querySelector('.identity');
 const monogram = identity.querySelector('.monogram');
-let logoTimer;
+let logoTimer, skipInitialLogo = false;
 function playLogo() {
   clearTimeout(logoTimer);
   monogram.classList.remove('logo-playing');
@@ -84,7 +84,7 @@ function playLogo() {
   logoTimer = setTimeout(() => monogram.classList.remove('logo-playing'), 2100);
 }
 identity.addEventListener('click', playLogo);
-document.fonts.ready.then(playLogo);
+document.fonts.ready.then(() => { if (!skipInitialLogo) playLogo(); });
 
 function updateBackToTop() {
   const visible = scrollY > 180;
@@ -293,13 +293,15 @@ function initName() {
   });
   // Start only after the pre-split home letters have their final DOM structure.
   const main = title.closest('main');
-  const arrival = shouldFlyHome(main, scrollY, location.hash) ? flyHomeLetters(main) : [];
+  const arrivalSession = shouldFlyHome(main, scrollY, location.hash) ? flyHomeLetters(main) : null;
+  const arrival = arrivalSession ? arrivalSession.animations : [];
   title.classList.add('animated-title');
   const values = letters.map(() => ({ y: 0, target: 0 }));
   let frame = 0, previous = 0, active = false;
   let centers = [], bounds;
   let visible = false, ambientTimer = 0, ambientStarted = 0;
   const finishEntrance = () => {
+    arrivalSession?.cleanup();
     if (title.classList.contains('name-ready')) return;
     title.classList.add('name-ready');
     title.dispatchEvent(new Event('title-ready'));
@@ -350,6 +352,7 @@ function initName() {
   function syncAmbient() {
     if (arrival.length && !motionEnabled()) {
       arrival.splice(0).forEach(animation => animation.cancel());
+      arrivalSession?.cancel();
       finishEntrance();
     }
     ambientStarted = 0;
@@ -401,6 +404,7 @@ function initName() {
   return () => {
     disposed = true;
     arrival.forEach(animation => animation.cancel());
+    arrivalSession?.cancel();
     clearTimeout(ambientTimer);
     visibilityObserver.disconnect();
     document.removeEventListener('visibilitychange', syncAmbient);
@@ -711,10 +715,13 @@ function initSkills() {
   return () => { hide(); events.abort(); card.remove(); };
 }
 
-const HOME_FLIGHT_MS = 2100;
+const HOME_FLIGHT_MS = 2650;
 const homeFlightKey = 'portfolio-home-flight';
 let homeFlightSeen = false;
-try { homeFlightSeen = sessionStorage.getItem(homeFlightKey) === '1'; } catch { /* Storage is optional. */ }
+try {
+  const navEntry = performance.getEntriesByType?.('navigation')?.[0];
+  homeFlightSeen = navEntry?.type === 'reload' ? false : sessionStorage.getItem(homeFlightKey) === '1';
+} catch { /* Storage is optional. */ }
 
 function shouldFlyHome(main, top, hash) {
   return !homeFlightSeen && main.dataset.page === 'home' && motionEnabled() && top < 120 && !hash;
@@ -722,42 +729,216 @@ function shouldFlyHome(main, top, hash) {
 
 function flyHomeLetters(main) {
   homeFlightSeen = true;
+  skipInitialLogo = true;
   try { sessionStorage.setItem(homeFlightKey, '1'); } catch { /* Use the in-memory flag. */ }
-  main.classList.add('home-arrival');
+  main.classList.add('home-arrival', 'home-arriving');
+
   const width = innerWidth, height = innerHeight;
   const eyeX = width / 2;
-  const glyphs = [...main.querySelectorAll('h1 .name-char, .hero-role .type-char')];
-  const boxes = glyphs.map(el => el.getBoundingClientRect());
-  // Sample the sky camera once. The compositor interpolates each letter's
-  // perspective projection without measuring or moving DOM nodes per frame.
-  const frames = Array.from({ length: 33 }, (_, i) => {
-    const distance = flightDistance(i / 32);
-    const remaining = 1 - distance;
-    return {
-      distance, remaining,
-      eyeY: height * homeFlightFocusY(remaining),
-    };
-  });
-  sky.travel(location.pathname, scrollY, HOME_FLIGHT_MS, { centered: true });
-  return glyphs.map((el, i) => {
-    const box = boxes[i];
-    const centerX = box.left + box.width / 2, centerY = box.top + box.height / 2;
-    const isSubtitle = el.classList.contains('type-char');
-    const lineDepth = isSubtitle ? 2.15 : 1.65;
-    const phase = Math.sin(i * 1.7);
-    const keys = frames.map(({ distance, remaining, eyeY }, frame) => {
-      // Shared scale and vertical travel keep the baseline level throughout the flight.
-      const lineScale = 1 / (1 + lineDepth * remaining);
-      const scale = 1 / (1 + (lineDepth + 1.15) * remaining);
-      const x = (eyeX - centerX) * (1 - lineScale);
-      const y = (eyeY - centerY) * (1 - lineScale);
+  const h1 = main.querySelector('h1');
+  const role = main.querySelector('.hero-role');
+  const h1Rect = h1.getBoundingClientRect();
+  const roleRect = role ? role.getBoundingClientRect() : null;
+  const focusY = Math.max(height * 0.28, Math.min(height * 0.56, h1Rect.top + h1Rect.height * 0.48));
+  const ruleTop = roleRect ? (h1Rect.bottom + roleRect.top) / 2 : h1Rect.bottom + 18;
+
+  // Build the lightweight cosmic ignition backdrop behind the typography.
+  const stage = document.createElement('div');
+  stage.className = 'home-arrival-stage';
+  stage.setAttribute('aria-hidden', 'true');
+  stage.innerHTML =
+    '<div class="arrival-vignette"></div>' +
+    '<div class="arrival-bloom"></div>' +
+    '<div class="arrival-ring arrival-ring--outer"></div>' +
+    '<div class="arrival-ring"></div>' +
+    '<div class="arrival-flare"></div>' +
+    '<div class="arrival-star"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 0C18 11 21 14 32 16C21 18 18 21 16 32C14 21 11 18 0 16C11 14 14 11 16 0Z" fill="currentColor"/></svg></div>' +
+    '<div class="arrival-rule"></div>';
+
+  const focusPct = `${(focusY / Math.max(1, height)) * 100}%`;
+  for (const selector of ['.arrival-bloom', '.arrival-flare', '.arrival-ring', '.arrival-star']) {
+    stage.querySelectorAll(selector).forEach(node => { node.style.top = focusPct; });
+  }
+  const rule = stage.querySelector('.arrival-rule');
+  rule.style.top = `${ruleTop}px`;
+  document.body.append(stage);
+
+  // Beat 1 (0..780ms): Solo central star spins smoothly, then collapses into light.
+  // Beat 2 (~520ms+): Warp jump, flare, rings, wordmark, subtitle, and nav all arrive out of that release.
+  // Register sky travel at t=0 with a built-in delay so the camera focus & nebula start aligned (zero jump at 420ms).
+  const LEAD = 520;
+  sky.travel(location.pathname, scrollY, HOME_FLIGHT_MS - 420, { centered: true, boost: 1.7, delay: 420 });
+
+  const animations = [];
+  const easeOut = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const easeExpo = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const arrivalStar = stage.querySelector('.arrival-star');
+
+  // 1. Solo central star (independent continuous spin + smooth bloom/hold/collapse) + ignition backdrop.
+  animations.push(
+    arrivalStar.animate([
+      { rotate: '0deg' },
+      { rotate: '270deg' },
+    ], { duration: 820, easing: 'cubic-bezier(0.28, 0.08, 0.28, 1)', fill: 'both' }),
+    arrivalStar.animate([
+      { scale: 0.12, opacity: 0, offset: 0, easing: easeOut },
+      { scale: 1.08, opacity: 1, offset: 0.24, easing: 'ease-in-out' },
+      { scale: 1, opacity: 1, offset: 0.68, easing: 'cubic-bezier(0.55, 0, 0.85, 1)' },
+      { scale: 0, opacity: 0, offset: 1 },
+    ], { duration: 780, fill: 'both' }),
+    stage.querySelector('.arrival-vignette').animate([
+      { opacity: 0.94, offset: 0 },
+      { opacity: 0.92, offset: 0.25 },
+      { opacity: 0.58, offset: 0.52 },
+      { opacity: 0, offset: 1 },
+    ], { duration: 2350, easing: easeOut, fill: 'both' }),
+    stage.querySelector('.arrival-bloom').animate([
+      { transform: 'scale(0.24)', opacity: 0, offset: 0 },
+      { transform: 'scale(0.46)', opacity: 0.45, offset: 0.2 },
+      { transform: 'scale(1.02)', opacity: 0.95, offset: 0.42 },
+      { transform: 'scale(1.22)', opacity: 0.4, offset: 0.72 },
+      { transform: 'scale(1.34)', opacity: 0, offset: 1 },
+    ], { duration: 2450, easing: easeOut, fill: 'both' }),
+    stage.querySelector('.arrival-flare').animate([
+      { transform: 'scaleX(0.02) scaleY(2.2)', opacity: 0, offset: 0 },
+      { transform: 'scaleX(1.04) scaleY(1)', opacity: 0.96, offset: 0.18 },
+      { transform: 'scaleX(1.18) scaleY(0.65)', opacity: 0.48, offset: 0.46 },
+      { transform: 'scaleX(1.34) scaleY(0.25)', opacity: 0, offset: 1 },
+    ], { duration: 1400, delay: LEAD + 40, easing: easeExpo, fill: 'both' }),
+    stage.querySelector('.arrival-ring:not(.arrival-ring--outer)').animate([
+      { transform: 'scale(0.14)', opacity: 0, offset: 0 },
+      { transform: 'scale(0.66)', opacity: 0.62, offset: 0.22 },
+      { transform: 'scale(1.24)', opacity: 0, offset: 1 },
+    ], { duration: 1620, delay: LEAD + 20, easing: easeExpo, fill: 'both' }),
+    stage.querySelector('.arrival-ring--outer').animate([
+      { transform: 'scale(0.2) rotate(-14deg)', opacity: 0, offset: 0 },
+      { transform: 'scale(0.76) rotate(-2deg)', opacity: 0.4, offset: 0.28 },
+      { transform: 'scale(1.18) rotate(12deg)', opacity: 0, offset: 1 },
+    ], { duration: 1900, delay: LEAD + 110, easing: easeExpo, fill: 'both' }),
+    rule.animate([
+      { transform: 'scaleX(0)', opacity: 0, offset: 0 },
+      { transform: 'scaleX(1)', opacity: 0.78, offset: 0.34 },
+      { transform: 'scaleX(1.14)', opacity: 0, offset: 1 },
+    ], { duration: 1240, delay: LEAD + 600, easing: easeExpo, fill: 'both' }),
+  );
+
+  // 2. Balanced center-out radial perspective emergence across the whole wordmark
+  // (or graceful two-tier cascade when wrapped onto two lines on mobile).
+  const lines = [...main.querySelectorAll('h1 .name-line')];
+  const lineRects = lines.map(line => line.getBoundingClientRect());
+  const stacked = lineRects.length > 1 && lineRects[1].top > lineRects[0].bottom - 10;
+  const allChars = [...main.querySelectorAll('h1 .name-char')];
+  const allBoxes = allChars.map(el => el.getBoundingClientRect());
+  const steps = 24;
+  const maxRadial = Math.max(1, ...allBoxes.map(b => Math.abs((b.left + b.width / 2) - eyeX)));
+
+  allChars.forEach((el, idx) => {
+    const box = allBoxes[idx];
+    const cx = box.left + box.width / 2;
+    const cy = box.top + box.height / 2;
+    const normX = (cx - eyeX) / maxRadial; // -1 (far left) .. 0 (center) .. +1 (far right)
+    const distNorm = Math.abs(normX);
+    const lineIndex = lines.indexOf(el.closest('.name-line'));
+    // Center letters ignite first right as the central star dissolves; outer wings unfurl symmetrically.
+    const delay = Math.round(LEAD + 120 + distNorm * 240 + (stacked && lineIndex > 0 ? 115 : 0));
+    const duration = 1400;
+
+    // Pure 2D radial perspective + smooth unified baseline glide & gentle kerning tighten (zero 3D/filter).
+    const keys = Array.from({ length: steps + 1 }, (_, step) => {
+      const t = step / steps;
+      const settled = 1 - (1 - t) ** 3.6;
+      const remaining = 1 - settled;
+      const scale = 0.64 + 0.36 * settled;
+      const pullX = (eyeX - cx) * 0.28 * remaining;
+      const kerningX = normX * 26 * (remaining ** 1.45);
+      const pullY = (focusY - cy) * 0.22 * remaining;
+      const liftY = 24 * (remaining ** 1.3);
+      const alpha = Math.min(1, t < 0.08 ? (t / 0.08) * 0.3 : 0.3 + ((t - 0.08) / 0.34) * 0.7);
       return {
-        transform: `translate(${x}px, ${y}px) scale(${scale})`,
-        opacity: Math.min(1, frame / 3) * Math.min(1, .36 + distance * (1.1 + .24 * phase)),
+        transform: `translate(${(pullX + kerningX).toFixed(2)}px, ${(pullY + liftY).toFixed(2)}px) scale(${scale.toFixed(4)})`,
+        opacity: Number(Math.min(1, alpha).toFixed(3)),
       };
     });
-    return el.animate(keys, { duration: HOME_FLIGHT_MS, fill: 'backwards' });
+    animations.push(el.animate(keys, { duration, delay, fill: 'backwards' }));
   });
+
+  // 3. Dedicated starlight ignition on the signature 4-point sparkle over "ı".
+  // Animate individual `scale`/`opacity` and monotonic `rotate` separately from CSS `transform`
+  // so the spin-in decelerates smoothly into the running 90deg/s `name-spark-turn` orbit with zero snap.
+  const nameSpark = main.querySelector('.name-spark');
+  if (nameSpark) {
+    const sparkEasing = CSS.supports?.('animation-timing-function', 'linear(0, 1)')
+      ? 'linear(0, 0.08 4%, 0.31 11%, 0.64 21%, 0.89 33%, 1.03 48%, 1.04 58%, 1.01 73%, 1 100%)'
+      : easeOut;
+    animations.push(
+      nameSpark.animate([
+        { scale: 0, opacity: 0, offset: 0 },
+        { scale: 1.75, opacity: 1, offset: 0.38 },
+        { scale: 0.96, opacity: 1, offset: 0.76 },
+        { scale: 1, opacity: 1, offset: 1 },
+      ], { duration: 760, delay: LEAD + 800, easing: sparkEasing, fill: 'backwards' }),
+      nameSpark.animate([
+        { rotate: '-160deg' },
+        { rotate: '0deg' },
+      ], { duration: 960, delay: LEAD + 800, easing: easeExpo, fill: 'backwards' }),
+    );
+  }
+
+  // 4. Editorial character wave for "Designer & developer" with subtle tracking tighten.
+  const roleChars = [...main.querySelectorAll('.hero-role .type-char')];
+  const roleMid = (roleChars.length - 1) / 2;
+  roleChars.forEach((el, i) => {
+    const spreadX = (i - roleMid) * 1.45;
+    animations.push(el.animate([
+      { transform: `translate(${spreadX.toFixed(2)}px, 16px) scale(0.92)`, opacity: 0 },
+      { transform: 'translate(0px, 0px) scale(1)', opacity: 1 },
+    ], { duration: 720, delay: LEAD + 640 + i * 22, easing: easeExpo, fill: 'backwards' }));
+  });
+
+  // 5. Choreographed header entrance & closing SM monogram flourish.
+  const navLinks = [...header.querySelectorAll('nav > a')].filter(
+    el => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden',
+  );
+  animations.push(identity.animate([
+    { transform: 'translateY(-10px)', opacity: 0 },
+    { transform: 'translateY(0px)', opacity: 1 },
+  ], { duration: 700, delay: LEAD + 400, easing: easeOut, fill: 'backwards' }));
+  navLinks.forEach((link, i) => {
+    animations.push(link.animate([
+      { transform: 'translateY(-10px)', opacity: 0 },
+      { transform: 'translateY(0px)', opacity: 1 },
+    ], { duration: 740, delay: LEAD + 480 + i * 52, easing: easeOut, fill: 'backwards' }));
+  });
+  if (menu && getComputedStyle(menu).display !== 'none') {
+    animations.push(menu.animate([
+      { transform: 'translateY(-10px)', opacity: 0 },
+      { transform: 'translateY(0px)', opacity: 1 },
+    ], { duration: 700, delay: LEAD + 500, easing: easeOut, fill: 'backwards' }));
+  }
+
+  const arrivalLogoTimer = setTimeout(() => {
+    skipInitialLogo = false;
+    document.fonts.ready.then(playLogo);
+  }, LEAD + 1300);
+
+  // Ensure the final entry in `animations` finishes at the end of the entire sequence.
+  const sentinel = stage.animate([{ opacity: 1 }, { opacity: 1 }], { duration: HOME_FLIGHT_MS });
+  animations.push(sentinel);
+
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    main.classList.remove('home-arriving');
+    stage.remove();
+  };
+  const cancel = () => {
+    clearTimeout(arrivalLogoTimer);
+    skipInitialLogo = false;
+    cleanup();
+  };
+
+  return { animations, cleanup, cancel };
 }
 
 function initPage() {

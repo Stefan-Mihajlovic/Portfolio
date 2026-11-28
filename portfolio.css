@@ -1555,6 +1555,139 @@ body:has(main[data-page="home"]) .nebula-canvas { opacity: .79; }
 .js-motion .home-arrival .hero-role .type-char { animation: none; }
 .home-arrival .hero-role .type-char { display: inline-block; }
 
+/* First-visit cosmic arrival stage: pure compositor layers, opt-in to motion only. */
+.home-arrival-stage {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .home-arrival-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    pointer-events: none;
+    overflow: hidden;
+    contain: layout paint style;
+  }
+  .arrival-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 72% 62% at 50% 45%,
+      rgb(10 13 24 / 0%) 0%,
+      rgb(8 9 13 / 52%) 58%,
+      rgb(5 6 10 / 88%) 100%
+    );
+    opacity: 0;
+  }
+  .arrival-bloom {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: min(760px, 110vmax);
+    height: min(760px, 110vmax);
+    margin-left: calc(min(760px, 110vmax) / -2);
+    margin-top: calc(min(760px, 110vmax) / -2);
+    background: radial-gradient(
+      circle closest-side at 50% 50%,
+      rgb(242 247 255 / 36%) 0%,
+      rgb(198 220 255 / 20%) 14%,
+      rgb(122 168 240 / 10%) 32%,
+      rgb(88 104 196 / 4%) 54%,
+      rgb(72 86 172 / 1%) 74%,
+      transparent 96%
+    );
+    mix-blend-mode: screen;
+    opacity: 0;
+  }
+  .arrival-flare {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: min(1240px, 94vw);
+    height: 2px;
+    margin-left: calc(min(1240px, 94vw) / -2);
+    margin-top: -1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(142 184 255 / 18%) 16%,
+      rgb(222 234 255 / 72%) 42%,
+      rgb(255 253 248 / 100%) 50%,
+      rgb(222 234 255 / 72%) 58%,
+      rgb(142 184 255 / 18%) 84%,
+      transparent 100%
+    );
+    box-shadow: 0 0 32px 3px rgb(186 214 255 / 50%);
+    opacity: 0;
+  }
+  .arrival-ring {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: min(480px, 76vw);
+    height: min(480px, 76vw);
+    margin-left: calc(min(480px, 76vw) / -2);
+    margin-top: calc(min(480px, 76vw) / -2);
+    border-radius: 50%;
+    border: 1px solid rgb(224 234 255 / 42%);
+    box-shadow: inset 0 0 46px rgb(164 196 255 / 11%);
+    opacity: 0;
+  }
+  .arrival-ring--outer {
+    width: min(740px, 114vw);
+    height: min(740px, 114vw);
+    margin-left: calc(min(740px, 114vw) / -2);
+    margin-top: calc(min(740px, 114vw) / -2);
+    border-style: dashed;
+    border-color: rgb(206 218 255 / 24%);
+    box-shadow: none;
+  }
+  .arrival-star {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: 54px;
+    height: 54px;
+    margin-left: -27px;
+    margin-top: -27px;
+    color: #fffdf8;
+    filter:
+      drop-shadow(0 0 8px rgb(255 253 248 / 85%))
+      drop-shadow(0 0 26px rgb(164 202 255 / 55%));
+    opacity: 0;
+  }
+  .arrival-star svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .arrival-rule {
+    position: absolute;
+    left: 50%;
+    width: min(260px, 52vw);
+    height: 1px;
+    margin-left: calc(min(260px, 52vw) / -2);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(240 239 237 / 55%) 50%,
+      transparent 100%
+    );
+    opacity: 0;
+  }
+  .home-arriving .work-section > .work-card.reveal {
+    transition:
+      opacity 1.15s cubic-bezier(0.22, 1, 0.36, 1) 1.05s,
+      transform 1.25s cubic-bezier(0.16, 1, 0.3, 1) 1.05s;
+  }
+  /* Physics-inspired smooth settle for the hero signature star with standard fallback */
+  .home-intro .name-spark {
+    --spark-settle: cubic-bezier(0.22, 1, 0.36, 1);
+    --spark-settle: linear(0, 0.08 4%, 0.31 11%, 0.64 21%, 0.89 33%, 1.03 48%, 1.04 58%, 1.01 73%, 1 100%);
+  }
+}
+
 .home-intro .hero-details { justify-content: center; align-items: center; }
 @media (max-width: 600px) {
   .home-intro .name-line { margin-inline: auto; }

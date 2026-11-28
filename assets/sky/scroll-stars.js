@@ -33,6 +33,7 @@ export function createScrollStars(host) {
   let distantTravel = 0;
   let travelDuration = 1350;
   let centeredFlight = false;
+  let travelBoost = 1;
   let destination = nebulaRegion(location.pathname, scroll), flightId = 0;
   const wrap = (n, max) => ((n % max) + max) % max;
   const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -78,7 +79,7 @@ export function createScrollStars(host) {
     ctx.clearRect(0, 0, width, height);
     const moving = enabled();
     const warp = moving ? envelope(time) : 0;
-    const speed = moving ? .014 + warp * 3.8 : 0;
+    const speed = moving ? .014 + warp * 3.8 * travelBoost : 0;
     const focal = Math.max(width, height) * .72;
     const distance = flightDistance((time - travelStart) / travelDuration);
     const cx = width * .5 + panX;
@@ -87,11 +88,11 @@ export function createScrollStars(host) {
       drawNebula(width, height, dt, scrollOffset, destination, flightId, distance, cx / width, cy / height);
     }
     if (distantStars) {
-      distantTravel += dt * (.14 + warp * 4);
+      distantTravel += dt * (.14 + warp * 4 * travelBoost);
       const parallax = Math.max(width, height) * .000013;
       ctx.save();
       ctx.translate(cx, cy);
-      ctx.scale(1 + warp * .045, 1 + warp * .045);
+      ctx.scale(1 + warp * .045 * travelBoost, 1 + warp * .045 * travelBoost);
       ctx.translate(-width * .5 + distantTravel, -height * .46 + scrollOffset * parallax);
       ctx.fillStyle = distantStars;
       // Paint the visible viewport in pattern coordinates, even after long scrolls.
@@ -112,9 +113,9 @@ export function createScrollStars(host) {
       const y = cy + sy / star.z * focal;
       if (x < -100 || x > width + 100 || y < -100 || y > height + 100) continue;
       const fade = Math.min(1, (star.z - .14) * 3, (3.94 - star.z) * 3);
-      const alpha = Math.min(.95, star.alpha * (.8 + 1.6 / star.z) * fade * (1 + warp * .65));
+      const alpha = Math.min(.95, star.alpha * (.8 + 1.6 / star.z) * fade * (1 + warp * .65 * travelBoost));
       const radius = Math.min(2.1, Math.max(.35, star.radius * .9 / star.z));
-      const trailZ = star.z + warp * (.09 + .12 / star.z);
+      const trailZ = star.z + warp * (.09 + .12 / star.z) * travelBoost;
       const tx = cx + star.x / trailZ * focal;
       const ty = cy + sy / trailZ * focal + Math.max(-32, Math.min(32, velocity * .009 / star.z));
       const dx = x - tx, dy = y - ty;
@@ -253,14 +254,15 @@ export function createScrollStars(host) {
   document.addEventListener('visibilitychange', () => { travelStart = -10000; meteor = null; resume(); });
   initialize();
   return {
-    travel(pathname = location.pathname, arrivalScroll = 0, duration = 1350, { centered = false } = {}) {
+    travel(pathname = location.pathname, arrivalScroll = 0, duration = 1350, { centered = false, boost = 1, delay = 0 } = {}) {
       const now = performance.now();
       travelDuration = duration;
       centeredFlight = centered;
+      travelBoost = boost;
       if (centered) panX = panY = 0;
       flightId++;
       destination = nebulaRegion(pathname, scrollOffset + arrivalScroll);
-      travelStart = enabled() ? now : -10000;
+      travelStart = enabled() ? now + delay : -10000;
       meteor = null;
       nextMeteor = elapsed + 3 + Math.random() * 3;
       if (!frame) resume();
