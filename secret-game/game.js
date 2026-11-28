@@ -1406,16 +1406,37 @@ function draw() {
   }
   ctx.globalAlpha = 1;
 
-  // Impact rings
+  // Impact rings + crisp 4-point star contact glints
   for (const ring of impacts) {
     const progress = 1 - ring.life / ring.maxLife;
     ctx.save();
-    ctx.globalAlpha = (1 - progress) * 0.78;
-    ctx.strokeStyle = ring.color;
-    ctx.beginPath();
-    ctx.arc(ring.x, ring.y, ring.radius * (0.35 + progress * 1.75), 0, TAU);
-    ctx.lineWidth = Math.max(0.6, 2.2 - progress * 1.6);
-    ctx.stroke();
+    if (ring.star) {
+      const s = ring.radius * (0.55 + progress * 0.95);
+      const a = 1 - progress;
+      ctx.translate(ring.x, ring.y);
+      ctx.rotate(ring.angle || 0);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = a * 0.95;
+      ctx.strokeStyle = ring.color || '#fff6dc';
+      ctx.lineWidth = Math.max(0.8, (1 - progress) * 2.4);
+      ctx.beginPath();
+      ctx.moveTo(-s, 0);
+      ctx.lineTo(s, 0);
+      ctx.moveTo(0, -s);
+      ctx.lineTo(0, s);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(1.2, (1 - progress) * 4.2), 0, TAU);
+      ctx.fill();
+    } else {
+      ctx.globalAlpha = (1 - progress) * 0.78;
+      ctx.strokeStyle = ring.color;
+      ctx.beginPath();
+      ctx.arc(ring.x, ring.y, ring.radius * (0.35 + progress * 1.75), 0, TAU);
+      ctx.lineWidth = Math.max(0.6, 2.2 - progress * 1.6);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -1760,6 +1781,46 @@ function draw() {
   ctx.restore();
 }
 
+function spawnHitFeedback(x, y, target, shot) {
+  const heavyHit = Boolean(shot?.heavy || shot?.pierce > 0 || shot?.reflected || shot?.homing);
+  const dmgProg = target?.maxHp ? clamp(1 - target.hp / target.maxHp, 0, 1) : 0.35;
+  if (target) {
+    const kMag = heavyHit ? 5.6 : 3.6;
+    const sv = Math.hypot(shot?.vx || 0, shot?.vy || -1) || 1;
+    target.hitPunch = 1;
+    target.hitKickX = ((shot?.vx || 0) / sv) * kMag;
+    target.hitKickY = ((shot?.vy || -1) / sv) * kMag;
+    if (target.hpTrail === undefined) target.hpTrail = target.maxHp || target.hp;
+  }
+  const glintColor = shot?.pierce > 0 || shot?.overdrive ? '#ffdf8c' : shot?.heavy ? '#a8f0ff' : '#fff5d8';
+  impacts.push({
+    x,
+    y,
+    radius: heavyHit ? 12.5 : 8.5,
+    color: glintColor,
+    star: true,
+    angle: between(-0.45, 0.45),
+    life: 0.11,
+    maxLife: 0.11,
+  });
+  const count = heavyHit ? 6 : 4;
+  for (let k = 0; k < count; k++) {
+    const spread = between(-1.15, 1.15);
+    const spd = between(heavyHit ? 115 : 85, heavyHit ? 255 : 195);
+    sparks.push({
+      x,
+      y,
+      vx: Math.sin(spread) * spd,
+      vy: Math.abs(Math.cos(spread)) * spd * 0.72 + between(-25, 45),
+      life: between(0.12, heavyHit ? 0.25 : 0.2),
+      color: k === 0 ? '#ffffff' : k % 2 === 0 ? glintColor : '#ffbc6b',
+      w: heavyHit ? 2.1 : 1.65,
+    });
+  }
+  addShake(heavyHit ? 0.72 : 0.32);
+  sound.effect('impact', dmgProg);
+}
+
 function burst(object, color, heavy = false) {
   const count = heavy ? 22 : 13;
   impacts.push({
@@ -2054,11 +2115,11 @@ function updateBossArmor() {
   bossArmor.setAttribute('aria-valuetext', `${Math.ceil(boss.hp)} armor remaining across ${totalBars} bars`);
 }
 
-function damageBossPart(b, part, dmg) {
+function damageBossPart(b, part, dmg, shot) {
   part.hp = Math.max(0, part.hp - dmg);
   part.flash = 0.14;
   if (part.hp > 0) {
-    sound.effect('impact');
+    spawnHitFeedback(shot ? shot.x : part.x, shot ? shot.y : part.y, part, shot);
     return;
   }
   part.dead = true;
@@ -2097,7 +2158,7 @@ function damageBossPart(b, part, dmg) {
   updateBossArmor();
 }
 
-function damageBossCore(b, dmg) {
+function damageBossCore(b, dmg, shot) {
   const armorScale = b.exposedFor > 0 ? 2 : hasActivePylons(b) ? 0.65 : 1;
   b.hp = Math.max(0, b.hp - dmg * armorScale);
   b.flash = 0.12;
@@ -2163,7 +2224,7 @@ function damageBossCore(b, dmg) {
     addShake(14);
     sound.effect('breach');
   } else if (b.hp > 0) {
-    sound.effect('impact');
+    spawnHitFeedback(shot ? shot.x : b.x, shot ? shot.y : b.y, b, shot);
   }
 }
 
@@ -2256,27 +2317,42 @@ function killEnemy(e) {
     'phantom',
     'healer',
   ].includes(e.kind);
-  sound.effect(isRock ? 'rock' : 'ship');
+  sound.effect(isRock ? 'rock' : 'ship', Math.min(8, combo / 2));
   addScore(e.points, e.x, e.y, true, e.kind === 'courier' ? PALETTE.gold : PALETTE.paper);
   if (!isRock) {
     kills++;
     bumpCombo(heavy ? 2 : 1);
   }
-  burst(
-    e,
-    isRock
-      ? e.cryo
-        ? '#9ee8ff'
-        : '#a79fa3'
-      : e.kind === 'prism' || e.kind === 'phantom'
-        ? '#cba8ff'
-        : e.kind === 'healer'
-          ? '#7ef2a8'
-          : e.kind === 'courier'
-            ? PALETTE.gold
-            : '#ffad73',
-    heavy,
-  );
+  const killColor = isRock
+    ? e.cryo
+      ? '#9ee8ff'
+      : '#a79fa3'
+    : e.kind === 'prism' || e.kind === 'phantom'
+      ? '#cba8ff'
+      : e.kind === 'healer'
+        ? '#7ef2a8'
+        : e.kind === 'courier'
+          ? PALETTE.gold
+          : '#ffad73';
+  burst(e, killColor, heavy);
+  shockwaves.push({
+    x: e.x,
+    y: e.y,
+    radius: heavy ? 74 : 44,
+    color: killColor,
+    life: heavy ? 0.3 : 0.22,
+    maxLife: heavy ? 0.3 : 0.22,
+  });
+  impacts.push({
+    x: e.x,
+    y: e.y,
+    radius: heavy ? 24 : 15,
+    color: '#fff9e6',
+    star: true,
+    angle: between(-0.6, 0.6),
+    life: 0.16,
+    maxLife: 0.16,
+  });
   // Sector 6 Cryo Asteroids shatter into 4 crisp ice needles when broken!
   if (isRock && e.cryo && e.split) {
     for (let i = 0; i < 4; i++) {
@@ -2293,10 +2369,11 @@ function killEnemy(e) {
     }
   }
   if (heavy) {
-    addShake(6);
-    triggerHitstop(0.028);
+    addShake(7.5);
+    triggerHitstop(0.036);
   } else {
-    addShake(2.2);
+    addShake(3.0);
+    if (!isRock && combo >= 4) triggerHitstop(0.014);
   }
   dropShards(e.x, e.y, e.shards || 2);
   if (!isRock && e.kind !== 'mine') {
@@ -2439,8 +2516,17 @@ function updateHud() {
   novaBlock.dataset.overdrive = String(overdriveTime > 0);
   dashPip.dataset.ready = String(player.dashCd <= 0);
   novaHint.dataset.ready = String(novaCharge >= 50);
-  touchNova.disabled = novaCharge < 50;
-  touchDash.disabled = player.dashCd > 0;
+  const dashReady = player.dashCd <= 0;
+  const dashMaxCd = Math.max(0.4, getEffectiveRig().dashCd);
+  const dashFill = dashReady ? 100 : clamp((1 - player.dashCd / dashMaxCd) * 100, 0, 100);
+  const novaReady = novaCharge >= 50;
+  touchDash.disabled = !dashReady;
+  touchDash.dataset.ready = String(dashReady);
+  touchDash.style.setProperty('--fill', `${dashFill.toFixed(1)}%`);
+  touchNova.disabled = !novaReady;
+  touchNova.dataset.ready = String(novaReady);
+  touchNova.dataset.full = String(novaCharge >= 99.5);
+  touchNova.style.setProperty('--fill', `${Math.min(100, novaCharge).toFixed(1)}%`);
 }
 
 function computeRank() {
@@ -3475,6 +3561,14 @@ function update(dt) {
 
   // Active thermal beam collision check (Prism & Vesper)
   for (const enemy of enemies) {
+    if (enemy.hitPunch > 0) {
+      enemy.hitPunch *= Math.exp(-dt * 20);
+      if (enemy.hitPunch < 0.01) enemy.hitPunch = 0;
+    }
+    if (enemy.hpTrail !== undefined && enemy.hpTrail > enemy.hp) {
+      enemy.hpTrail += (enemy.hp - enemy.hpTrail) * (1 - Math.exp(-dt * 6.5));
+      if (enemy.hpTrail - enemy.hp < 0.02) enemy.hpTrail = enemy.hp;
+    }
     if (enemy === boss) {
       if (boss.dying > 0) {
         boss.dying -= dt;
@@ -3823,14 +3917,14 @@ function update(dt) {
         for (const part of aliveBossParts(boss)) {
           if (collides(s, part)) {
             s.dead = true;
-            damageBossPart(boss, part, s.dmg || 1);
+            damageBossPart(boss, part, s.dmg || 1, s);
             hitSomething = true;
             break;
           }
         }
         if (!hitSomething && collides(s, boss)) {
           s.dead = true;
-          damageBossCore(boss, s.dmg || 1);
+          damageBossCore(boss, s.dmg || 1, s);
           hitSomething = true;
         }
       }
@@ -3874,18 +3968,11 @@ function update(dt) {
         } else {
           s.dead = true;
         }
+        if (e.hpTrail === undefined) e.hpTrail = e.hp;
         e.hp = Math.max(0, e.hp - (s.dmg || 1));
         e.flash = 0.13;
         if (e.hp > 0) {
-          sound.effect('impact');
-          sparks.push({
-            x: s.x,
-            y: s.y,
-            vx: between(-90, 90),
-            vy: between(20, 100),
-            life: 0.16,
-            color: '#fff2cf',
-          });
+          spawnHitFeedback(s.x, s.y, e, s);
         } else {
           killEnemy(e);
         }

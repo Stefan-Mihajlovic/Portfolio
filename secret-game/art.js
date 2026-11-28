@@ -764,9 +764,13 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.restore();
   }
 
+  const punch = e.hitPunch || 0;
+  if (punch > 0.01) {
+    ctx.translate((e.hitKickX || 0) * punch, (e.hitKickY || 0) * punch);
+  }
   ctx.rotate(e.kind === 'orbiter' ? (e.age || 0) * 3.4 : e.tilt || 0);
   const scale = e.r / 18;
-  ctx.scale(scale, scale);
+  ctx.scale(scale * (1 + punch * 0.16), scale * (1 - punch * 0.14));
 
   if (e.kind === 'phantom' && e.blinkTelegraph > 0) {
     ctx.globalAlpha = 0.42 + 0.35 * Math.sin((e.age || 0) * 36);
@@ -844,12 +848,21 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
   );
 
   if (e.flash > 0) {
+    const f = Math.min(1, e.flash / 0.13);
+    ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = 'rgba(255, 244, 216, 0.55)';
+    ctx.globalAlpha = 0.65 * f;
+    const foeShape = foes[e.kind] || foes.raider;
+    ctx.fillStyle = '#fff5df';
+    for (const [, path] of foeShape) {
+      ctx.fill(path);
+    }
+    ctx.globalAlpha = 0.45 * f;
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(0, 0, 14, 0, TAU);
+    ctx.arc(0, 0, 17, 0, TAU);
     ctx.fill();
-    ctx.globalCompositeOperation = 'source-over';
+    ctx.restore();
   }
 
   const charge = e.fireIn < 0.6 && e.fireIn >= 0 && e.kind !== 'courier';
@@ -880,10 +893,15 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     const bw = Math.max(24, e.r * 1.45);
     const bx = e.x - bw / 2;
     const by = e.y - e.r - 9;
-    ctx.fillStyle = 'rgba(13, 20, 34, 0.78)';
-    ctx.fillRect(bx - 1, by - 1, bw + 2, 4.5);
-    ctx.fillStyle = e.kind === 'courier' ? teal : amber;
-    ctx.fillRect(bx, by, bw * (e.hp / e.maxHp), 2.5);
+    ctx.fillStyle = 'rgba(13, 20, 34, 0.82)';
+    ctx.fillRect(bx - 1, by - 1, bw + 2, 4.8);
+    const trailHp = Math.max(e.hp, e.hpTrail ?? e.hp);
+    if (trailHp > e.hp + 0.02) {
+      ctx.fillStyle = 'rgba(255, 244, 218, 0.9)';
+      ctx.fillRect(bx, by, bw * Math.min(1, trailHp / e.maxHp), 2.8);
+    }
+    ctx.fillStyle = e.flash > 0 ? '#fff6e0' : e.kind === 'courier' ? teal : amber;
+    ctx.fillRect(bx, by, bw * (e.hp / e.maxHp), 2.8);
   }
 }
 

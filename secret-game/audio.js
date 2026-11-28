@@ -1209,16 +1209,32 @@ export function createFlightAudio() {
         sfxVoice(t, 0.24, 'sawtooth', 105, 540, 0.095, 0.024, 1550, 0.25, 0.25);
         sfxVoice(t, 0.18, 'noise', 0, 0, 0.12, 0.02, 1800);
         break;
-      case 'impact':
-        sfxVoice(t, 0.075, 'plasma', 1220 * jitter, 220, 0.14, 0.002, 4100);
-        sfxVoice(t, 0.055, 'noise', 0, 0, 0.09, 0.002, 2000);
+      case 'impact': {
+        // Escalating tactile hit feedback: tight kinetic thump + crisp armor tick whose pitch rises as target HP nears 0!
+        const nowMs = performance.now();
+        if (nowMs - (session.lastImpactMs || 0) < 28) break;
+        session.lastImpactMs = nowMs;
+        const dmgProg = Math.max(0, Math.min(1, Number(detail) || 0));
+        const pitch = (1 + dmgProg * 0.48) * jitter;
+        // Punchy low-mid kinetic body thump
+        sfxVoice(t, 0.055, 'sine', 210 * pitch, 68, 0.16, 0.0015, 1200);
+        // Crisp armor crack / metallic hitmarker transient
+        sfxVoice(t, 0.068, 'plasma', 1360 * pitch, 310 * pitch, 0.145, 0.0015, 4800);
+        sfxVoice(t, 0.042, 'noise', 0, 0, 0.085, 0.0015, 2900 + dmgProg * 1400);
         break;
+      }
       case 'rock':
-      case 'ship':
-        sfxVoice(t, 0.1, 'plasma', 370 * jitter, 64, 0.22, 0.002, 2600);
-        sfxVoice(t, 0.4, 'noise', 0, 0, 0.3, 0.006, name === 'rock' ? 1080 : 2300, -0.14, 0.22);
-        sfxVoice(t, 0.3, 'sine', name === 'rock' ? 112 : 164, 34, 0.26, 0.006, 980);
+      case 'ship': {
+        // Juicy kill-confirm crunch: sub-bass pop + crisp shatter snap + subtle combo-pitched harmonic spark!
+        const comboStep = Math.min(comboScale.length - 1, Math.max(0, Math.floor(Number(detail) || 0)));
+        sfxVoice(t, 0.11, 'plasma', 410 * jitter, 62, 0.25, 0.002, 3000);
+        sfxVoice(t, 0.38, 'noise', 0, 0, 0.32, 0.004, name === 'rock' ? 1180 : 2700, -0.1, 0.22);
+        sfxVoice(t, 0.28, 'sine', name === 'rock' ? 118 : 178, 32, 0.3, 0.004, 1050);
+        if (name === 'ship') {
+          sfxVoice(t + 0.012, 0.12, 'triangle', hz(comboScale[comboStep] + 12), hz(comboScale[comboStep] + 19), 0.11, 0.002, 4600, (Math.random() - 0.5) * 0.28, 0.18);
+        }
         break;
+      }
       case 'graze': {
         const note = comboScale[Math.min(comboScale.length - 1, Math.floor(detail) + 3)];
         sfxVoice(t, 0.09, 'sine', hz(note), hz(note + 5), 0.1, 0.003, 3400, (Math.random() - 0.5) * 0.4, 0.22);
