@@ -314,11 +314,50 @@ try {
   if (savedRig && RIGS[savedRig]) selectedRig = savedRig;
 } catch {}
 
+const DEFAULT_SETTINGS = {
+  screenShake: true,
+  defaultAutoFire: false,
+  scorePopups: true,
+  touchSide: 'right',
+};
+
+function loadSettings() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('low-orbit-settings') || 'null');
+    if (raw && typeof raw === 'object') {
+      return {
+        screenShake: raw.screenShake !== false,
+        defaultAutoFire: Boolean(raw.defaultAutoFire),
+        scorePopups: raw.scorePopups !== false,
+        touchSide: raw.touchSide === 'left' ? 'left' : 'right',
+      };
+    }
+  } catch {}
+  return { ...DEFAULT_SETTINGS };
+}
+
+const gameSettings = loadSettings();
+
+function saveSettings() {
+  try {
+    localStorage.setItem('low-orbit-settings', JSON.stringify(gameSettings));
+  } catch {}
+}
+
+function applySettings() {
+  document.body.dataset.touchSide = gameSettings.touchSide;
+}
+applySettings();
+
+let lastNonZeroMaster = sound.volume > 0 ? sound.volume : 35;
+
 volume.value = sound.volume;
 level.value = sound.volume + '%';
 volume.addEventListener('input', () => {
   sound.setVolume(volume.valueAsNumber);
+  if (sound.volume > 0) lastNonZeroMaster = sound.volume;
   level.value = sound.volume + '%';
+  syncSettingsUi?.();
 });
 
 fullscreen.hidden = !document.fullscreenEnabled;
@@ -355,6 +394,31 @@ const coinBankEl = document.querySelector('#coin-bank');
 const runCoinsHud = document.querySelector('#run-coins-hud');
 const overclockHudBadge = document.querySelector('#overclock-hud-badge');
 const restartMenu = document.querySelector('#restart-menu');
+const quitMenu = document.querySelector('#quit-menu');
+const pauseKickerEl = document.querySelector('#pause-kicker');
+const pauseQuickBar = document.querySelector('#pause-quick-bar');
+const pauseMusicBtn = document.querySelector('#pause-music-btn');
+const pauseMusicState = document.querySelector('#pause-music-state');
+const pauseSfxBtn = document.querySelector('#pause-sfx-btn');
+const pauseSfxState = document.querySelector('#pause-sfx-state');
+const pauseSettingsBtn = document.querySelector('#pause-settings-btn');
+const settingsOpenBtn = document.querySelector('#settings-open');
+const settingsOpenBottomBtn = document.querySelector('#settings-open-bottom');
+const settingsDialog = document.querySelector('#settings-dialog');
+const setMasterVol = document.querySelector('#set-master-vol');
+const setMasterOut = document.querySelector('#set-master-out');
+const setMasterMute = document.querySelector('#set-master-mute');
+const setMusicVol = document.querySelector('#set-music-vol');
+const setMusicOut = document.querySelector('#set-music-out');
+const setMusicToggle = document.querySelector('#set-music-toggle');
+const setSfxVol = document.querySelector('#set-sfx-vol');
+const setSfxOut = document.querySelector('#set-sfx-out');
+const setSfxToggle = document.querySelector('#set-sfx-toggle');
+const setShakeToggle = document.querySelector('#set-shake-toggle');
+const setAutofireToggle = document.querySelector('#set-autofire-toggle');
+const setPopupsToggle = document.querySelector('#set-popups-toggle');
+const setSideLeftBtn = document.querySelector('#set-side-left');
+const setSideRightBtn = document.querySelector('#set-side-right');
 const hud = document.querySelector('#hud');
 const scoreLabel = document.querySelector('#score');
 const bestLabel = document.querySelector('#best');
@@ -586,7 +650,7 @@ function showBanner(kicker, headline, tone = 'teal', duration = 2.4) {
 }
 
 function addShake(amount) {
-  if (reducedMotion.matches) return;
+  if (reducedMotion.matches || !gameSettings.screenShake) return;
   shake = Math.min(18, Math.max(shake, amount));
 }
 
@@ -1721,15 +1785,17 @@ function draw() {
   }
 
   // Floating score & callout popups
-  for (const pop of popups) {
-    const p = 1 - pop.life / pop.maxLife;
-    ctx.save();
-    ctx.globalAlpha = Math.min(1, (1 - p) * 1.6);
-    ctx.fillStyle = pop.color;
-    ctx.font = `700 ${pop.size}px ui-monospace, monospace`;
-    ctx.textAlign = 'center';
-    ctx.fillText(pop.text, pop.x, pop.y - p * 22);
-    ctx.restore();
+  if (gameSettings.scorePopups) {
+    for (const pop of popups) {
+      const p = 1 - pop.life / pop.maxLife;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, (1 - p) * 1.6);
+      ctx.fillStyle = pop.color;
+      ctx.font = `700 ${pop.size}px ui-monospace, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(pop.text, pop.x, pop.y - p * 22);
+      ctx.restore();
+    }
   }
 
   // Diegetic Sector / Boss Warning Banner
@@ -2542,6 +2608,9 @@ function setMode(next) {
   document.body.dataset.mode = next;
   pauseButton.hidden = next !== 'playing';
   restartMenu.hidden = next !== 'paused';
+  quitMenu.hidden = next !== 'paused' && next !== 'over';
+  pauseQuickBar.hidden = next !== 'paused';
+  pauseKickerEl.hidden = next !== 'paused' && next !== 'over';
   mixer.open = false;
   keys.clear();
   pointer = null;
@@ -2595,6 +2664,9 @@ function setMode(next) {
   } else {
     const lost = next === 'over';
     sound.stop();
+    const secLabel = `SECTOR ${String(sectorIndex + 1).padStart(2, '0')}`;
+    const rigLabel = getBaseRig(selectedRig).name.toUpperCase();
+    pauseKickerEl.textContent = `${secLabel} · WAVE ${waveLabel.textContent} · ${rigLabel}`;
     title.textContent = lost ? 'Ship lost' : 'Paused';
     message.hidden = true;
     document.querySelector('#debrief').hidden = false;
@@ -2606,6 +2678,7 @@ function setMode(next) {
     document.querySelector('#run-combo').textContent = `×${peakMultiplier.toFixed(1)}`;
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
     syncMetaUi();
+    syncSettingsUi();
     action.focus({ preventScroll: true });
     if (lost && runIsNewBest && Math.floor(score) > 0) {
       openRecordDialog();
@@ -2693,6 +2766,7 @@ function launch() {
   ventBoostTime = 0;
   hitstop = 0;
   shake = 0;
+  autoFire = Boolean(gameSettings.defaultAutoFire);
   player.x = w / 2;
   player.y = h * (w < h ? 0.66 : 0.7);
   enemies = [];
@@ -4447,6 +4521,10 @@ action.addEventListener('click', () => {
   else launch();
 });
 restartMenu.addEventListener('click', () => {
+  sound.uiLaunch(meta.overclock);
+  launch();
+});
+quitMenu.addEventListener('click', () => {
   sound.uiClose();
   setMode('intro');
 });
@@ -4798,15 +4876,22 @@ function wireModal(dialog) {
     }
   });
   if (!('closedBy' in HTMLDialogElement.prototype)) {
-    dialog.addEventListener('click', (event) => {
-      if (event.target !== dialog) return;
+    const outside = (event) => {
       const rect = dialog.getBoundingClientRect();
-      const isContent =
-        rect.top <= event.clientY &&
-        event.clientY <= rect.top + rect.height &&
-        rect.left <= event.clientX &&
-        event.clientX <= rect.left + rect.width;
-      if (!isContent) closeTopLayer(dialog);
+      return (
+        event.clientX < rect.left ||
+        event.clientX > rect.right ||
+        event.clientY < rect.top ||
+        event.clientY > rect.bottom
+      );
+    };
+    let pressedOutside = false;
+    dialog.addEventListener('pointerdown', (event) => {
+      pressedOutside = outside(event);
+    });
+    dialog.addEventListener('pointerup', (event) => {
+      if (pressedOutside && outside(event)) closeTopLayer(dialog);
+      pressedOutside = false;
     });
   }
 }
@@ -4815,6 +4900,138 @@ wireModal(hangar);
 wireModal(recordDialog);
 wireModal(leaderboardDialog);
 wireModal(unsavedDialog);
+wireModal(settingsDialog);
+
+function syncSettingsUi() {
+  const masterMuted = sound.volume <= 0;
+  const musicOn = !sound.musicMuted && sound.musicVolume > 0;
+  const sfxOn = !sound.sfxMuted && sound.sfxVolume > 0;
+
+  volume.value = sound.volume;
+  level.value = sound.volume + '%';
+  setMasterVol.value = sound.volume;
+  setMasterOut.value = masterMuted ? 'MUTE' : `${sound.volume}%`;
+  setMasterMute.setAttribute('aria-pressed', String(masterMuted));
+  setMasterMute.setAttribute('aria-label', masterMuted ? 'Unmute audio' : 'Mute all audio');
+
+  setMusicVol.value = sound.musicVolume;
+  setMusicVol.disabled = sound.musicMuted;
+  setMusicOut.value = sound.musicMuted ? 'OFF' : `${sound.musicVolume}%`;
+  setMusicToggle.setAttribute('aria-checked', String(!sound.musicMuted));
+
+  setSfxVol.value = sound.sfxVolume;
+  setSfxVol.disabled = sound.sfxMuted;
+  setSfxOut.value = sound.sfxMuted ? 'OFF' : `${sound.sfxVolume}%`;
+  setSfxToggle.setAttribute('aria-checked', String(!sound.sfxMuted));
+
+  setShakeToggle.setAttribute('aria-checked', String(gameSettings.screenShake));
+  setAutofireToggle.setAttribute('aria-checked', String(gameSettings.defaultAutoFire));
+  setPopupsToggle.setAttribute('aria-checked', String(gameSettings.scorePopups));
+  setSideLeftBtn.setAttribute('aria-pressed', String(gameSettings.touchSide === 'left'));
+  setSideRightBtn.setAttribute('aria-pressed', String(gameSettings.touchSide === 'right'));
+
+  // Sync Pause Menu 1-tap quick audio pills
+  pauseMusicBtn.setAttribute('aria-pressed', String(musicOn));
+  pauseMusicState.textContent = musicOn ? 'ON' : 'OFF';
+  pauseSfxBtn.setAttribute('aria-pressed', String(sfxOn));
+  pauseSfxState.textContent = sfxOn ? 'ON' : 'OFF';
+}
+
+function openSettings() {
+  syncSettingsUi();
+  sound.uiClick();
+  settingsDialog.removeAttribute('data-closing');
+  if (!settingsDialog.open) settingsDialog.showModal();
+}
+
+settingsOpenBtn?.addEventListener('click', openSettings);
+settingsOpenBottomBtn?.addEventListener('click', openSettings);
+pauseSettingsBtn?.addEventListener('click', openSettings);
+
+pauseMusicBtn?.addEventListener('click', () => {
+  sound.setMusicMuted(!sound.musicMuted);
+  if (!sound.musicMuted && sound.musicVolume <= 0) sound.setMusicVolume(100);
+  sound.uiClick();
+  syncSettingsUi();
+});
+pauseSfxBtn?.addEventListener('click', () => {
+  const nextMuted = !sound.sfxMuted;
+  sound.setSfxMuted(nextMuted);
+  if (!nextMuted && sound.sfxVolume <= 0) sound.setSfxVolume(100);
+  if (!nextMuted) sound.uiClick();
+  syncSettingsUi();
+});
+
+setMasterVol?.addEventListener('input', () => {
+  const v = setMasterVol.valueAsNumber;
+  sound.setVolume(v);
+  if (v > 0) lastNonZeroMaster = v;
+  syncSettingsUi();
+});
+setMasterMute?.addEventListener('click', () => {
+  if (sound.volume > 0) {
+    lastNonZeroMaster = sound.volume;
+    sound.setVolume(0);
+  } else {
+    sound.setVolume(lastNonZeroMaster || 35);
+    sound.uiClick();
+  }
+  syncSettingsUi();
+});
+setMusicVol?.addEventListener('input', () => {
+  sound.setMusicVolume(setMusicVol.valueAsNumber);
+  syncSettingsUi();
+});
+setMusicToggle?.addEventListener('click', () => {
+  sound.setMusicMuted(!sound.musicMuted);
+  if (!sound.musicMuted && sound.musicVolume <= 0) sound.setMusicVolume(100);
+  sound.uiClick();
+  syncSettingsUi();
+});
+setSfxVol?.addEventListener('input', () => {
+  sound.setSfxVolume(setSfxVol.valueAsNumber);
+  syncSettingsUi();
+});
+setSfxToggle?.addEventListener('click', () => {
+  const nextMuted = !sound.sfxMuted;
+  sound.setSfxMuted(nextMuted);
+  if (!nextMuted && sound.sfxVolume <= 0) sound.setSfxVolume(100);
+  if (!nextMuted) sound.uiClick();
+  syncSettingsUi();
+});
+setShakeToggle?.addEventListener('click', () => {
+  gameSettings.screenShake = !gameSettings.screenShake;
+  saveSettings();
+  sound.uiClick();
+  syncSettingsUi();
+});
+setAutofireToggle?.addEventListener('click', () => {
+  gameSettings.defaultAutoFire = !gameSettings.defaultAutoFire;
+  saveSettings();
+  sound.uiClick();
+  syncSettingsUi();
+});
+setPopupsToggle?.addEventListener('click', () => {
+  gameSettings.scorePopups = !gameSettings.scorePopups;
+  saveSettings();
+  sound.uiClick();
+  syncSettingsUi();
+});
+setSideLeftBtn?.addEventListener('click', () => {
+  gameSettings.touchSide = 'left';
+  applySettings();
+  saveSettings();
+  sound.uiClick();
+  syncSettingsUi();
+});
+setSideRightBtn?.addEventListener('click', () => {
+  gameSettings.touchSide = 'right';
+  applySettings();
+  saveSettings();
+  sound.uiClick();
+  syncSettingsUi();
+});
+syncSettingsUi();
 
 async function copyBuildCode(code, buttonEl) {
   let ok = false;

@@ -403,6 +403,8 @@ export function createFlightAudio() {
   let ctx,
     master,
     compressor,
+    musicMaster,
+    sfxMaster,
     noise,
     reverbImpulse,
     session,
@@ -416,12 +418,30 @@ export function createFlightAudio() {
     bossSpec = null,
     bossRank = 0,
     bossFinalPhase = false,
-    volume = 35;
+    volume = 35,
+    musicVolume = 100,
+    sfxVolume = 100,
+    musicMuted = false,
+    sfxMuted = false;
 
   try {
     const saved = localStorage.getItem('low-orbit-volume');
     if (saved !== null && Number.isFinite(+saved)) volume = Math.max(0, Math.min(100, +saved));
+    const savedMusicVol = localStorage.getItem('low-orbit-music-volume');
+    if (savedMusicVol !== null && Number.isFinite(+savedMusicVol)) musicVolume = Math.max(0, Math.min(100, +savedMusicVol));
+    const savedSfxVol = localStorage.getItem('low-orbit-sfx-volume');
+    if (savedSfxVol !== null && Number.isFinite(+savedSfxVol)) sfxVolume = Math.max(0, Math.min(100, +savedSfxVol));
+    musicMuted = localStorage.getItem('low-orbit-music-muted') === '1';
+    sfxMuted = localStorage.getItem('low-orbit-sfx-muted') === '1';
   } catch {}
+
+  function targetMusicGain() {
+    return musicMuted ? 0 : musicVolume / 100;
+  }
+
+  function targetSfxGain() {
+    return sfxMuted ? 0 : sfxVolume / 100;
+  }
 
   function init() {
     const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -442,6 +462,14 @@ export function createFlightAudio() {
     master = ctx.createGain();
     master.gain.value = (volume / 100) * 0.9;
     compressor.connect(master).connect(ctx.destination);
+
+    musicMaster = ctx.createGain();
+    musicMaster.gain.value = targetMusicGain();
+    musicMaster.connect(compressor);
+
+    sfxMaster = ctx.createGain();
+    sfxMaster.gain.value = targetSfxGain();
+    sfxMaster.connect(compressor);
 
     noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const data = noise.getChannelData(0);
@@ -468,6 +496,7 @@ export function createFlightAudio() {
     bus = session?.musicBus,
   }) {
     if (!bus || !ctx) return;
+    if (bus === session?.musicBus && (musicMuted || musicVolume <= 0)) return;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.setValueAtTime(Math.max(80, cutoffStart), t);
@@ -623,6 +652,7 @@ export function createFlightAudio() {
     bus = session?.sfxBus,
   ) {
     if (!bus || !ctx) return;
+    if (bus === session?.musicBus && (musicMuted || musicVolume <= 0)) return;
     const source = kind === 'noise' ? ctx.createBufferSource() : ctx.createOscillator();
     const filter = ctx.createBiquadFilter();
     const env = ctx.createGain();
@@ -1016,9 +1046,9 @@ export function createFlightAudio() {
     delayFilter.connect(delayWet).connect(rootBus);
     delayFilter.connect(delayFeedback).connect(delayNode);
 
-    musicBus.connect(rootBus);
-    sfxBus.connect(rootBus);
-    rootBus.connect(compressor);
+    musicBus.connect(musicMaster);
+    sfxBus.connect(sfxMaster);
+    rootBus.connect(sfxMaster);
 
     session = {
       rootBus,
@@ -1047,11 +1077,11 @@ export function createFlightAudio() {
   }
 
   function death() {
-    if (!ctx || !volume) return;
+    if (!ctx || !volume || sfxMuted || sfxVolume <= 0) return;
     silenceLoss();
     const t = ctx.currentTime;
     const bus = ctx.createGain();
-    bus.connect(compressor);
+    bus.connect(sfxMaster);
     lossBus = bus;
     sfxVoice(t, 0.55, 'noise', 0, 0, 0.72, 0.003, 4200, -0.1, 0, bus);
     sfxVoice(t, 0.9, 'sine', 175, 28, 0.7, 0.005, 1200, 0, 0, bus);
@@ -1103,7 +1133,7 @@ export function createFlightAudio() {
   }
 
   function effect(name, detail = 0) {
-    if (!session || !volume) return;
+    if (!session || !volume || sfxMuted || sfxVolume <= 0) return;
     const t = ctx.currentTime;
     const jitter = 0.96 + Math.random() * 0.08;
     switch (name) {
@@ -1159,7 +1189,7 @@ export function createFlightAudio() {
         ctx.resume().catch(() => {});
         {
           const b = ctx.createGain();
-          b.connect(compressor);
+          b.connect(sfxMaster);
           [69, 76, 81].forEach((n, i) =>
             sfxVoice(ctx.currentTime + i * 0.05, 0.22, 'triangle', hz(n), hz(n), 0.16, 0.004, 4000, 0, 0, b),
           );
@@ -1378,10 +1408,10 @@ export function createFlightAudio() {
   }
 
   function uiBuy() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const b = ctx.createGain();
-    b.connect(compressor);
+    b.connect(sfxMaster);
     const t = ctx.currentTime;
     [69, 76, 81, 88].forEach((n, i) =>
       sfxVoice(t + i * 0.045, 0.24, 'triangle', hz(n), hz(n), 0.16, 0.004, 4200, (i - 1.5) * 0.2, 0, b),
@@ -1390,7 +1420,7 @@ export function createFlightAudio() {
   }
 
   function overclockOn() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
 
     // Separate saturated low-end growl bus from clean high-voltage sheen (zero muddy clash!)
@@ -1417,8 +1447,8 @@ export function createFlightAudio() {
     dirtyOut.gain.value = 0.62;
     cleanOut.gain.value = 0.72;
 
-    dirtyIn.connect(shaper).connect(dirtyFilter).connect(dirtyOut).connect(compressor);
-    cleanOut.connect(compressor);
+    dirtyIn.connect(shaper).connect(dirtyFilter).connect(dirtyOut).connect(sfxMaster);
+    cleanOut.connect(sfxMaster);
 
     // 1. Tight mechanical ignition punch + crisp spark snap (instant tactile hit)
     sfxVoice(t, 0.16, 'sine', 190, 48, 0.58, 0.002, 800, 0, 0, cleanOut);
@@ -1439,7 +1469,7 @@ export function createFlightAudio() {
   }
 
   function overclockOff() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const bus = ctx.createGain();
     const lp = ctx.createBiquadFilter();
@@ -1449,7 +1479,7 @@ export function createFlightAudio() {
     lp.frequency.setValueAtTime(1600, t);
     lp.frequency.exponentialRampToValueAtTime(220, t + 0.28);
     bus.gain.value = 0.72;
-    bus.connect(lp).connect(compressor);
+    bus.connect(lp).connect(sfxMaster);
 
     // 1. Crisp mechanical unlatch click
     sfxVoice(t, 0.055, 'triangle', 340, 145, 0.28, 0.002, 2400, 0, 0, bus);
@@ -1466,10 +1496,10 @@ export function createFlightAudio() {
   }
 
   function uiClick() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const b = ctx.createGain();
-    b.connect(compressor);
+    b.connect(sfxMaster);
     const t = ctx.currentTime;
     sfxVoice(t, 0.055, 'triangle', 640, 920, 0.14, 0.002, 4200, 0, 0, b);
     sfxVoice(t, 0.025, 'noise', 0, 0, 0.09, 0.001, 4800, 0, 0, b);
@@ -1477,20 +1507,20 @@ export function createFlightAudio() {
   }
 
   function uiClose() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const b = ctx.createGain();
-    b.connect(compressor);
+    b.connect(sfxMaster);
     const t = ctx.currentTime;
     sfxVoice(t, 0.075, 'triangle', 520, 290, 0.14, 0.002, 2800, 0, 0, b);
     setTimeout(() => b.disconnect(), 240);
   }
 
   function uiLaunch(overclock = false) {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const b = ctx.createGain();
-    b.connect(compressor);
+    b.connect(sfxMaster);
     const t = ctx.currentTime;
     if (overclock) {
       sfxVoice(t, 0.28, 'sawtooth', 98, 220, 0.24, 0.005, 2400, 0, 0, b);
@@ -1505,10 +1535,10 @@ export function createFlightAudio() {
   }
 
   function uiRefund() {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const b = ctx.createGain();
-    b.connect(compressor);
+    b.connect(sfxMaster);
     const t = ctx.currentTime;
     [81, 76, 72, 79].forEach((n, i) =>
       sfxVoice(t + i * 0.04, 0.14, 'triangle', hz(n), hz(n) * 0.98, 0.15, 0.003, 3600, (i - 1.5) * 0.18, 0, b),
@@ -1518,11 +1548,11 @@ export function createFlightAudio() {
 
   // Realistic mechanical / propulsion spacecraft SFX for each playable ship (zero musical bee-boops!)
   function uiShip(rig = 'kestrel') {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     ctx.resume().catch(() => {});
     const bus = ctx.createGain();
     bus.gain.value = 0.88;
-    bus.connect(compressor);
+    bus.connect(sfxMaster);
     const t = ctx.currentTime;
     const tempNodes = [bus];
 
@@ -1616,7 +1646,7 @@ export function createFlightAudio() {
 
   // Distinct live test-fire weapon previews inside Ship Forge (plays without needing an active gameplay session!)
   function uiWeaponPreview(kind = 'kestrel') {
-    if (!volume || !init()) return;
+    if (!volume || sfxMuted || sfxVolume <= 0 || !init()) return;
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const t = ctx.currentTime;
     const tempNodes = [];
@@ -1636,7 +1666,7 @@ export function createFlightAudio() {
       gain.gain.linearRampToValueAtTime(lvl, start + 0.003);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + len);
       pan.pan.value = panVal;
-      osc.connect(filt).connect(gain).connect(pan).connect(compressor);
+      osc.connect(filt).connect(gain).connect(pan).connect(sfxMaster);
       osc.start(start);
       osc.stop(start + len + 0.02);
       tempNodes.push(osc, filt, gain, pan);
@@ -1656,7 +1686,7 @@ export function createFlightAudio() {
       gain.gain.linearRampToValueAtTime(lvl, start + 0.004);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + len);
       pan.pan.value = panVal;
-      src.connect(filt).connect(gain).connect(pan).connect(compressor);
+      src.connect(filt).connect(gain).connect(pan).connect(sfxMaster);
       src.start(start);
       src.stop(start + len + 0.02);
       tempNodes.push(src, filt, gain, pan);
@@ -1723,7 +1753,7 @@ export function createFlightAudio() {
   }
 
   function playAmbientBar() {
-    if (!ambientBus || !ctx || session || !volume) return;
+    if (!ambientBus || !ctx || session || !volume || musicMuted || musicVolume <= 0) return;
     const chord = AMBIENT_CHORDS[ambientStep++ % AMBIENT_CHORDS.length];
     const t = ctx.currentTime + 0.05;
     chord.forEach((n, i) => {
@@ -1749,7 +1779,7 @@ export function createFlightAudio() {
   }
 
   function startAmbient() {
-    if (ambientTimer || session || !volume || !init()) return;
+    if (ambientTimer || session || !volume || musicMuted || musicVolume <= 0 || !init()) return;
     if (ctx.state === 'suspended') {
       ctx.resume().then(() => {
         if (!session && !ambientTimer) startAmbient();
@@ -1759,7 +1789,7 @@ export function createFlightAudio() {
     ambientBus = ctx.createGain();
     ambientBus.gain.setValueAtTime(0.0001, ctx.currentTime);
     ambientBus.gain.exponentialRampToValueAtTime(0.78, ctx.currentTime + 0.85);
-    ambientBus.connect(compressor);
+    ambientBus.connect(musicMaster);
     playAmbientBar();
     ambientTimer = setInterval(playAmbientBar, 4400);
   }
@@ -1841,8 +1871,56 @@ export function createFlightAudio() {
     setVolume(value) {
       volume = Math.max(0, Math.min(100, value));
       if (master) master.gain.setTargetAtTime((volume / 100) * 0.9, ctx.currentTime, 0.018);
+      if (volume > 0 && !session && !ambientTimer && !musicMuted && musicVolume > 0) startAmbient();
       try {
         localStorage.setItem('low-orbit-volume', String(volume));
+      } catch {}
+    },
+    get musicVolume() {
+      return musicVolume;
+    },
+    setMusicVolume(value) {
+      musicVolume = Math.max(0, Math.min(100, value));
+      if (musicMaster && ctx) musicMaster.gain.setTargetAtTime(targetMusicGain(), ctx.currentTime, 0.02);
+      if (!musicMuted && musicVolume > 0 && !session && !ambientTimer && volume > 0) startAmbient();
+      if (musicVolume <= 0) stopAmbient();
+      try {
+        localStorage.setItem('low-orbit-music-volume', String(musicVolume));
+      } catch {}
+    },
+    get musicMuted() {
+      return musicMuted;
+    },
+    setMusicMuted(muted) {
+      musicMuted = Boolean(muted);
+      if (musicMaster && ctx) musicMaster.gain.setTargetAtTime(targetMusicGain(), ctx.currentTime, 0.02);
+      if (musicMuted) {
+        stopAmbient();
+      } else if (!session && volume > 0 && musicVolume > 0) {
+        startAmbient();
+      }
+      try {
+        localStorage.setItem('low-orbit-music-muted', musicMuted ? '1' : '0');
+      } catch {}
+    },
+    get sfxVolume() {
+      return sfxVolume;
+    },
+    setSfxVolume(value) {
+      sfxVolume = Math.max(0, Math.min(100, value));
+      if (sfxMaster && ctx) sfxMaster.gain.setTargetAtTime(targetSfxGain(), ctx.currentTime, 0.02);
+      try {
+        localStorage.setItem('low-orbit-sfx-volume', String(sfxVolume));
+      } catch {}
+    },
+    get sfxMuted() {
+      return sfxMuted;
+    },
+    setSfxMuted(muted) {
+      sfxMuted = Boolean(muted);
+      if (sfxMaster && ctx) sfxMaster.gain.setTargetAtTime(targetSfxGain(), ctx.currentTime, 0.02);
+      try {
+        localStorage.setItem('low-orbit-sfx-muted', sfxMuted ? '1' : '0');
       } catch {}
     },
   };

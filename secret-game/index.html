@@ -147,6 +147,12 @@
             </summary>
             <label>Volume <input id="volume" type="range" min="0" max="100" value="35" /></label>
           </details>
+          <button id="settings-open" class="pill-icon" type="button" aria-label="Settings" title="Settings">
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3.2" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 .92-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51.92H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+            </svg>
+          </button>
           <button id="fullscreen" class="pill-icon" type="button" aria-label="Enter fullscreen" title="Enter fullscreen" hidden>
             <svg
               aria-hidden="true"
@@ -173,6 +179,7 @@
 
       <section id="panel" aria-labelledby="title">
         <div class="menu-stack">
+          <span id="pause-kicker" class="pause-kicker" hidden>SECTOR 01 · WAVE 01 · KESTREL</span>
           <h1 id="title">Low Orbit</h1>
           <p id="message">Dodge incoming fire. Clear each wave.</p>
 
@@ -246,6 +253,34 @@
             </div>
           </fieldset>
 
+          <div id="pause-quick-bar" class="pause-quick-bar" hidden>
+            <button id="pause-music-btn" class="pause-quick-btn" type="button" aria-pressed="true">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+              <span>Music</span>
+              <b id="pause-music-state">ON</b>
+            </button>
+            <button id="pause-sfx-btn" class="pause-quick-btn" type="button" aria-pressed="true">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+              </svg>
+              <span>SFX</span>
+              <b id="pause-sfx-state">ON</b>
+            </button>
+            <button id="pause-settings-btn" class="pause-quick-btn" type="button">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 .92-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51.92H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+              </svg>
+              <span>Settings</span>
+            </button>
+          </div>
+
           <div class="launch-row">
             <button id="action" class="hero-btn primary" type="button">
               <svg class="oc-bolt oc-bolt-l" aria-hidden="true" width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
@@ -279,6 +314,12 @@
                 <path d="M3 3v5h5" />
               </svg>
               <span>Restart</span>
+            </button>
+            <button id="quit-menu" class="hero-btn secondary-btn quit-btn" type="button" hidden>
+              <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" />
+              </svg>
+              <span>Menu</span>
             </button>
           </div>
 
@@ -334,6 +375,13 @@
                 <path d="M3 4.5c3-.7 6-.2 9 1.5 3-1.7 6-2.2 9-1.5v14c-3-.7-6-.2-9 1.5-3-1.7-6-2.2-9-1.5zM12 6v14" />
               </svg>
               Guide
+            </button>
+            <button class="guide-open" id="settings-open-bottom" type="button">
+              <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.08a1.65 1.65 0 0 0 .92-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.08a1.65 1.65 0 0 0 1.51.92H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+              </svg>
+              Settings
             </button>
           </div>
         </div>
@@ -403,6 +451,110 @@
           <p id="forge-status" class="forge-status" aria-live="polite"></p>
         </div>
       </section>
+
+      <dialog id="settings-dialog" class="modal-sheet settings-sheet" closedby="any" aria-labelledby="settings-title">
+        <form method="dialog" class="modal-head">
+          <div>
+            <span class="settings-kicker">FLIGHT COMPUTER</span>
+            <h2 id="settings-title">Settings</h2>
+          </div>
+          <button type="submit" class="modal-close" aria-label="Close settings" autofocus>×</button>
+        </form>
+
+        <div class="settings-body">
+          <div class="settings-group">
+            <h3 class="settings-group-title">Audio</h3>
+
+            <div class="setting-row setting-slider-row">
+              <div class="setting-label-wrap">
+                <label for="set-master-vol">Master Volume</label>
+                <output id="set-master-out" for="set-master-vol">35%</output>
+              </div>
+              <div class="setting-slider-ctrl">
+                <button id="set-master-mute" type="button" class="setting-mute-btn" aria-pressed="false" aria-label="Mute all audio" title="Mute all audio">
+                  <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                    <path class="vol-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" />
+                    <path class="vol-mute-x" d="m22 9-6 6M16 9l6 6" />
+                  </svg>
+                </button>
+                <input id="set-master-vol" class="setting-range" type="range" min="0" max="100" value="35" />
+              </div>
+            </div>
+
+            <div class="setting-row setting-slider-row">
+              <div class="setting-label-wrap">
+                <label for="set-music-vol">Music</label>
+                <div class="setting-inline-right">
+                  <output id="set-music-out" for="set-music-vol">100%</output>
+                  <button id="set-music-toggle" type="button" class="setting-switch" role="switch" aria-checked="true" aria-label="Toggle music">
+                    <span class="setting-switch-knob" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+              <input id="set-music-vol" class="setting-range" type="range" min="0" max="100" value="100" />
+            </div>
+
+            <div class="setting-row setting-slider-row">
+              <div class="setting-label-wrap">
+                <label for="set-sfx-vol">Sound Effects</label>
+                <div class="setting-inline-right">
+                  <output id="set-sfx-out" for="set-sfx-vol">100%</output>
+                  <button id="set-sfx-toggle" type="button" class="setting-switch" role="switch" aria-checked="true" aria-label="Toggle sound effects">
+                    <span class="setting-switch-knob" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+              <input id="set-sfx-vol" class="setting-range" type="range" min="0" max="100" value="100" />
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3 class="settings-group-title">Gameplay &amp; Controls</h3>
+
+            <div class="setting-row setting-toggle-row">
+              <div>
+                <strong>Screen Shake</strong>
+                <small>Camera punch on hits &amp; explosions</small>
+              </div>
+              <button id="set-shake-toggle" type="button" class="setting-switch" role="switch" aria-checked="true" aria-label="Toggle screen shake">
+                <span class="setting-switch-knob" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div class="setting-row setting-toggle-row">
+              <div>
+                <strong>Auto-Fire by Default</strong>
+                <small>Start every run with cannons on auto</small>
+              </div>
+              <button id="set-autofire-toggle" type="button" class="setting-switch" role="switch" aria-checked="false" aria-label="Toggle auto-fire by default">
+                <span class="setting-switch-knob" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div class="setting-row setting-toggle-row">
+              <div>
+                <strong>Score &amp; Hit Popups</strong>
+                <small>Floating combat callouts &amp; points</small>
+              </div>
+              <button id="set-popups-toggle" type="button" class="setting-switch" role="switch" aria-checked="true" aria-label="Toggle score and hit popups">
+                <span class="setting-switch-knob" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div class="setting-row setting-toggle-row setting-touch-only">
+              <div>
+                <strong>Dash &amp; Nova Side</strong>
+                <small>Thumb trigger placement on screen</small>
+              </div>
+              <div class="setting-seg" role="group" aria-label="Touch trigger side">
+                <button id="set-side-left" type="button" class="setting-seg-btn" aria-pressed="false">LEFT</button>
+                <button id="set-side-right" type="button" class="setting-seg-btn" aria-pressed="true">RIGHT</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </dialog>
 
       <dialog id="forge-unsaved" class="modal-sheet unsaved-dialog" closedby="any" aria-labelledby="unsaved-title">
         <form method="dialog" class="modal-head unsaved-head">
