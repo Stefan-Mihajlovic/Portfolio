@@ -9,6 +9,12 @@ const scores = {
   prism: 165,
   minelayer: 220,
   courier: 210,
+  dreadcourier: 420,
+  ace: 520,
+  volatile: 65,
+  shieldgen: 260,
+  gravmine: 195,
+  turretbarge: 280,
   vanguard: 230,
   swarmpod: 200,
   swarmer: 30,
@@ -22,30 +28,106 @@ const scores = {
 
 export const waveNames = [
   'ORBITAL ENTRY',
-  'VANGUARD SWEEP',
-  'PRISM CORRIDOR',
-  'CALDERA DRIFT',
+  'FLANKER BLITZ',
+  'ASTEROID CANYON',
+  'LASER GAUNTLET',
+  'TREASURE CONVOY',
   'PHANTOM AMBUSH',
-  'CLUSTER SIEGE',
-  'ASTRAL RIFT GATE',
-  'CRYO SHATTER',
-  'IRON PHALANX',
-  'ECLIPSE INTERCEPT',
-  'SOLAR OVERDRIVE',
-  'EVENT HORIZON',
+  'ACE INTERCEPT',
+  'COMBINED ASSAULT',
 ];
 
-// Clean, readable choreographed encounters across 6 escalating tactical banks!
-const phrases = [
-  ['echelon', 'laserLink', 'orbiterRing', 'sniperRun', 'courier', 'anchorBattery'],
-  ['vanguardWall', 'blinkAmbush', 'swarmDrop', 'railSniper', 'courier', 'clusterSiege'],
-  ['healerPhalanx', 'laserLink', 'orbiterRing', 'mineSweep', 'courier', 'phantomSniper'],
-  ['clusterSiege', 'crossLaserGate', 'mineSweep', 'vanguardWall', 'courier', 'swarmDrop'],
-  ['healerPhalanx', 'phantomSniper', 'crossLaserGate', 'mineSweep', 'courier', 'clusterSiege'],
-  ['crossLaserGate', 'healerPhalanx', 'mineSweep', 'blinkAmbush', 'courier', 'clusterSiege'],
+const WAVE_ARCHETYPES = [
+  {
+    id: 'assault',
+    title: 'COMBINED ASSAULT',
+    tone: 'teal',
+    cadenceMult: 1.0,
+    pool: ['echelon', 'sideRibbon', 'shieldFortress', 'orbiterRing', 'turretCrossfire', 'clusterSiege', 'gravityTrap', 'courier', 'healerPhalanx'],
+  },
+  {
+    id: 'blitz',
+    title: 'FLANKER BLITZ',
+    tone: 'teal',
+    cadenceMult: 1.28,
+    pool: ['sideRibbon', 'pincerFlank', 'crossWeave', 'pincerStrike', 'sideRibbon', 'courier'],
+  },
+  {
+    id: 'canyon',
+    title: 'ASTEROID CANYON',
+    tone: 'gold',
+    cadenceMult: 1.12,
+    pool: ['asteroidRiver', 'volatileRocks', 'sniperRun', 'gravityTrap', 'railSniper', 'courier'],
+  },
+  {
+    id: 'gauntlet',
+    title: 'LASER GAUNTLET',
+    tone: 'teal',
+    cadenceMult: 0.96,
+    pool: ['laserLink', 'prismCorridor', 'turretCrossfire', 'crossLaserGate', 'orbiterRing', 'mineSweep'],
+  },
+  {
+    id: 'convoy',
+    title: 'TREASURE CONVOY',
+    tone: 'gold',
+    cadenceMult: 0.95,
+    pool: ['sideRibbon', 'treasureConvoy', 'shieldFortress', 'healerPhalanx', 'pincerFlank', 'anchorBattery'],
+  },
+  {
+    id: 'ambush',
+    title: 'PHANTOM AMBUSH',
+    tone: 'warn',
+    cadenceMult: 1.08,
+    pool: ['blinkAmbush', 'gravityTrap', 'phantomSniper', 'pincerFlank', 'swarmDrop', 'clusterSiege'],
+  },
+  {
+    id: 'ace',
+    title: 'ACE INTERCEPT',
+    tone: 'warn',
+    cadenceMult: 0.88,
+    pool: ['sideRibbon', 'aceDuel', 'echelon', 'pincerFlank', 'courier', 'sniperRun'],
+  },
+  {
+    id: 'fortress',
+    title: 'SIEGE FORTRESS',
+    tone: 'warn',
+    cadenceMult: 0.92,
+    pool: ['shieldFortress', 'turretCrossfire', 'gravityTrap', 'healerPhalanx', 'volatileRocks', 'clusterSiege'],
+  },
 ];
 
-export const waveLength = 15.5;
+function waveRng(seed) {
+  let s = (seed * 2654435761) >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return (s >>> 0) / 4294967296;
+  };
+}
+
+// Deterministic per-run shuffled wave archetype selector — never repeats back-to-back & feels unique every run!
+export function getWaveProfile(wave, runSeed = 1, sectorIndex = 0) {
+  if (wave <= 1) {
+    // Wave 1: lively opener (alternates Assault vs Flanker Blitz across runs!)
+    const startIdx = runSeed % 2 === 0 ? 0 : 1;
+    const base = WAVE_ARCHETYPES[startIdx];
+    return { ...base, title: wave === 1 ? 'ORBITAL ENTRY' : base.title };
+  }
+  const cycle = Math.floor((wave - 2) / WAVE_ARCHETYPES.length);
+  const pos = (wave - 2) % WAVE_ARCHETYPES.length;
+  const order = WAVE_ARCHETYPES.map((_, i) => i);
+  const rng = waveRng(runSeed * 6151 + cycle * 9973 + 19);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  // Avoid repeating Wave 1's archetype immediately on Wave 2
+  if (cycle === 0 && order[0] === (runSeed % 2 === 0 ? 0 : 1)) {
+    [order[0], order[1]] = [order[1], order[0]];
+  }
+  return WAVE_ARCHETYPES[order[pos]];
+}
+
+export const waveLength = 15.0;
 
 export function createEnemy(kind, x, y, wave, overrides = {}) {
   const tier = Math.max(0, wave - 1);
@@ -68,6 +150,12 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 18,
     minelayer: 22,
     courier: 20,
+    dreadcourier: 27,
+    ace: 24,
+    volatile: 17,
+    shieldgen: 20,
+    gravmine: 17,
+    turretbarge: 25,
     vanguard: 23,
     swarmpod: 20,
     swarmer: 10,
@@ -87,6 +175,12 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 74,
     minelayer: 62,
     courier: 72,
+    dreadcourier: 56,
+    ace: 118,
+    volatile: 64,
+    shieldgen: 62,
+    gravmine: 52,
+    turretbarge: 50,
     vanguard: 58,
     swarmpod: 64,
     swarmer: 175,
@@ -106,6 +200,12 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 5,
     minelayer: 12,
     courier: 6,
+    dreadcourier: 22,
+    ace: 26,
+    volatile: 2.2,
+    shieldgen: 6.2,
+    gravmine: 5.5,
+    turretbarge: 11,
     vanguard: 8,
     swarmpod: 6.5,
     swarmer: 1,
@@ -125,6 +225,12 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
     prism: 5,
     minelayer: 6,
     courier: 6,
+    dreadcourier: 12,
+    ace: 12,
+    volatile: 3,
+    shieldgen: 6,
+    gravmine: 5,
+    turretbarge: 7,
     vanguard: 6,
     swarmpod: 5,
     swarmer: 1,
@@ -206,21 +312,41 @@ export function createEnemy(kind, x, y, wave, overrides = {}) {
 }
 
 export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
-  const { overclock = false, sectorIndex = 0 } = opts;
-  const bankIdx = Math.min(phrases.length - 1, Math.floor((wave - 1) / 2));
-  const kind = phrases[bankIdx][beat % 6];
+  const { overclock = false, sectorIndex = 0, runSeed = 1, h = 700 } = opts;
+  const profile = getWaveProfile(wave, runSeed, sectorIndex);
+  let kind;
+  if (profile.id === 'convoy' || profile.id === 'ace') {
+    // Choreographed event beats: warm-up -> marquee event on beat 1 -> escalating follow-ups
+    kind = profile.pool[beat % profile.pool.length];
+  } else {
+    // Deterministically shuffled non-repeating sequence per wave & run!
+    const rng = waveRng(runSeed * 3571 + wave * 919 + sectorIndex * 73);
+    const shuffled = [...profile.pool];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    kind = shuffled[beat % shuffled.length];
+    // On Wave 1 beat 0, ensure an approachable, fun opening formation
+    if (wave === 1 && beat === 0) kind = runSeed % 2 === 0 ? 'echelon' : 'sideRibbon';
+    // Keep high-complexity healers/cross-gates for Wave 2+
+    if (wave === 1 && (kind === 'healerPhalanx' || kind === 'crossLaserGate')) kind = 'laserLink';
+  }
   const center = Math.max(0.2, Math.min(0.8, (playerX / w) * 0.4 + 0.18 + Math.random() * 0.36));
   const side = Math.random() < 0.5 ? 1 : -1;
 
   function add(type, lane, delay = 0, dir = side, extra = {}) {
-    const r = extra.r ?? { rock: 22, raider: 16, kite: 14, lancer: 15, gunship: 24, prism: 18, minelayer: 22, courier: 20 }[type] ?? 16;
-    const x = Math.max(r + 12, Math.min(w - r - 12, lane * w));
-    const y = -r - 10 - delay * 95;
+    const r =
+      extra.r ??
+      { rock: 22, raider: 16, kite: 14, lancer: 15, gunship: 24, prism: 18, minelayer: 22, courier: 20, dreadcourier: 27, ace: 24, volatile: 17 }[type] ??
+      16;
+    const x = extra.x ?? Math.max(r + 12, Math.min(w - r - 12, lane * w));
+    const y = extra.y ?? -r - 10 - delay * 95;
     const foe = createEnemy(type, x, y, wave, {
       dir,
       overclock,
       sectorIndex,
-      molten: type === 'rock' && sectorIndex % 8 === 1,
+      molten: type === 'rock' && (sectorIndex % 8 === 1 || sectorIndex % 8 === 3),
       cryo: type === 'rock' && sectorIndex % 8 === 5,
       ...extra,
     });
@@ -228,7 +354,94 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
     return foe;
   }
 
-  if (kind === 'laserLink') {
+  function addFlanker(type, fromSide, yFrac, wait, extra = {}) {
+    const r = type === 'ace' ? 24 : type === 'kite' ? 14 : 16;
+    const startX = fromSide < 0 ? -r - 18 : w + r + 18;
+    const startY = Math.max(68, Math.min(h * 0.48, h * yFrac));
+    return add(type, 0.5, 0, -fromSide, {
+      x: startX,
+      y: startY,
+      flank: {
+        fromSide,
+        wait,
+        baseY: startY,
+        amp: extra.flankAmp ?? 42,
+        freq: extra.flankFreq ?? 2.6,
+        speedX: extra.flankSpeed ?? Math.min(220, Math.max(155, w * 0.34)),
+      },
+      ...extra,
+    });
+  }
+
+  if (kind === 'sideRibbon') {
+    // Classic arcade curved ribbon of 4-5 nimble fighters sweeping in from the LEFT or RIGHT edge!
+    const fromSide = side;
+    const count = wave >= 4 ? 5 : 4;
+    const baseY = 0.16 + Math.random() * 0.14;
+    for (let i = 0; i < count; i++) {
+      addFlanker(i % 2 === 0 ? 'kite' : 'raider', fromSide, baseY + i * 0.025, 0.45 + i * 0.24, {
+        fireIn: 0.95 + i * 0.28,
+        flankAmp: 46,
+        flankFreq: 2.9,
+      });
+    }
+  } else if (kind === 'pincerFlank') {
+    // Mirrored left+right crossing ribbons squeezing the mid-field!
+    for (let i = 0; i < 3; i++) {
+      addFlanker('kite', -1, 0.17 + i * 0.05, 0.45 + i * 0.28, { fireIn: 1.05 + i * 0.35, flankAmp: 34 });
+      addFlanker('kite', 1, 0.22 + i * 0.05, 0.55 + i * 0.28, { fireIn: 1.25 + i * 0.35, flankAmp: 34 });
+    }
+  } else if (kind === 'asteroidRiver') {
+    // Dense asteroid canyon corridor with an open slalom channel + ambush sniper/lancer!
+    const gapLane = Math.max(0.24, Math.min(0.76, center));
+    for (let i = 0; i < 5; i++) {
+      const lane = 0.1 + i * 0.2;
+      if (Math.abs(lane - gapLane) < 0.14) continue;
+      add('rock', lane, i * 0.16, side, { r: 21 + Math.random() * 8 });
+    }
+    add('rock', gapLane + (gapLane > 0.5 ? -0.22 : 0.22), 0.72, -side, { r: 24 });
+    add(wave >= 3 ? 'sniper' : 'lancer', gapLane, 0.48, side, { holdY: 0.17, fireIn: 1.3 });
+    if (sectorIndex % 8 === 6 || wave >= 3) {
+      add('volatile', Math.max(0.18, Math.min(0.82, 1 - gapLane)), 0.32, side);
+    }
+  } else if (kind === 'volatileRocks') {
+    // Explosive derelict reactor drums nestled inside an enemy squad — shoot the drum for chain kills!
+    add('volatile', center, 0.15, side);
+    add('raider', Math.max(0.14, center - 0.16), 0.1, 1, { fireIn: 1.25 });
+    add('raider', Math.min(0.86, center + 0.16), 0.1, -1, { fireIn: 1.6 });
+    add('rock', Math.max(0.12, center - 0.28), 0.45, 1, { r: 22 });
+    add('rock', Math.min(0.88, center + 0.28), 0.45, -1, { r: 22 });
+  } else if (kind === 'treasureConvoy') {
+    // High-value Gold Dread-Courier escorted by Shield Vanguard & Healer!
+    const startLane = side > 0 ? 0.2 : 0.8;
+    add('dreadcourier', startLane, 0, side);
+    add('vanguard', Math.max(0.16, Math.min(0.84, startLane + side * 0.14)), 0.22, side, { fireIn: 1.4 });
+    add('healer', Math.max(0.18, Math.min(0.82, startLane - side * 0.14)), 0.38, -side, { holdY: 0.22 });
+  } else if (kind === 'aceDuel') {
+    // Mini-Boss Event: Elite Crimson-Gold Ace Interceptor enters from the flank!
+    addFlanker('ace', side, 0.2, 0.75, {
+      fireIn: 1.15,
+      dashCd: 2.1,
+      flankSpeed: 210,
+      flankAmp: 16,
+    });
+    add('raider', side > 0 ? 0.22 : 0.78, 0.35, -side, { fireIn: 1.5 });
+  } else if (kind === 'shieldFortress') {
+    // Tactical Priority Puzzle: Shield Generator projecting 75% armor bubbles over Turret Barge & flankers!
+    add('turretbarge', center, 0, side, { holdY: 0.2, fireIn: 1.35 });
+    add('shieldgen', Math.max(0.18, Math.min(0.82, center + side * 0.24)), 0.25, -side, { holdY: 0.23 });
+    add('raider', Math.max(0.14, Math.min(0.86, center - side * 0.24)), 0.45, side, { fireIn: 1.65 });
+  } else if (kind === 'gravityTrap') {
+    // Spatial Synergy Trap: Gravity Mine tugging ship + Cluster Bomber or Lancers!
+    add('gravmine', center, 0.1, side, { holdY: 0.3 });
+    add(wave >= 3 ? 'bomber' : 'gunship', Math.max(0.2, Math.min(0.8, 1 - center)), 0.25, -side, { fireIn: 1.4 });
+    add('kite', side > 0 ? 0.16 : 0.84, 0.4, side, { fireIn: 1.5 });
+  } else if (kind === 'turretCrossfire') {
+    // Dual Rotating Artillery Barges locking lanes from opposite corners (flank their turret turn speed!)
+    add('turretbarge', 0.22, 0, 1, { holdY: 0.19, fireIn: 1.15 });
+    add('turretbarge', 0.78, 0.35, -1, { holdY: 0.22, fireIn: 1.95 });
+    add('volatile', 0.5, 0.55, side);
+  } else if (kind === 'laserLink') {
     // Synchronized laser-tethered drone gate! Shoot either anchor node to snap the live plasma beam!
     const span = Math.min(0.32, Math.max(0.22, 230 / Math.max(360, w)));
     const mid = Math.max(0.26, Math.min(0.74, center));
@@ -372,11 +585,263 @@ export function spawnFormation(enemies, w, wave, beat, playerX, opts = {}) {
   }
 }
 
-export function flyEnemy(e, dt, w, h, player, shots, sound, enemies, ionWind = 0) {
+export function flyEnemy(e, rawDt, w, h, player, shots, sound, enemies, ionWind = 0) {
+  if (e.frozen > 0) e.frozen = Math.max(0, e.frozen - rawDt);
+  const dt = e.frozen > 0 ? rawDt * 0.45 : rawDt;
   e.age += dt;
-  e.flash = Math.max(0, e.flash - dt);
-  if (e.shieldFlash > 0) e.shieldFlash = Math.max(0, e.shieldFlash - dt);
+  e.flash = Math.max(0, e.flash - rawDt);
+  if (e.shieldFlash > 0) e.shieldFlash = Math.max(0, e.shieldFlash - rawDt);
   const wv = e.wave || 1;
+
+  // Side-entry curved ribbon flankers (enter from LEFT/RIGHT with off-screen warning telegraph!)
+  if (e.flank && e.kind !== 'ace') {
+    const f = e.flank;
+    if (f.wait > 0) {
+      f.wait -= rawDt;
+      return;
+    }
+    const dir = -f.fromSide;
+    e.vx = dir * f.speedX * Math.min(1.25, e.threat);
+    const waveT = (e.age - 0.1) * f.freq;
+    e.vy = Math.cos(waveT) * f.amp * 2.2 + 42;
+    e.x += e.vx * dt;
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, Math.max(60, Math.abs(e.vy) + 70)) * 0.72;
+    if ((dir > 0 && e.x > w + e.r + 48) || (dir < 0 && e.x < -e.r - 48)) {
+      e.dead = true;
+      return;
+    }
+    if (e.x > 16 && e.x < w - 16 && e.y > 16 && e.y < player.y - 60) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const aim = Math.atan2(player.x - e.x, Math.max(60, player.y - e.y));
+        const spd = Math.min(220, 168 * e.threat);
+        shots.push({
+          x: e.x,
+          y: e.y + 8,
+          r: 4,
+          vx: Math.sin(aim) * spd,
+          vy: Math.cos(aim) * spd,
+          hostile: true,
+          color: '#ff9c6e',
+        });
+        sound.effect('raider');
+        e.fireIn = Math.max(1.35, 1.95 / e.threat);
+      }
+    }
+    return;
+  }
+
+  // Mini-Boss: Elite Ace Interceptor (enters from flank, dashes across arena with laser telegraph, aimed bursts!)
+  if (e.kind === 'ace') {
+    if (e.flank && e.flank.wait > 0) {
+      e.flank.wait -= rawDt;
+      return;
+    }
+    if (e.flank) {
+      const targetX = e.flank.fromSide < 0 ? w * 0.28 : w * 0.72;
+      e.x += (targetX - e.x) * (1 - Math.exp(-dt * 4.5));
+      e.y += (h * 0.22 - e.y) * (1 - Math.exp(-dt * 4.5));
+      e.tilt = -Math.sign(targetX - e.x) * 0.35;
+      if (Math.abs(targetX - e.x) < 18) e.flank = null;
+      return;
+    }
+    if (e.dashTelegraph > 0) {
+      e.dashTelegraph -= dt;
+      e.vx *= Math.exp(-dt * 10);
+      e.vy *= Math.exp(-dt * 10);
+      if (e.dashTelegraph <= 0) {
+        e.dashing = 0.36;
+        e.dashStartX = e.x;
+        e.dashStartY = e.y;
+        sound.effect('dash');
+      }
+      return;
+    }
+    if (e.dashing > 0) {
+      e.dashing -= dt;
+      const p = 1 - Math.max(0, e.dashing / 0.36);
+      const eased = p * p * (3 - 2 * p);
+      const prevX = e.x;
+      e.x = e.dashStartX + (e.dashTargetX - e.dashStartX) * eased;
+      e.y = e.dashStartY + (e.dashTargetY - e.dashStartY) * eased;
+      e.tilt = -Math.atan2(e.x - prevX, 14) * 0.5;
+      e.trail.push({ x: e.x, y: e.y, tilt: e.tilt, life: 0.22 });
+      if (e.trail.length > 7) e.trail.shift();
+      if (e.dashing <= 0) {
+        // Snap-fire crisp 5-bolt fan right after dash stop!
+        const aim = Math.atan2(player.x - e.x, Math.max(70, player.y - e.y));
+        const spd = Math.min(240, 184 * e.threat);
+        for (const off of [-0.34, -0.17, 0, 0.17, 0.34]) {
+          shots.push({
+            x: e.x,
+            y: e.y + 12,
+            r: 4.3,
+            vx: Math.sin(aim + off) * spd,
+            vy: Math.cos(aim + off) * spd,
+            hostile: true,
+            color: '#ffd56b',
+          });
+        }
+        sound.effect('volley');
+        e.dashCd = Math.max(2.1, 2.8 / e.threat);
+      }
+      return;
+    }
+    // Agile stalking orbit in upper field
+    const trackX = Math.max(w * 0.16, Math.min(w * 0.84, player.x * 0.65 + (w * 0.5 + Math.sin(e.age * 1.8) * w * 0.22) * 0.35));
+    const goalY = e.age < 13.5 ? h * (0.2 + Math.sin(e.age * 1.6) * 0.06) : h + 80;
+    e.vx = (trackX - e.x) * 2.6;
+    e.vy = (goalY - e.y) * (e.age < 13.5 ? 2.6 : 1.1);
+    e.x = Math.max(e.r + 14, Math.min(w - e.r - 14, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    e.tilt = -Math.atan2(e.vx, 220) * 0.55;
+    if (e.age < 12.5) {
+      e.dashCd = (e.dashCd ?? 2.2) - dt;
+      if (e.dashCd <= 0) {
+        e.dashTargetX = e.x < w * 0.5 ? w * (0.68 + Math.random() * 0.16) : w * (0.16 + Math.random() * 0.16);
+        e.dashTargetY = h * (0.18 + Math.random() * 0.2);
+        e.dashTelegraph = 0.55;
+        sound.effect('sniperLock');
+        return;
+      }
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const aim = Math.atan2(player.x - e.x, Math.max(70, player.y - e.y));
+        const spd = Math.min(235, 178 * e.threat);
+        for (const off of [-0.14, 0, 0.14]) {
+          shots.push({
+            x: e.x,
+            y: e.y + 12,
+            r: 4.1,
+            vx: Math.sin(aim + off) * spd,
+            vy: Math.cos(aim + off) * spd,
+            hostile: true,
+            color: '#ff6e7a',
+          });
+        }
+        sound.effect('raider');
+        e.fireIn = Math.max(1.15, 1.55 / e.threat);
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'dreadcourier') {
+    // High-value Gold Convoy barge weaving slowly across the arena (defensive twin bursts)
+    e.vx = e.dir * Math.min(82, w * 0.15);
+    e.vy = e.cruise * (e.y < h * 0.2 ? 1.1 : 0.42);
+    e.x += e.vx * dt;
+    if (e.x < e.r + 22) e.dir = 1;
+    if (e.x > w - e.r - 22) e.dir = -1;
+    e.y += e.vy * dt;
+    e.tilt = Math.sin(e.age * 2.0) * 0.08;
+    if (e.y > 24 && e.y < player.y - 80) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        for (const off of [-0.25, 0.25]) {
+          shots.push({
+            x: e.x + Math.sign(off) * 16,
+            y: e.y + 14,
+            r: 4.2,
+            vx: Math.sin(off) * 155,
+            vy: Math.cos(off) * 155,
+            hostile: true,
+            color: '#ffd56b',
+          });
+        }
+        e.fireIn = 1.95;
+      }
+    }
+    return;
+  }
+
+  if (e.kind === 'volatile') {
+    e.x = Math.max(e.r + 12, Math.min(w - e.r - 12, e.x + (Math.sin(e.age * 1.4 + e.angle) * 18 + ionWind * 0.45) * dt));
+    e.y += e.vy * dt;
+    return;
+  }
+
+  if (e.kind === 'shieldgen') {
+    // Projects hard-light cyan shield bubbles onto up to 2 nearby allies — snipe this first!
+    const holdY = h * (e.holdY || 0.23);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.2));
+    e.vy += ((e.age < 10.5 ? arrival : e.cruise * 1.4) - e.vy) * (1 - Math.exp(-dt * 4));
+    e.vx = e.dir * Math.sin(e.age * 1.1) * 44;
+    e.x = Math.max(e.r + 16, Math.min(w - e.r - 16, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+
+    // Clear stale shield pointers owned by this generator, then re-link closest 2 allies
+    for (const ally of enemies) {
+      if (ally.shieldedBy === e) ally.shieldedBy = null;
+    }
+    const candidates = [];
+    for (const ally of enemies) {
+      if (ally === e || ally.dead || ally.kind === 'rock' || ally.kind === 'mine' || ally.kind === 'shieldgen' || ally.kind === 'volatile' || ally.kind === 'boss') continue;
+      const d = Math.hypot(ally.x - e.x, ally.y - e.y);
+      if (d < 360) candidates.push({ ally, d });
+    }
+    candidates.sort((a, b) => a.d - b.d);
+    e.shieldTargets = candidates.slice(0, 2).map((c) => c.ally);
+    for (const ally of e.shieldTargets) ally.shieldedBy = e;
+    return;
+  }
+
+  if (e.kind === 'gravmine') {
+    // Drifts to mid-field, pulls player & curves nearby bullets until shot down!
+    const holdY = h * (e.holdY || 0.3);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 1.9));
+    e.vy += ((e.age < 9.5 ? arrival : e.cruise * 1.4) - e.vy) * (1 - Math.exp(-dt * 3.5));
+    e.vx = e.dir * Math.sin(e.age * 0.9) * 24;
+    e.x = Math.max(e.r + 18, Math.min(w - e.r - 18, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+    return;
+  }
+
+  if (e.kind === 'turretbarge') {
+    // Heavy slow armored barge with a rotating dual turret that turns at finite angular speed (flank its blind spot!)
+    const holdY = h * (e.holdY || 0.2);
+    const arrival = Math.max(0, Math.min(e.cruise, (holdY - e.y) * 2.0));
+    e.vy += ((e.age < 9.2 ? arrival : e.cruise * 1.35) - e.vy) * (1 - Math.exp(-dt * 3.5));
+    e.vx = e.dir * Math.sin(e.age * 0.75) * 24;
+    e.x = Math.max(e.r + 18, Math.min(w - e.r - 18, e.x + e.vx * dt));
+    e.y += e.vy * dt;
+
+    const desired = Math.max(-1.05, Math.min(1.05, Math.atan2(player.x - e.x, Math.max(55, player.y - e.y))));
+    const cur = e.turretAngle || 0;
+    const maxTurn = 1.45 * dt;
+    e.turretAngle = cur + Math.max(-maxTurn, Math.min(maxTurn, desired - cur));
+
+    if (e.y > 22 && e.age < 8.4) {
+      e.fireIn -= dt;
+      if (e.fireIn <= 0) {
+        const a = e.turretAngle || 0;
+        const spd = Math.min(230, 178 * e.threat);
+        const perpX = Math.cos(a) * 6;
+        const perpY = -Math.sin(a) * 6;
+        for (const s of [-1, 1]) {
+          shots.push({
+            x: e.x + Math.sin(a) * 16 + perpX * s,
+            y: e.y + Math.cos(a) * 16 + perpY * s,
+            r: 4.1,
+            vx: Math.sin(a) * spd,
+            vy: Math.cos(a) * spd,
+            hostile: true,
+            color: '#ff9d5c',
+          });
+        }
+        sound.effect('raider');
+        e.burstLeft = (e.burstLeft ?? 2) - 1;
+        if (e.burstLeft > 0) {
+          e.fireIn = 0.22;
+        } else {
+          e.burstLeft = 3;
+          e.fireIn = Math.max(1.5, 2.05 / e.threat);
+        }
+      }
+    }
+    return;
+  }
 
   if (e.kind === 'orbiter') {
     // Drops to mid-field, spins rapidly, fires rotating 4-point cross volleys!

@@ -25,18 +25,26 @@ import {
   drawInterceptor,
   drawBankedShip,
 } from './art.js';
-import { createEnemy, spawnFormation, flyEnemy, waveLength, waveNames } from './encounters.js';
+import { createEnemy, spawnFormation, flyEnemy, getWaveProfile, waveLength, waveNames } from './encounters.js';
 import {
   advanceArmor,
   aliveBossParts,
   hasActivePylons,
   getBossLaserTethers,
+  getBossPhaseTitle,
   createBoss,
   drawBoss,
   drawEntry,
   flyBoss,
   flyEscort,
 } from './bosses.js';
+import {
+  getAugmentById,
+  pickAugmentDraft,
+  pickSectorMutator,
+  rollContract,
+  rollDilemmaPair,
+} from './augments.js';
 import { createFlightAudio } from './audio.js';
 
 const sound = createFlightAudio();
@@ -433,6 +441,15 @@ const comboMultEl = document.querySelector('#combo-mult');
 const bossHud = document.querySelector('#boss-hud');
 const bossArmor = document.querySelector('#boss-armor');
 const bossPartsEl = document.querySelector('#boss-parts');
+const contractHud = document.querySelector('#contract-hud');
+const contractTextEl = document.querySelector('#contract-text');
+const contractProgEl = document.querySelector('#contract-prog');
+const contractFillEl = document.querySelector('#contract-fill');
+const pauseAugmentsEl = document.querySelector('#pause-augments');
+const augmentDraftEl = document.querySelector('#augment-draft');
+const draftKickerEl = document.querySelector('#draft-kicker');
+const draftSubEl = document.querySelector('#draft-sub');
+const draftCardsEl = document.querySelector('#draft-cards');
 const weaponTierEl = document.querySelector('#weapon-tier');
 const fireModeEl = document.querySelector('#fire-mode');
 const rapidBadgeEl = document.querySelector('#rapid-badge');
@@ -571,6 +588,23 @@ let riftWell = null;
 let riftTimer = 4.0;
 let empWave = null;
 let empTimer = 5.5;
+let boostRing = null;
+let boostRingTimer = 5.2;
+let runAugments = {};
+let draftActive = false;
+let draftChoices = [];
+let sectorMutator = null;
+let activeContract = null;
+let dilemmaGate = null;
+let dilemmaSpawnedThisSector = false;
+let lightningArcs = [];
+let augmentHitCounter = 0;
+let siphonKills = 0;
+let droneTimer = 0;
+let microMissileTimer = 0;
+let staticOrbs = [0, 0];
+
+const hasAug = (id) => runAugments[id] || 0;
 let runCoins = 0;
 let missileTimer = 0;
 let weaponHeat = 0;
@@ -620,7 +654,9 @@ function getMultiplier() {
 
 function addScore(base, x, y, showPopup = false, color = PALETTE.paper) {
   const dimBonus = sectorIndex % 8 === 7 ? 1.25 : 1;
-  const mult = getMultiplier() * (meta.overclock ? 1.35 : 1) * dimBonus;
+  const mutBonus = sectorMutator?.scoreMult || 1;
+  const augBonus = hasAug('greed') ? 1.15 : 1;
+  const mult = getMultiplier() * (meta.overclock ? 1.35 : 1) * dimBonus * mutBonus * augBonus;
   const gained = Math.round(base * mult);
   score += gained;
   if (showPopup && x !== undefined) {
@@ -1145,6 +1181,76 @@ function draw() {
   // Salvage & tactical pickups
   for (const p of pickups) drawPickup(ctx, p);
 
+  // Interactive Space Mechanics: Orbital Boost Gates (Sector 1/3) + In-Arena Risk/Reward Dilemma Gates!
+  if (boostRing && mode === 'playing') {
+    const pulse = 0.72 + 0.28 * Math.sin(time * 9);
+    const col = sectorIndex % 8 === 2 ? '#d2b8ff' : '#79e3d5';
+    ctx.save();
+    ctx.translate(boostRing.x, boostRing.y);
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, boostRing.r * 0.25, 0, 0, boostRing.r * 1.25);
+    g.addColorStop(0, sectorIndex % 8 === 2 ? 'rgba(210, 184, 255, 0.08)' : 'rgba(121, 227, 213, 0.08)');
+    g.addColorStop(0.75, sectorIndex % 8 === 2 ? 'rgba(210, 184, 255, 0.28)' : 'rgba(121, 227, 213, 0.28)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, boostRing.r * 1.25, 0, TAU);
+    ctx.fill();
+    ctx.rotate(time * 1.8);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2.4 * pulse;
+    ctx.setLineDash([12, 8]);
+    ctx.beginPath();
+    ctx.arc(0, 0, boostRing.r, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.rotate(-time * 3.2);
+    ctx.strokeStyle = '#ffffffcc';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(0, 0, boostRing.r * 0.68, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = col;
+    ctx.font = '700 9px ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('BOOST GATE', boostRing.x, boostRing.y - boostRing.r - 6);
+    ctx.restore();
+  }
+  if (dilemmaGate && !dilemmaGate.resolved && mode === 'playing') {
+    for (const [gx, opt] of [
+      [dilemmaGate.leftX, dilemmaGate.left],
+      [dilemmaGate.rightX, dilemmaGate.right],
+    ]) {
+      const hw = dilemmaGate.halfW;
+      const hh = dilemmaGate.h * 0.5;
+      ctx.save();
+      ctx.translate(gx, dilemmaGate.y);
+      ctx.fillStyle = 'rgba(8, 16, 28, 0.78)';
+      ctx.strokeStyle = opt.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-hw + 8, -hh);
+      ctx.lineTo(hw, -hh);
+      ctx.lineTo(hw, hh - 8);
+      ctx.lineTo(hw - 8, hh);
+      ctx.lineTo(-hw, hh);
+      ctx.lineTo(-hw, -hh + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = opt.color;
+      ctx.font = '800 10px ui-monospace, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(opt.title, 0, -2);
+      ctx.fillStyle = '#e8f1f5';
+      ctx.font = '600 8.5px ui-monospace, monospace';
+      ctx.fillText(opt.sub, 0, 10);
+      ctx.restore();
+    }
+  }
+
   // Dimension Hazards: Astral Rift Gravity Anomaly + Iron Graveyard EMP Pulse Storm!
   if (riftWell && mode === 'playing') {
     const fade = Math.min(1, riftWell.life * 1.4, (riftWell.maxLife - riftWell.life) * 2.5);
@@ -1242,7 +1348,31 @@ function draw() {
       ctx.fillText('+', e.x, e.y - e.r - 12);
       ctx.restore();
     }
-    if (e.dead || e.kind !== 'healer') continue;
+    if (e.dead || (e.kind !== 'healer' && e.kind !== 'shieldgen')) continue;
+    if (e.kind === 'shieldgen') {
+      for (const t of e.shieldTargets || []) {
+        if (!t || t.dead) continue;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = 'rgba(116, 236, 255, 0.34)';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y);
+        ctx.lineTo(t.x, t.y);
+        ctx.stroke();
+        ctx.strokeStyle = '#dffbff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 5]);
+        ctx.lineDashOffset = -time * 66;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y);
+        ctx.lineTo(t.x, t.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+      continue;
+    }
     const targets = e.healTargets?.length ? e.healTargets : e.healTarget ? [e.healTarget] : [];
     for (const t of targets) {
       if (!t || t.dead) continue;
@@ -1347,11 +1477,100 @@ function draw() {
         ctx.restore();
       }
     }
-    if (enemy.escort && enemy.age < 0) drawEntry(ctx, enemy, w);
+    if (enemy.flank && enemy.flank.wait > 0) {
+      // Crisp side-entry edge warning chevrons so player sees incoming flanker ribbons & Aces!
+      ctx.save();
+      const fromLeft = enemy.flank.fromSide < 0;
+      const pulse = 0.55 + 0.45 * Math.sin(time * 22);
+      ctx.translate(fromLeft ? 14 : w - 14, enemy.y);
+      ctx.rotate(fromLeft ? 0 : Math.PI);
+      ctx.strokeStyle = enemy.kind === 'ace' ? `rgba(255, 106, 114, ${pulse})` : `rgba(255, 206, 134, ${pulse})`;
+      ctx.lineWidth = enemy.kind === 'ace' ? 2.4 : 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-4, -6);
+      ctx.lineTo(3, 0);
+      ctx.lineTo(-4, 6);
+      ctx.moveTo(4, -6);
+      ctx.lineTo(11, 0);
+      ctx.lineTo(4, 6);
+      ctx.stroke();
+      ctx.restore();
+    } else if (enemy.escort && enemy.age < 0) drawEntry(ctx, enemy, w);
     else if (enemy.kind === 'rock') drawRock(ctx, enemy, sectorIndex);
     else if (enemy.kind === 'mine') drawMine(ctx, enemy);
     else if (enemy.kind === 'boss') drawBoss(ctx, enemy, w, h);
     else drawFoe(ctx, enemy, sectorIndex);
+  }
+
+  // Chain Lightning Augment visual arcs + Orbital Wingman Drones + Aegis Shield Orbs!
+  for (const arc of lightningArcs) {
+    const a = arc.life / arc.maxLife;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = `rgba(121, 240, 255, ${a * 0.95})`;
+    ctx.lineWidth = 2.6 * a;
+    ctx.beginPath();
+    ctx.moveTo(arc.x1, arc.y1);
+    const mx = (arc.x1 + arc.x2) * 0.5 + (Math.random() - 0.5) * 18;
+    const my = (arc.y1 + arc.y2) * 0.5 + (Math.random() - 0.5) * 18;
+    ctx.lineTo(mx, my);
+    ctx.lineTo(arc.x2, arc.y2);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (mode === 'playing' && hull > 0 && playerDying <= 0 && !warp) {
+    const droneCount = hasAug('drone');
+    for (let i = 0; i < droneCount; i++) {
+      const ang = time * 2.4 + i * Math.PI;
+      const dx = player.x + Math.cos(ang) * 42;
+      const dy = player.y + Math.sin(ang) * 28;
+      ctx.save();
+      ctx.translate(dx, dy);
+      ctx.fillStyle = '#0d1422';
+      ctx.strokeStyle = '#79e3d5';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(6.5, 4);
+      ctx.lineTo(0, 1.5);
+      ctx.lineTo(-6.5, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e8fffb';
+      ctx.beginPath();
+      ctx.arc(0, -1, 2.2, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+    if (hasAug('staticOrb')) {
+      for (let i = 0; i < 2; i++) {
+        const ang = -time * 3.1 + i * Math.PI;
+        const ox = player.x + Math.cos(ang) * 34;
+        const oy = player.y + Math.sin(ang) * 34;
+        const ready = staticOrbs[i] <= 0;
+        ctx.save();
+        ctx.translate(ox, oy);
+        if (ready) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = 'rgba(136, 240, 255, 0.34)';
+          ctx.beginPath();
+          ctx.arc(0, 0, 11, 0, TAU);
+          ctx.fill();
+          ctx.fillStyle = '#e6fdff';
+          ctx.beginPath();
+          ctx.arc(0, 0, 5.2, 0, TAU);
+          ctx.fill();
+        } else {
+          ctx.strokeStyle = 'rgba(136, 240, 255, 0.32)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(0, 0, 5, 0, TAU);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
   }
 
   // Spinning armor debris chunks
@@ -2021,10 +2240,27 @@ function triggerPhaseDash() {
   player.dashDx = dx / len;
   player.dashDy = dy / len;
   player.dashTime = 0.2;
-  player.dashCd = rig.dashCd;
+  player.dashCd = rig.dashCd * (sectorMutator?.speedMult ? 0.86 : 1);
   immune = Math.max(immune, 0.26);
   sound.effect('phaseDash');
   impacts.push({ x: player.x, y: player.y, radius: 14, color: getRigAccent(selectedRig), life: 0.3, maxLife: 0.3 });
+
+  // Phase Wake Augment: fires a 3-bolt piercing plasma wake on dash!
+  if (hasAug('phaseSlash')) {
+    for (const off of [-0.26, 0, 0.26]) {
+      shots.push({
+        x: player.x,
+        y: player.y - 8,
+        r: 4.8,
+        vx: Math.sin(off) * 520,
+        vy: -Math.cos(off) * 520,
+        dmg: 2.2,
+        hostile: false,
+        pierce: 2,
+        hitIds: new Set(),
+      });
+    }
+  }
 
   // Falcon / Ion Afterburner Signature Perk: Phase Dash triggers 0.6s Bullet-Time + fires a 4-missile micro-seeker burst!
   if (rig.perk === 'falcon') {
@@ -2228,6 +2464,17 @@ function damageBossCore(b, dmg, shot) {
   const armorScale = b.exposedFor > 0 ? 2 : hasActivePylons(b) ? 0.65 : 1;
   b.hp = Math.max(0, b.hp - dmg * armorScale);
   b.flash = 0.12;
+  // Monolith Mirage Split counterplay: shooting the REAL Monolith shatters its holographic decoys!
+  if (b.mirages && b.mirages.length > 0 && b.hp > 0) {
+    for (const m of b.mirages) {
+      burst({ x: m.x, y: m.y, r: 24 }, '#d8b4ff', false);
+      dropShards(m.x, m.y, 3, true);
+    }
+    b.mirages = [];
+    b.exposedFor = Math.max(b.exposedFor, 1.8);
+    addScore(180, b.x, b.y - 26, true, '#d8b4ff');
+    popups.push({ x: b.x, y: b.y - b.r - 14, text: 'MIRAGE SHATTERED!', color: '#e2c6ff', life: 1.0, maxLife: 1.0, size: 12 });
+  }
   if (advanceArmor(b)) {
     for (const round of shots) {
       if (round.hostile) {
@@ -2237,6 +2484,7 @@ function damageBossCore(b, dmg, shot) {
     }
     burst({ x: b.x, y: b.y, r: b.r * 1.2 }, '#ffcd8a', true);
     shockwaves.push({ x: b.x, y: b.y, radius: 190, color: '#ffbe78', life: 0.45, maxLife: 0.45 });
+    const phaseLabel = getBossPhaseTitle(b);
     // Final-Phase Armor Shedding + Dynamic Boss Soundtrack Escalation!
     if (b.isFinalPhase) {
       sound.setBossPhase(true);
@@ -2259,20 +2507,20 @@ function damageBossCore(b, dmg, shot) {
       popups.push({
         x: b.x,
         y: b.y - b.r - 12,
-        text: 'FINAL BAR — ENRAGED!',
+        text: `FINAL PHASE // ${phaseLabel}`,
         color: '#ff9668',
-        life: 1.35,
-        maxLife: 1.35,
+        life: 1.45,
+        maxLife: 1.45,
         size: 13,
       });
     } else {
       popups.push({
         x: b.x,
         y: b.y - b.r - 12,
-        text: 'ARMOR BAR BROKEN',
+        text: `PHASE ${b.phase} // ${phaseLabel}`,
         color: '#ffe099',
-        life: 1.05,
-        maxLife: 1.05,
+        life: 1.25,
+        maxLife: 1.25,
         size: 12,
       });
     }
@@ -2375,6 +2623,8 @@ function killEnemy(e) {
     'prism',
     'minelayer',
     'courier',
+    'dreadcourier',
+    'ace',
     'vanguard',
     'swarmpod',
     'sniper',
@@ -2383,11 +2633,11 @@ function killEnemy(e) {
     'phantom',
     'healer',
   ].includes(e.kind);
-  sound.effect(isRock ? 'rock' : 'ship', Math.min(8, combo / 2));
-  addScore(e.points, e.x, e.y, true, e.kind === 'courier' ? PALETTE.gold : PALETTE.paper);
+  sound.effect(isRock ? 'rock' : e.kind === 'ace' || e.kind === 'dreadcourier' ? 'breach' : 'ship', Math.min(8, combo / 2));
+  addScore(e.points, e.x, e.y, true, e.kind === 'courier' || e.kind === 'dreadcourier' || e.kind === 'ace' ? PALETTE.gold : PALETTE.paper);
   if (!isRock) {
     kills++;
-    bumpCombo(heavy ? 2 : 1);
+    bumpCombo(e.kind === 'ace' || e.kind === 'dreadcourier' ? 4 : heavy ? 2 : 1);
   }
   const killColor = isRock
     ? e.cryo
@@ -2397,17 +2647,21 @@ function killEnemy(e) {
       ? '#cba8ff'
       : e.kind === 'healer'
         ? '#7ef2a8'
-        : e.kind === 'courier'
+        : e.kind === 'courier' || e.kind === 'dreadcourier'
           ? PALETTE.gold
-          : '#ffad73';
-  burst(e, killColor, heavy);
+          : e.kind === 'ace'
+            ? '#ff5a6c'
+            : e.kind === 'volatile'
+              ? '#ff9844'
+              : '#ffad73';
+  burst(e, killColor, heavy || e.kind === 'volatile');
   shockwaves.push({
     x: e.x,
     y: e.y,
-    radius: heavy ? 74 : 44,
+    radius: e.kind === 'volatile' ? 155 : e.kind === 'ace' || e.kind === 'dreadcourier' ? 120 : heavy ? 74 : 44,
     color: killColor,
-    life: heavy ? 0.3 : 0.22,
-    maxLife: heavy ? 0.3 : 0.22,
+    life: heavy || e.kind === 'volatile' ? 0.34 : 0.22,
+    maxLife: heavy || e.kind === 'volatile' ? 0.34 : 0.22,
   });
   impacts.push({
     x: e.x,
@@ -2419,24 +2673,116 @@ function killEnemy(e) {
     life: 0.16,
     maxLife: 0.16,
   });
-  // Sector 6 Cryo Asteroids shatter into 4 crisp ice needles when broken!
-  if (isRock && e.cryo && e.split) {
-    for (let i = 0; i < 4; i++) {
-      const a = (i * TAU) / 4 + Math.PI / 4;
-      shots.push({
-        x: e.x,
-        y: e.y,
-        r: 3.8,
-        vx: Math.sin(a) * 145,
-        vy: Math.cos(a) * 145,
-        hostile: true,
-        color: '#9ee8ff',
-      });
+  // Sector 6 Cryo Asteroids shatter into a frost wave that freezes & slows nearby enemies!
+  if (isRock && (e.cryo || sectorIndex % 8 === 5) && e.split) {
+    shockwaves.push({ x: e.x, y: e.y, radius: 165, color: '#9ee8ff', life: 0.36, maxLife: 0.36 });
+    let slowed = 0;
+    for (const foe of enemies) {
+      if (foe === e || foe.dead || foe.kind === 'rock' || foe.kind === 'boss') continue;
+      if (Math.hypot(foe.x - e.x, foe.y - e.y) < 165) {
+        foe.frozen = 2.6;
+        slowed++;
+      }
+    }
+    if (slowed > 0) {
+      popups.push({ x: e.x, y: e.y - 20, text: 'CRYO FREEZE!', color: '#b8f0ff', life: 0.9, maxLife: 0.9, size: 12 });
+    }
+  }
+  // Volatile Derelict Core: massive AoE chain-blast damaging nearby enemies!
+  if (e.kind === 'volatile') {
+    addShake(11);
+    triggerHitstop(0.045);
+    sound.effect('nova');
+    let blasted = 0;
+    for (const foe of enemies) {
+      if (foe === e || foe.dead || foe.kind === 'boss') continue;
+      if (Math.hypot(foe.x - e.x, foe.y - e.y) < 155 + foe.r) {
+        foe.hp -= 7;
+        foe.flash = 0.16;
+        if (foe.hp <= 0) killEnemy(foe);
+        blasted++;
+      }
+    }
+    if (blasted > 0) {
+      popups.push({ x: e.x, y: e.y - 22, text: 'CHAIN BLAST!', color: '#ffbe78', life: 0.95, maxLife: 0.95, size: 13 });
+    }
+  }
+  // Elite Ace Mini-Boss: local bullet-cancel + celebration!
+  if (e.kind === 'ace') {
+    for (const round of shots) {
+      if (round.hostile && Math.hypot(round.x - e.x, round.y - e.y) < 280) {
+        round.dead = true;
+        dropShards(round.x, round.y, 1, true);
+      }
+    }
+    popups.push({ x: e.x, y: e.y - 26, text: 'ACE INTERCEPTED!', color: '#ffd56b', life: 1.25, maxLife: 1.25, size: 14 });
+  }
+  if (e.kind === 'dreadcourier') {
+    popups.push({ x: e.x, y: e.y - 26, text: 'CONVOY JACKPOT!', color: '#ffe18c', life: 1.25, maxLife: 1.25, size: 14 });
+  }
+  // Shield Generator killed: immediately drop all linked hard-light barriers!
+  if (e.kind === 'shieldgen') {
+    for (const ally of enemies) {
+      if (ally.shieldedBy === e) ally.shieldedBy = null;
+    }
+    popups.push({ x: e.x, y: e.y - 22, text: 'SHIELDS DOWN!', color: '#8cf7ff', life: 0.95, maxLife: 0.95, size: 12 });
+  }
+  // Gravity Mine popped: reverse-polarity blast damages nearby foes!
+  if (e.kind === 'gravmine') {
+    shockwaves.push({ x: e.x, y: e.y, radius: 135, color: '#cfa6ff', life: 0.34, maxLife: 0.34 });
+    for (const foe of enemies) {
+      if (foe === e || foe.dead || foe.kind === 'boss') continue;
+      if (Math.hypot(foe.x - e.x, foe.y - e.y) < 135 + foe.r) {
+        foe.hp -= 4.5;
+        foe.flash = 0.14;
+        if (foe.hp <= 0) killEnemy(foe);
+      }
+    }
+  }
+  // Thermal Detonator Augment OR Volatile Hulls Sector Mutator: foes detonate on death!
+  const burstStacks = hasAug('novaBurst') + (sectorMutator?.explodeOnDeath ? 1 : 0);
+  if (burstStacks > 0 && !isRock && e.kind !== 'mine' && e.kind !== 'volatile' && !e._chained) {
+    const rad = 64 + burstStacks * 18;
+    const blastDmg = 2.4 * burstStacks;
+    shockwaves.push({ x: e.x, y: e.y, radius: rad, color: '#ff9c63', life: 0.24, maxLife: 0.24 });
+    for (const foe of enemies) {
+      if (foe === e || foe.dead || foe.kind === 'boss') continue;
+      if (Math.hypot(foe.x - e.x, foe.y - e.y) < rad + foe.r) {
+        foe._chained = true;
+        foe.hp -= blastDmg;
+        foe.flash = 0.12;
+        if (foe.hp <= 0) killEnemy(foe);
+      }
+    }
+  }
+  // Shield Siphon Augment: every 18 kills restores +1 Shield!
+  if (!isRock && e.kind !== 'mine' && hasAug('siphon')) {
+    siphonKills++;
+    if (siphonKills >= 18) {
+      siphonKills = 0;
+      if (shields < maxShields) {
+        shields++;
+        renderVitals();
+        popups.push({ x: player.x, y: player.y - 26, text: 'SIPHON +1 SHIELD', color: '#99dcff', life: 1.0, maxLife: 1.0, size: 12 });
+        sound.effect('upgrade');
+      }
+    }
+  }
+  // Live Contract tracking (kills & combo!)
+  if (!isRock && e.kind !== 'mine' && activeContract && !activeContract.done && !activeContract.failed) {
+    if (activeContract.id === 'kills') {
+      activeContract.progress++;
+      if (activeContract.progress >= activeContract.target) completeContract();
+      else updateContractHud();
+    } else if (activeContract.id === 'combo') {
+      activeContract.progress = Math.max(activeContract.progress, Math.floor(getMultiplier()));
+      if (getMultiplier() >= activeContract.target) completeContract();
+      else updateContractHud();
     }
   }
   if (heavy) {
-    addShake(7.5);
-    triggerHitstop(0.036);
+    addShake(e.kind === 'ace' || e.kind === 'dreadcourier' ? 11 : 7.5);
+    triggerHitstop(e.kind === 'ace' || e.kind === 'dreadcourier' ? 0.055 : 0.036);
   } else {
     addShake(3.0);
     if (!isRock && combo >= 4) triggerHitstop(0.014);
@@ -2444,7 +2790,17 @@ function killEnemy(e) {
   dropShards(e.x, e.y, e.shards || 2);
   if (!isRock && e.kind !== 'mine') {
     const coinCount =
-      e.kind === 'courier' ? 6 : ['gunship', 'prism', 'minelayer'].includes(e.kind) ? 3 : Math.random() < 0.55 ? 1 : 0;
+      e.kind === 'dreadcourier'
+        ? 12
+        : e.kind === 'ace'
+          ? 8
+          : e.kind === 'courier'
+            ? 6
+            : ['gunship', 'prism', 'minelayer'].includes(e.kind)
+              ? 3
+              : Math.random() < 0.55
+                ? 1
+                : 0;
     if (coinCount > 0) dropCoins(e.x, e.y, coinCount);
   }
 
@@ -2466,8 +2822,13 @@ function killEnemy(e) {
     p.linkPartner = null;
   }
 
-  // Supply courier always drops a tactical cell; Repair Drones can drop Shield cells (34%); heavy craft 12%!
-  if (e.kind === 'courier') {
+  // Supply courier, Dread-Courier & Elite Ace guarantee high-value tactical drops!
+  if (e.kind === 'dreadcourier') {
+    dropTacticalCell(e.x - 18, e.y, weaponLevel < 7 ? 'weapon' : 'overshield');
+    dropTacticalCell(e.x + 18, e.y, 'rapid');
+  } else if (e.kind === 'ace') {
+    dropTacticalCell(e.x, e.y, weaponLevel < 7 ? 'weapon' : 'overshield');
+  } else if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
   } else if (e.kind === 'healer' && Math.random() < 0.34) {
     dropTacticalCell(e.x, e.y, 'shield');
@@ -2679,6 +3040,8 @@ function setMode(next) {
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
     syncMetaUi();
     syncSettingsUi();
+    renderPauseAugments();
+    updateContractHud();
     action.focus({ preventScroll: true });
     if (lost && runIsNewBest && Math.floor(score) > 0) {
       openRecordDialog();
@@ -2689,6 +3052,177 @@ function setMode(next) {
     }
   }
   draw();
+}
+
+function renderPauseAugments() {
+  if (!pauseAugmentsEl) return;
+  const entries = Object.entries(runAugments).filter(([, count]) => count > 0);
+  if (!entries.length || (mode !== 'paused' && mode !== 'over')) {
+    pauseAugmentsEl.hidden = true;
+    pauseAugmentsEl.innerHTML = '';
+    return;
+  }
+  pauseAugmentsEl.hidden = false;
+  pauseAugmentsEl.innerHTML = entries
+    .map(([id, count]) => {
+      const aug = getAugmentById(id);
+      if (!aug) return '';
+      return `<span class="aug-chip" data-rarity="${aug.rarity}">${aug.name}${count > 1 ? ` ×${count}` : ''}</span>`;
+    })
+    .join('');
+}
+
+function updateContractHud() {
+  if (!contractHud) return;
+  if (mode !== 'playing' || !activeContract || activeContract.done || activeContract.failed || boss || warp) {
+    contractHud.hidden = true;
+    return;
+  }
+  contractHud.hidden = false;
+  contractTextEl.textContent = activeContract.text;
+  const pct =
+    activeContract.id === 'nohit'
+      ? 100
+      : clamp((activeContract.progress / Math.max(1, activeContract.target)) * 100, 0, 100);
+  contractProgEl.textContent =
+    activeContract.id === 'nohit'
+      ? 'ACTIVE'
+      : activeContract.id === 'combo'
+        ? `×${getMultiplier().toFixed(1)}/${activeContract.target}`
+        : `${Math.min(activeContract.progress, activeContract.target)}/${activeContract.target}`;
+  contractFillEl.style.width = `${pct.toFixed(0)}%`;
+}
+
+function completeContract() {
+  if (!activeContract || activeContract.done || activeContract.failed) return;
+  activeContract.done = true;
+  const c = activeContract;
+  const coinBonus = Math.round(c.coins * (meta.overclock ? 1.6 : 1));
+  runCoins += coinBonus;
+  meta.coins += coinBonus;
+  saveMeta();
+  bumpCombo(4);
+  addScore(350, player.x, player.y - 34, true, PALETTE.gold);
+  dropTacticalCell(clamp(player.x, 40, w - 40), Math.max(60, player.y - 95), c.reward);
+  shockwaves.push({ x: player.x, y: player.y, radius: 130, color: '#ffd66b', life: 0.36, maxLife: 0.36 });
+  showBanner('CONTRACT COMPLETE', `${c.text} // ${c.rewardLabel}`, 'gold', 2.0);
+  sound.effect('victory');
+  updateContractHud();
+}
+
+function openAugmentDraft() {
+  const choices = pickAugmentDraft(runAugments, runSeed * 97 + sectorIndex * 31 + nextBossRank * 17);
+  if (!choices.length) return false;
+  draftActive = true;
+  draftChoices = choices;
+  const totalInstalled = Object.values(runAugments).reduce((a, b) => a + b, 0);
+  draftKickerEl.textContent = `SECTOR ${String(sectorIndex + 1).padStart(2, '0')} CLEARED // FLAGSHIP SALVAGE`;
+  draftSubEl.textContent =
+    totalInstalled > 0
+      ? `${totalInstalled} Augment${totalInstalled > 1 ? 's' : ''} installed — stack synergies for Sector ${String(sectorIndex + 2).padStart(2, '0')}.`
+      : 'Permanent upgrade for this run — stack synergies across sectors.';
+  draftCardsEl.innerHTML = choices
+    .map(
+      (aug, i) => `
+      <button type="button" class="draft-card" data-draft-idx="${i}" data-rarity="${aug.rarity}">
+        <div class="draft-card-top">
+          <span class="draft-rarity">${aug.rarity}</span>
+          <span class="draft-key">${i + 1}</span>
+        </div>
+        <span class="draft-ico-wrap" aria-hidden="true">${aug.icon}</span>
+        <strong>${aug.name}</strong>
+        <p>${aug.desc}</p>
+        <span class="draft-tag">${aug.tag}</span>
+      </button>`,
+    )
+    .join('');
+  draftCardsEl.querySelectorAll('.draft-card').forEach((btn) => {
+    btn.addEventListener('click', () => chooseAugment(Number(btn.dataset.draftIdx)));
+  });
+  augmentDraftEl.hidden = false;
+  keys.clear();
+  pointer = null;
+  sound.effect('upgrade');
+  return true;
+}
+
+function chooseAugment(idx) {
+  if (!draftActive || !draftChoices[idx]) return;
+  const aug = draftChoices[idx];
+  runAugments[aug.id] = (runAugments[aug.id] || 0) + 1;
+  if (aug.id === 'glassCannon') {
+    maxShields = Math.max(1, maxShields - 1);
+    shields = Math.min(shields, maxShields);
+    renderVitals();
+  } else if (aug.id === 'staticOrb') {
+    staticOrbs = [0, 0];
+  }
+  draftActive = false;
+  draftChoices = [];
+  augmentDraftEl.hidden = true;
+  sound.effect('nova');
+  popups.push({
+    x: player.x,
+    y: player.y - 30,
+    text: `INSTALLED: ${aug.name.toUpperCase()}`,
+    color: aug.rarity === 'omega' ? '#ff9ab5' : aug.rarity === 'prototype' ? '#ffd66b' : '#79e3d5',
+    life: 1.4,
+    maxLife: 1.4,
+    size: 13,
+  });
+  renderPauseAugments();
+}
+
+function resolveDilemma(opt) {
+  if (!dilemmaGate || dilemmaGate.resolved) return;
+  dilemmaGate.resolved = true;
+  shockwaves.push({ x: player.x, y: player.y, radius: 115, color: opt.color, life: 0.34, maxLife: 0.34 });
+  sound.effect('upgrade');
+  if (opt.id === 'rapid') {
+    rapidFireTime = Math.min(12, rapidFireTime + 9);
+    weaponHeat = 0;
+    weaponOverheated = false;
+  } else if (opt.id === 'repair') {
+    shields = Math.min(maxShields, shields + 1);
+    weaponHeat = 0;
+    weaponOverheated = false;
+    renderVitals();
+  } else if (opt.id === 'bountyAce') {
+    const ace = createEnemy('ace', -42, h * 0.22, currentWave + 1, {
+      overclock: meta.overclock,
+      sectorIndex,
+      flank: { fromSide: -1, wait: 0.5, baseY: h * 0.22, amp: 16, freq: 2, speedX: 210 },
+      dashCd: 1.8,
+      fireIn: 1.1,
+    });
+    enemies.push(ace);
+    dropCoins(player.x, Math.max(50, player.y - 90), 8);
+  } else if (opt.id === 'overshield') {
+    overshieldTime = Math.max(overshieldTime, 7.0);
+  } else if (opt.id === 'novaFull') {
+    novaCharge = 100;
+  } else if (opt.id === 'weaponUp') {
+    if (weaponLevel < 7) weaponLevel++;
+    else addScore(500, player.x, player.y - 28, true, PALETTE.gold);
+  } else if (opt.id === 'greedBurst') {
+    runCoins += 55;
+    meta.coins += 55;
+    saveMeta();
+    weaponHeat = 0;
+    weaponOverheated = false;
+  } else if (opt.id === 'overdrive') {
+    overdriveTime = Math.max(overdriveTime, 7.0);
+  }
+  popups.push({
+    x: player.x,
+    y: player.y - 28,
+    text: `${opt.title} // ${opt.sub}`,
+    color: opt.color,
+    life: 1.25,
+    maxLife: 1.25,
+    size: 13,
+  });
+  dilemmaGate = null;
 }
 
 function launch() {
@@ -2731,6 +3265,24 @@ function launch() {
   riftTimer = 4.0;
   empWave = null;
   empTimer = 5.5;
+  boostRing = null;
+  boostRingTimer = 4.8;
+  runAugments = {};
+  draftActive = false;
+  draftChoices = [];
+  sectorMutator = null;
+  activeContract = null;
+  dilemmaGate = null;
+  dilemmaSpawnedThisSector = false;
+  lightningArcs = [];
+  augmentHitCounter = 0;
+  siphonKills = 0;
+  droneTimer = 0;
+  microMissileTimer = 0;
+  staticOrbs = [0, 0];
+  if (augmentDraftEl) augmentDraftEl.hidden = true;
+  if (contractHud) contractHud.hidden = true;
+  renderPauseAugments();
   overclockHudBadge.hidden = !meta.overclock;
   weaponLevel = rig.startWeapon;
   maxHull = rig.hull;
@@ -2786,6 +3338,10 @@ function launch() {
 function hitPlayer() {
   if (immune > 0 || player.dashTime > 0 || overshieldTime > 0 || warp || playerDying > 0) return;
   if (boss && !boss.dead) bossHitTaken = true;
+  if (activeContract && activeContract.id === 'nohit' && !activeContract.done) {
+    activeContract.failed = true;
+    updateContractHud();
+  }
   combo = Math.floor(combo * 0.35);
   immune = 1.65;
 
@@ -2907,7 +3463,12 @@ function firePlayerWeapons(focused) {
   const vb = ventBoostTime > 0;
   // Clean, measured damage scaling across MK I–VII (evolves bolts instead of flooding the screen!)
   const tierScale = 1 + (weaponLevel - 1) * 0.08;
-  const dmgBoost = (focused ? 1.24 : 1) * (od ? 1.2 : 1) * (vb ? 1.2 : 1) * tierScale;
+  const dmgBoost =
+    (focused ? 1.24 : 1) *
+    (od ? 1.2 : 1) *
+    (vb ? 1.2 : 1) *
+    (hasAug('glassCannon') ? 1.45 : 1) *
+    tierScale;
 
   function shoot(ox, oy, angle, speed, dmg, opts = {}) {
     shots.push({
@@ -2921,6 +3482,7 @@ function firePlayerWeapons(focused) {
       focused,
       overdrive: od,
       pierce: opts.pierce || 0,
+      bouncesLeft: hasAug('ricochet') && !opts.homing ? 1 : 0,
       hitIds: opts.pierce ? new Set() : null,
       ...opts,
     });
@@ -3024,7 +3586,7 @@ function firePlayerWeapons(focused) {
     const expMult = Math.pow(1.135, weaponLevel - 1);
     const touchEase = pointer?.isTouch ? 0.88 : 1;
     const rfEase = rf ? 0.78 : 1;
-    const partHeat = rig.heatMult || 1;
+    const partHeat = (rig.heatMult || 1) * (hasAug('glassCannon') ? 0.7 : 1) * (sectorMutator?.heatMult || 1);
     weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * partHeat * touchEase * rfEase);
     heatCoolDelay = 0.15;
 
@@ -3033,6 +3595,17 @@ function firePlayerWeapons(focused) {
       ventAttempted = false;
       sound.effect('overheat');
       addShake(5);
+      if (hasAug('ventNova')) {
+        // Thermal Purge Augment: overheating clears nearby enemy fire with a protective shockwave!
+        shockwaves.push({ x: player.x, y: player.y, radius: 155, color: '#ff9c63', life: 0.34, maxLife: 0.34 });
+        for (const round of shots) {
+          if (round.hostile && Math.hypot(round.x - player.x, round.y - player.y) < 155) {
+            round.dead = true;
+            dropShards(round.x, round.y, 1, true);
+          }
+        }
+        popups.push({ x: player.x, y: player.y - 40, text: 'THERMAL PURGE!', color: '#ffb478', life: 0.9, maxLife: 0.9, size: 12 });
+      }
       popups.push({
         x: player.x,
         y: player.y - 26,
@@ -3151,6 +3724,8 @@ function update(dt) {
     return;
   }
 
+  if (draftActive) return;
+
   time += dt;
   immune = Math.max(0, immune - dt);
   hitFlash = Math.max(0, hitFlash - dt);
@@ -3186,14 +3761,43 @@ function update(dt) {
   }
   const worldDt = bulletTime > 0 ? dt * 0.36 : dt;
 
-  // Sector-specific environmental effects across all 8 Dimensions!
+  // Sector-specific environmental effects across ALL 8 Dimensions!
   const secMod = sectorIndex % 8;
-  ionWind = secMod === 2 && !warp ? Math.sin(time * 0.75) * 44 : 0;
-  // Sector 4 (Eclipse Corona): Diagonal molten meteor surges
-  if (secMod === 3 && !warp && !boss) {
+  ionWind = secMod === 2 && !warp ? Math.sin(time * 0.75) * 48 : 0;
+
+  // Sector 1 (Pelagic Rim) & Sector 3 (Opal Expanse): Interactive Orbital Boost Gates (+Nova, instant cool, +250 score!)
+  if ((secMod === 0 || secMod === 2) && !warp && !boss) {
+    if (boostRing) {
+      boostRing.y += 112 * worldDt;
+      if (Math.hypot(player.x - boostRing.x, player.y - boostRing.y) < boostRing.r + player.r * 0.6) {
+        novaCharge = Math.min(100, novaCharge + 20);
+        weaponHeat = 0;
+        weaponOverheated = false;
+        bumpCombo(3);
+        addScore(250, boostRing.x, boostRing.y, true, '#98ffdc');
+        shockwaves.push({ x: boostRing.x, y: boostRing.y, radius: 96, color: '#79e3d5', life: 0.34, maxLife: 0.34 });
+        popups.push({ x: boostRing.x, y: boostRing.y - 24, text: 'ORBITAL BOOST!', color: '#98ffdc', life: 0.95, maxLife: 0.95, size: 13 });
+        sound.effect('coolReady');
+        boostRing = null;
+      } else if (boostRing.y > h + 50) {
+        boostRing = null;
+      }
+    } else {
+      boostRingTimer -= worldDt;
+      if (boostRingTimer <= 0) {
+        boostRingTimer = between(6.8, 9.4);
+        boostRing = { x: between(w * 0.2, w * 0.8), y: -36, r: 30 };
+      }
+    }
+  } else {
+    boostRing = null;
+  }
+
+  // Sector 2 (Caldera Belt), Sector 4 (Eclipse Corona) & Sector 8 (Event Horizon): Diagonal molten meteor surges!
+  if ((secMod === 1 || secMod === 3 || secMod === 7) && !warp && !boss) {
     meteorTimer -= worldDt;
     if (meteorTimer <= 0) {
-      meteorTimer = between(3.6, 5.4);
+      meteorTimer = between(secMod === 1 ? 4.4 : 3.6, secMod === 1 ? 6.2 : 5.4);
       const fromLeft = Math.random() < 0.5;
       const m = createEnemy('rock', fromLeft ? -18 : w + 18, between(40, h * 0.32), currentWave, {
         r: between(14, 19),
@@ -3212,8 +3816,97 @@ function update(dt) {
       enemies.push(m);
     }
   }
-  // Sector 5 (Astral Rift): Periodic Gravity Anomaly Well curving bullets & charging Nova nearby!
-  if (secMod === 4 && !warp && !boss) {
+  // In-Arena Risk/Reward Dilemma Gate drift & choice check
+  if (dilemmaGate && !dilemmaGate.resolved && !warp && !boss) {
+    dilemmaGate.y += 96 * worldDt;
+    const dy = Math.abs(player.y - dilemmaGate.y);
+    if (dy < dilemmaGate.h * 0.5 + player.r * 0.7) {
+      if (Math.abs(player.x - dilemmaGate.leftX) < dilemmaGate.halfW) {
+        resolveDilemma(dilemmaGate.left);
+      } else if (Math.abs(player.x - dilemmaGate.rightX) < dilemmaGate.halfW) {
+        resolveDilemma(dilemmaGate.right);
+      }
+    } else if (dilemmaGate.y > h + 50) {
+      dilemmaGate = null;
+    }
+  }
+  // Active Gravity Mine enemies pull player slightly off-course until popped!
+  if (!warp && player.dashTime <= 0) {
+    for (const gm of enemies) {
+      if (gm.dead || gm.kind !== 'gravmine') continue;
+      const d = Math.hypot(gm.x - player.x, gm.y - player.y);
+      if (d < 160 && d > 16) {
+        const pull = 44 * worldDt;
+        player.x = clamp(player.x + ((gm.x - player.x) / d) * pull, 19, w - 19);
+        player.y = clamp(player.y + ((gm.y - player.y) / d) * pull, 24, h - 24);
+      }
+    }
+  }
+  // Active Augment Systems: Orbital Wingman Drones, Micro-Missile Pod, Aegis Shield Orbs, Lightning Arcs
+  for (const arc of lightningArcs) arc.life -= dt;
+  lightningArcs = lightningArcs.filter((a) => a.life > 0);
+  if (hasAug('staticOrb')) {
+    for (let i = 0; i < 2; i++) if (staticOrbs[i] > 0) staticOrbs[i] = Math.max(0, staticOrbs[i] - dt);
+  }
+  if (!warp && hull > 0 && playerDying <= 0) {
+    const droneCount = hasAug('drone');
+    if (droneCount > 0) {
+      droneTimer -= dt;
+      if (droneTimer <= 0) {
+        let target = null;
+        let bestD = Infinity;
+        for (const e of enemies) {
+          if (e.dead || e.y < 8 || e.x < 0 || e.x > w || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
+          const d = Math.hypot(e.x - player.x, e.y - player.y);
+          if (d < bestD) {
+            bestD = d;
+            target = e;
+          }
+        }
+        if (target) {
+          droneTimer = 0.52;
+          for (let i = 0; i < droneCount; i++) {
+            const ang = time * 2.4 + i * Math.PI;
+            const dx = player.x + Math.cos(ang) * 42;
+            const dy = player.y + Math.sin(ang) * 28;
+            const aim = Math.atan2(target.x - dx, target.y - dy);
+            shots.push({
+              x: dx,
+              y: dy,
+              r: 3.6,
+              vx: Math.sin(aim) * 560,
+              vy: Math.cos(aim) * 560,
+              dmg: 1.05,
+              hostile: false,
+            });
+          }
+        }
+      }
+    }
+    const microStacks = hasAug('splitSeeker');
+    if (microStacks > 0) {
+      microMissileTimer -= dt;
+      if (microMissileTimer <= 0 && enemies.some((e) => !e.dead && e.y > 10 && e.x > 0 && e.x < w)) {
+        microMissileTimer = microStacks >= 2 ? 1.45 : 2.2;
+        for (const ox of [-14, 14]) {
+          shots.push({
+            x: player.x + ox,
+            y: player.y - 4,
+            r: 4.0,
+            vx: Math.sign(ox) * 145,
+            vy: -175,
+            dmg: 1.15,
+            hostile: false,
+            homing: true,
+            age: 0,
+          });
+        }
+        sound.effect('missile');
+      }
+    }
+  }
+  // Sector 5 (Astral Rift) & Sector 8 (Event Horizon): Periodic Gravity Anomaly Well curving bullets & charging Nova nearby!
+  if ((secMod === 4 || secMod === 7) && !warp && !boss) {
     if (riftWell) {
       riftWell.life -= worldDt;
       const distP = Math.hypot(riftWell.x - player.x, riftWell.y - player.y);
@@ -3302,6 +3995,10 @@ function update(dt) {
       // Auto-vacuum all boss drops while player can still steer briefly
       for (const p of pickups) p.magnet = true;
       if (warp.t >= (shortMotion ? 0.45 : 0.9)) {
+        if (!warp.draftOffered) {
+          warp.draftOffered = true;
+          if (openAugmentDraft()) return;
+        }
         warp.phase = 'depart';
         warp.t = 0;
         warp.startX = player.x;
@@ -3361,6 +4058,8 @@ function update(dt) {
         player.y = targetY;
         player.vy = 0;
         spawnIn = 0.8;
+        dilemmaSpawnedThisSector = false;
+        sectorMutator = pickSectorMutator(sectorIndex, runSeed);
         const secNum = String(sectorIndex + 1).padStart(2, '0');
         if (sectorIndex + 1 > meta.records.bestSector) {
           meta.records.bestSector = sectorIndex + 1;
@@ -3368,7 +4067,13 @@ function update(dt) {
         }
         if (sectorIndex + 1 >= 2) completeMilestone('sector2');
         if (sectorIndex + 1 >= 3) completeMilestone('sector3');
-        showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, getSectorHazard(sectorIndex), 'teal', 2.4);
+        showBanner(
+          `SECTOR ${secNum} // ${getSectorName(sectorIndex)}`,
+          sectorMutator ? sectorMutator.label : getSectorHazard(sectorIndex),
+          'teal',
+          2.6,
+        );
+        updateContractHud();
       }
     }
   }
@@ -3414,7 +4119,7 @@ function update(dt) {
     const dy =
       Number(keys.has('ArrowDown') || keys.has('KeyS')) - Number(keys.has('ArrowUp') || keys.has('KeyW'));
     const length = Math.hypot(dx, dy);
-    const thrust = focused ? rig.focusSpeed : rig.speed;
+    const thrust = (focused ? rig.focusSpeed : rig.speed) * (sectorMutator?.speedMult || 1);
     const targetX = (dx * thrust) / (length || 1);
     const targetY = (dy * thrust) / (length || 1);
 
@@ -3460,15 +4165,15 @@ function update(dt) {
   const wantsFire = !controlsLocked && (keys.has('Space') || Boolean(pointer) || autoFire);
   const isFiring = wantsFire && !weaponOverheated;
 
-  // Cryo Nebula (Sector 6) sub-zero atmosphere cools weapons +35% faster!
-  const cryoCoolBonus = sectorIndex % 8 === 5 ? 1.35 : 1;
+  // Cryo Nebula (Sector 6) sub-zero atmosphere cools weapons +40% faster!
+  const cryoCoolBonus = sectorIndex % 8 === 5 ? 1.4 : 1;
 
   if (overdriveTime > 0 || rig.noOverheat) {
     // Nova Overdrive or Level 4 Cryo Cooling Core keeps barrels ice-cool!
     weaponOverheated = false;
     weaponHeat = Math.max(0, weaponHeat - dt * 140);
   } else if (weaponOverheated) {
-    weaponHeat = Math.max(0, weaponHeat - dt * 44 * rig.coolScale * cryoCoolBonus);
+    weaponHeat = Math.max(0, weaponHeat - dt * 44 * rig.coolScale * cryoCoolBonus * (hasAug('ventNova') ? 2 : 1));
     if (Math.random() < dt * 22) {
       smoke.push({
         x: player.x + (Math.random() < 0.5 ? -10 : 10),
@@ -3562,8 +4267,12 @@ function update(dt) {
       if (spawnIn <= 0 && !arenaCrowded) {
         const wave = Math.floor(spawnCount / 6) + 1;
         const beat = spawnCount % 6;
+        const waveProfile = getWaveProfile(wave, runSeed, sectorIndex);
         hud.style.setProperty('--wave-progress', ((beat + 1) / 6) * 100 + '%');
         if (beat === 0) {
+          if (activeContract && activeContract.id === 'nohit' && !activeContract.done && !activeContract.failed && wave > activeContract.wave) {
+            completeContract();
+          }
           currentWave = wave;
           waveLabel.textContent = String(wave).padStart(2, '0');
           sound.setWave(wave);
@@ -3573,19 +4282,33 @@ function update(dt) {
           }
           if (wave >= 10) completeMilestone('wave10');
           if (wave > 1) {
-            const opName = waveNames[(wave - 1) % waveNames.length];
             const secNum = String(sectorIndex + 1).padStart(2, '0');
-            showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, `WAVE ${String(wave).padStart(2, '0')} — ${opName}`, 'teal', 2.1);
+            showBanner(`SECTOR ${secNum} // ${getSectorName(sectorIndex)}`, `WAVE ${String(wave).padStart(2, '0')} — ${waveProfile.title}`, waveProfile.tone || 'teal', 2.2);
           }
+          // Roll a fresh live Tactical Contract on even waves (Wave 2, 4, 6...)!
+          if (wave % 2 === 0) {
+            activeContract = rollContract(wave, runSeed + sectorIndex * 31);
+          } else if (activeContract && activeContract.done) {
+            activeContract = null;
+          }
+          updateContractHud();
+        }
+        // Spawn an In-Arena Risk/Reward Dilemma Gate once per sector on beat 3!
+        if (beat === 3 && !dilemmaSpawnedThisSector && !dilemmaGate) {
+          dilemmaSpawnedThisSector = true;
+          dilemmaGate = rollDilemmaPair(runSeed + wave * 19 + sectorIndex * 7, w);
         }
         const first = enemies.length;
-        spawnFormation(enemies, w, wave, beat, player.x, { overclock: meta.overclock, sectorIndex });
+        spawnFormation(enemies, w, wave, beat, player.x, { overclock: meta.overclock, sectorIndex, runSeed, h });
         for (const enemy of enemies.slice(first)) {
           if (enemy.kind === 'rock') enemy.shape = outlineRock();
         }
         spawnCount++;
-        // Smooth asymptotic pacing ceiling (never spawns exponentially faster!)
-        const cadence = (1 + 0.36 * (1 - Math.exp(-(wave - 1) * 0.2))) * (meta.overclock ? 1.12 : 1);
+        // Smooth asymptotic pacing ceiling + archetype tempo modulation!
+        const cadence =
+          (1 + 0.36 * (1 - Math.exp(-(wave - 1) * 0.2))) *
+          (meta.overclock ? 1.12 : 1) *
+          (waveProfile.cadenceMult || 1);
         spawnIn = (beat === 5 ? waveLength / 6 + 1.25 : waveLength / 6) / cadence;
       }
     }
@@ -3746,9 +4469,15 @@ function update(dt) {
               (enemy.beamAngle || 0) + Math.PI,
               (enemy.beamAngle || 0) + (Math.PI * 3) / 2,
             ]
-          : enemy === boss && enemy.twinBeam
-            ? [-(enemy.beamSpread || 0.35), enemy.beamSpread || 0.35]
-            : [enemy.beamAngle || 0];
+          : enemy === boss && enemy.coronaBeam
+            ? [
+                enemy.beamAngle || 0,
+                (enemy.beamAngle || 0) + TAU / 3,
+                (enemy.beamAngle || 0) + (TAU * 2) / 3,
+              ]
+            : enemy === boss && enemy.twinBeam
+              ? [-(enemy.beamSpread || 0.35), enemy.beamSpread || 0.35]
+              : [enemy.beamAngle || 0];
       for (const ang of angles) {
         if (pointHitsBeam(player.x, player.y, enemy.x, enemy.y, ang, halfWidth + player.r, beamReach)) {
           hitPlayer();
@@ -3788,7 +4517,7 @@ function update(dt) {
       let target = null;
       let bestDist = Infinity;
       for (const e of enemies) {
-        if (e.dead || e.y < 10 || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
+        if (e.dead || e.y < 10 || e.x < 0 || e.x > w || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
         if (e === boss) {
           for (const part of aliveBossParts(e)) {
             const d = Math.hypot(part.x - s.x, part.y - s.y);
@@ -3837,6 +4566,31 @@ function update(dt) {
       s.age = (s.age || 0) + stepDt;
       s.x += Math.cos(s.age * (s.waveFreq || 5) + (s.wavePhase || 0)) * s.waveAmp * stepDt;
     }
+    // Seraph curving angelic feather bullets
+    if (s.hostile && s.curveRate) {
+      const ang = Math.atan2(s.vx, s.vy) + s.curveRate * stepDt;
+      const spd = Math.hypot(s.vx, s.vy);
+      s.vx = Math.sin(ang) * spd;
+      s.vy = Math.cos(ang) * spd;
+    }
+    // Eclipse Collapsing Star-Ring bullets (fly out -> brief glowing hover -> surge toward player!)
+    if (s.hostile && s.starPause !== undefined) {
+      if (s.starPause > 0) {
+        s.starPause -= stepDt;
+      } else if (s.starHold > 0) {
+        s.starHold -= stepDt;
+        s.vx *= Math.exp(-stepDt * 12);
+        s.vy *= Math.exp(-stepDt * 12);
+        if (s.starHold <= 0) {
+          const a = Math.atan2(player.x - s.x, player.y - s.y);
+          const spd = s.starSpeed || 195;
+          s.vx = Math.sin(a) * spd;
+          s.vy = Math.cos(a) * spd;
+          s.color = '#ff8a5c';
+          s.starPause = undefined;
+        }
+      }
+    }
     if (s.hostile && riftWell) {
       const dx = riftWell.x - s.x;
       const dy = riftWell.y - s.y;
@@ -3876,10 +4630,60 @@ function update(dt) {
         continue;
       }
     }
+    if (s.hostile) {
+      for (const gm of enemies) {
+        if (gm.dead || gm.kind !== 'gravmine') continue;
+        const dx = gm.x - s.x;
+        const dy = gm.y - s.y;
+        const d = Math.hypot(dx, dy) || 1;
+        if (d < 150 && d > 12) {
+          s.vx += (dx / d) * 130 * stepDt;
+          s.vy += (dy / d) * 130 * stepDt;
+        }
+      }
+    }
     s.x += s.vx * stepDt;
     s.y += s.vy * stepDt;
 
+    // Prism Ricochet Augment: bounce friendly shots cleanly off left/right walls once!
+    if (!s.hostile && s.bouncesLeft > 0) {
+      if (s.x < 6 && s.vx < 0) {
+        s.x = 6;
+        s.vx = -s.vx;
+        s.bouncesLeft--;
+      } else if (s.x > w - 6 && s.vx > 0) {
+        s.x = w - 6;
+        s.vx = -s.vx;
+        s.bouncesLeft--;
+      }
+    }
+
     if (s.hostile) {
+      // Aegis Shield Orbs Augment: orbiting spheres intercept & erase hostile bullets!
+      if (hasAug('staticOrb')) {
+        let blockedByOrb = false;
+        for (let i = 0; i < 2; i++) {
+          if (staticOrbs[i] > 0) continue;
+          const ang = -time * 3.1 + i * Math.PI;
+          const ox = player.x + Math.cos(ang) * 34;
+          const oy = player.y + Math.sin(ang) * 34;
+          if (Math.hypot(s.x - ox, s.y - oy) < 12 + s.r) {
+            s.dead = true;
+            staticOrbs[i] = 5.5;
+            impacts.push({ x: ox, y: oy, radius: 14, color: '#9bf3f7', life: 0.22, maxLife: 0.22 });
+            sound.effect('graze', 6);
+            blockedByOrb = true;
+            break;
+          }
+        }
+        if (blockedByOrb) continue;
+      }
+      // Phase Wake Augment: dashing vaporizes enemy bullets along your path!
+      if (hasAug('phaseSlash') && player.dashTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 42 + s.r) {
+        s.dead = true;
+        dropShards(s.x, s.y, 1, true);
+        continue;
+      }
       // Aegis Signature Perk: Reflective Mirror bounces enemy bullets right back at them!
       if (reflectShieldTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 37 + s.r) {
         s.hostile = false;
@@ -3922,13 +4726,32 @@ function update(dt) {
         if (dx * dx + dy * dy < grazeR * grazeR) {
           s.grazed = true;
           grazes++;
-          novaCharge = Math.min(100, novaCharge + 3.2);
-          // Graze cools weapon barrels (-8% heat) for high-skill risk/reward!
-          weaponHeat = Math.max(0, weaponHeat - 8);
+          const gMult = (hasAug('grazeAmp') ? 2 : 1) * (sectorMutator?.grazeMult || 1);
+          novaCharge = Math.min(100, novaCharge + 3.2 * gMult);
+          // Graze cools weapon barrels (-8% heat, -14% with Graze Reactor!) for high-skill risk/reward!
+          weaponHeat = Math.max(0, weaponHeat - (hasAug('grazeAmp') ? 14 : 8));
           bumpCombo(1);
           addScore(15, player.x, player.y - 12, false);
           impacts.push({ x: player.x, y: player.y, radius: 10, color: '#9df4df', life: 0.3, maxLife: 0.3 });
           sound.effect('graze', Math.min(8, combo / 3));
+          if (hasAug('grazeAmp')) {
+            shots.push({
+              x: player.x,
+              y: player.y - 8,
+              r: 4.0,
+              vx: between(-120, 120),
+              vy: -240,
+              dmg: 1.6,
+              hostile: false,
+              homing: true,
+              age: 0,
+            });
+          }
+          if (activeContract && activeContract.id === 'graze' && !activeContract.done && !activeContract.failed) {
+            activeContract.progress++;
+            if (activeContract.progress >= activeContract.target) completeContract();
+            else updateContractHud();
+          }
         }
       }
     } else {
@@ -3985,21 +4808,30 @@ function update(dt) {
         if (s.dead) continue;
       }
 
-      // Check boss subsystems first so wing turrets / shield pylons intercept cleanly
+      // Check boss subsystems first so wing turrets / repair nodes / shield pylons intercept cleanly
       let hitSomething = false;
       if (boss && !boss.dead && boss.entering <= 0 && boss.dying <= 0) {
-        for (const part of aliveBossParts(boss)) {
-          if (collides(s, part)) {
+        const liveBossParts = aliveBossParts(boss);
+        for (const part of liveBossParts) {
+          if (Math.hypot(s.x - part.x, s.y - part.y) < s.r + part.r + 3) {
             s.dead = true;
             damageBossPart(boss, part, s.dmg || 1, s);
             hitSomething = true;
             break;
           }
         }
-        if (!hitSomething && collides(s, boss)) {
-          s.dead = true;
-          damageBossCore(boss, s.dmg || 1, s);
-          hitSomething = true;
+        if (!hitSomething) {
+          // If bullet is lined up to hit an alive subsystem sitting just ahead, let it pass through the core silhouette!
+          const aimingAtPartAhead =
+            s.vy < 0 &&
+            liveBossParts.some((part) => part.y < s.y + part.r * 0.4 && Math.abs(s.x - part.x) <= part.r + s.r + 3);
+          const coreHitR = liveBossParts.length > 0 ? boss.r * 0.8 : boss.r;
+          if (!aimingAtPartAhead && Math.hypot(s.x - boss.x, s.y - boss.y) < s.r + coreHitR) {
+            s.dead = true;
+            const execMult = hasAug('execute') && boss.hp / boss.maxHp < 0.45 ? 1.6 : 1;
+            damageBossCore(boss, (s.dmg || 1) * execMult, s);
+            hitSomething = true;
+          }
         }
       }
       if (hitSomething) continue;
@@ -4043,8 +4875,33 @@ function update(dt) {
           s.dead = true;
         }
         if (e.hpTrail === undefined) e.hpTrail = e.hp;
-        e.hp = Math.max(0, e.hp - (s.dmg || 1));
+        const shieldedMult = e.shieldedBy && !e.shieldedBy.dead ? 0.25 : 1;
+        const execMult = hasAug('execute') && e.maxHp >= 6 && e.hp / e.maxHp < 0.45 ? 1.6 : 1;
+        e.hp = Math.max(0, e.hp - (s.dmg || 1) * shieldedMult * execMult);
         e.flash = 0.13;
+        if (hasAug('cryoShot') && e.kind !== 'rock' && e.kind !== 'mine') {
+          e.frozen = Math.max(e.frozen || 0, 1.6);
+        }
+        // Chain Lightning Augment: every 4th hit arcs jagged lightning to nearby foes!
+        const arcStacks = hasAug('arc');
+        if (arcStacks > 0) {
+          augmentHitCounter++;
+          if (augmentHitCounter >= 4) {
+            augmentHitCounter = 0;
+            let chained = 0;
+            for (const other of enemies) {
+              if (other === e || other.dead || other === boss || other.kind === 'mine') continue;
+              if (Math.hypot(other.x - e.x, other.y - e.y) < 165) {
+                lightningArcs.push({ x1: e.x, y1: e.y, x2: other.x, y2: other.y, life: 0.18, maxLife: 0.18 });
+                other.hp -= 1.35 * arcStacks;
+                other.flash = 0.12;
+                if (other.hp <= 0) killEnemy(other);
+                chained++;
+                if (chained >= 1 + arcStacks) break;
+              }
+            }
+          }
+        }
         if (e.hp > 0) {
           spawnHitFeedback(s.x, s.y, e, s);
         } else {
@@ -4109,7 +4966,9 @@ function update(dt) {
 
   // Salvage, Coin & Pickup physics + smart magnet vacuum
   const magnetRadius =
-    (overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 225 : 120) * rig.magnetScale;
+    (overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 225 : 120) *
+    rig.magnetScale *
+    (hasAug('greed') ? 2 : 1);
   for (const p of pickups) {
     p.age += dt;
     const dx = player.x - p.x;
@@ -4137,7 +4996,11 @@ function update(dt) {
         sound.effect('shard', Math.min(10, Math.floor(combo / 2)));
       } else if (p.kind === 'coin') {
         const baseVal = 2 + sectorIndex;
-        const value = meta.overclock ? Math.round(baseVal * 1.6) : baseVal;
+        const mult =
+          (meta.overclock ? 1.6 : 1) *
+          (hasAug('greed') ? 1.5 : 1) *
+          (sectorMutator?.coinMult || 1);
+        const value = Math.max(1, Math.round(baseVal * mult));
         runCoins += value;
         meta.coins += value;
         saveMeta();
@@ -4564,7 +5427,13 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open || unsavedDialog.open) return;
+  if (draftActive) {
+    if (e.code === 'Digit1') { e.preventDefault(); chooseAugment(0); }
+    else if (e.code === 'Digit2') { e.preventDefault(); chooseAugment(1); }
+    else if (e.code === 'Digit3') { e.preventDefault(); chooseAugment(2); }
+    return;
+  }
+  if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open || unsavedDialog.open || settingsDialog.open) return;
   if (forgeActive) {
     if (e.code === 'Escape') {
       e.preventDefault();

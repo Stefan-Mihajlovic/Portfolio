@@ -73,6 +73,15 @@
             </div>
           </div>
 
+          <div id="contract-hud" class="contract-hud" hidden>
+            <div class="contract-head">
+              <span class="contract-tag">CONTRACT</span>
+              <b id="contract-text">GRAZE 6 BULLETS</b>
+              <span id="contract-prog" class="contract-prog">0/6</span>
+            </div>
+            <div class="contract-track" aria-hidden="true"><i id="contract-fill"></i></div>
+          </div>
+
           <div class="hud-bottom-center" id="shield-hud">
             <div id="overshield-badge" class="overshield-badge" hidden>
               OVERSHIELD <b id="overshield-time">6.0s</b>
@@ -252,6 +261,8 @@
               </button>
             </div>
           </fieldset>
+
+          <div id="pause-augments" class="pause-augments" hidden aria-label="Active run augments"></div>
 
           <div id="pause-quick-bar" class="pause-quick-bar" hidden>
             <button id="pause-music-btn" class="pause-quick-btn" type="button" aria-pressed="true">
@@ -449,6 +460,18 @@
             <button id="forge-equip" type="button" class="forge-equip-btn">▶ FLY CUSTOM</button>
           </div>
           <p id="forge-status" class="forge-status" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="augment-draft" class="augment-draft" aria-labelledby="draft-title" hidden>
+        <div class="draft-shell">
+          <div class="draft-head">
+            <span id="draft-kicker" class="draft-kicker">FLAGSHIP SALVAGE // SECTOR MUTATION</span>
+            <h2 id="draft-title">Install 1 Tactical Augment</h2>
+            <p id="draft-sub" class="draft-sub">Permanent upgrade for this run — stack synergies across sectors.</p>
+          </div>
+          <div id="draft-cards" class="draft-cards" role="group" aria-label="Augment choices"></div>
+          <p class="draft-hint">Click or press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to install</p>
         </div>
       </section>
 

@@ -142,8 +142,8 @@ function buildPartsForChassis(chassis, rank, rng) {
         id: `${side < 0 ? 'L' : 'R'}-WING-PYLON`,
         role: 'pylon',
         side,
-        ox: side * 50,
-        oy: -4,
+        ox: side * 52,
+        oy: 4,
         x: 0,
         y: 0,
         r: 14,
@@ -157,7 +157,7 @@ function buildPartsForChassis(chassis, rank, rng) {
         role: 'repair',
         side,
         ox: side * 28,
-        oy: 22,
+        oy: 26,
         x: 0,
         y: 0,
         r: 13,
@@ -228,11 +228,11 @@ function buildPartsForChassis(chassis, rank, rng) {
   }
 
   if (chassis.id === 'monolith') {
-    // 3 triangular corner emitters: 2 side rail-lances + 1 apex cluster mortar
+    // 3 triangular corner emitters: 2 outer wing rail-lances + 1 apex cluster mortar (all cleanly targetable!)
     const offsets = [
-      [0, 34, 'mortar'],
-      [-38, -18, 'lance'],
-      [38, -18, 'lance'],
+      [0, 36, 'mortar'],
+      [-44, 4, 'lance'],
+      [44, 4, 'lance'],
     ];
     offsets.forEach(([ox, oy, pRole], i) => {
       parts.push({
@@ -256,14 +256,14 @@ function buildPartsForChassis(chassis, rank, rng) {
   }
 
   if (chassis.id === 'catamaran' || chassis.id === 'carrier') {
-    // Twin heavy outer hulls + inner mortar/repair wings
+    // Twin heavy outer hulls + forward-mounted inner mortar/repair pods (all cleanly breakable from below!)
     for (const side of [-1, 1]) {
       parts.push({
         id: `${side < 0 ? 'L' : 'R'}-POD`,
         role,
         side,
-        ox: side * 44,
-        oy: chassis.id === 'catamaran' ? 14 : 6,
+        ox: side * 48,
+        oy: chassis.id === 'catamaran' ? 20 : 12,
         x: 0,
         y: 0,
         r: 16,
@@ -280,7 +280,7 @@ function buildPartsForChassis(chassis, rank, rng) {
           role: chassis.id === 'carrier' ? 'repair' : 'mortar',
           side,
           ox: side * 24,
-          oy: -16,
+          oy: chassis.id === 'carrier' ? 24 : 26,
           x: 0,
           y: 0,
           r: 13,
@@ -348,22 +348,33 @@ export function createBoss(rank, w, runSeed = 1, overclock = false) {
   const volleyStyles = ['aimed', 'fan', 'spiral', 'helix', 'cross', 'burst', 'wave'];
   const specialPool = ['dive', 'minefield', 'beam', 'ringburst', 'barrage', 'clusterRain', 'waveCurtain'];
 
-  const moveStyle =
-    chassis.id === 'scythe'
-      ? 'stalker'
-      : chassis.id === 'citadel'
-        ? 'orbit'
-        : moveStyles[Math.floor(rng() * moveStyles.length)];
-  const volleyStyle =
-    chassis.id === 'leviathan'
-      ? 'wave'
-      : chassis.id === 'citadel'
-        ? 'spiral'
-        : volleyStyles[Math.floor(rng() * volleyStyles.length)];
+  const moveStyle = {
+    catamaran: 'pendulum',
+    citadel: 'center',
+    monolith: 'weave',
+    carrier: 'pendulum',
+    scythe: 'stalker',
+    leviathan: 'figure8',
+    hive: 'orbit',
+    eclipse: 'center',
+    seraph: 'figure8',
+    kraken: 'weave',
+  }[chassis.id] || moveStyles[Math.floor(rng() * moveStyles.length)];
+  const volleyStyle = chassis.id;
   // Every boss ALWAYS owns its bespoke signature special as primarySpecial!
   const primarySpecial = chassis.signature;
-  const secondarySpecial =
-    specialPool[(specialPool.indexOf(primarySpecial) + 1 + Math.floor(rng() * (specialPool.length - 1))) % specialPool.length];
+  const secondarySpecial = {
+    catamaran: 'barrage',
+    citadel: 'ringburst',
+    monolith: 'mirage',
+    carrier: 'carpetBomb',
+    scythe: 'dive',
+    leviathan: 'waveCurtain',
+    hive: 'honeycomb',
+    eclipse: 'coronaBeam',
+    seraph: 'crossBeam',
+    kraken: 'clusterRain',
+  }[chassis.id] || specialPool[0];
 
   const palette = BOSS_PALETTES[palIdx];
   const maxPhases = chassis.phases;
@@ -416,16 +427,38 @@ export function createBoss(rank, w, runSeed = 1, overclock = false) {
     beamSweep: 0,
     twinBeam: false,
     crossBeam: false,
+    coronaBeam: false,
+    beamReverseAt: 0,
+    mirages: [],
+    carpetLanes: null,
+    overheated: 0,
     ringQueue: 0,
     ringTimer: 0,
     age: 0,
-    fireIn: 2.0,
+    fireIn: 1.75,
     volley: 0,
     aim: 0,
     flash: 0,
   };
   syncBossParts(boss);
   return boss;
+}
+
+export function getBossPhaseTitle(b) {
+  if (!b) return 'ARMOR BAR BROKEN';
+  const map = {
+    catamaran: b.isFinalPhase ? 'REACTOR MELTDOWN' : 'TWIN SCISSOR BEAMS',
+    scythe: 'TRIPLE BLADE FRENZY',
+    citadel: b.isFinalPhase ? 'CENTRIFUGE VORTEX' : 'ROTATING LASER CAGE',
+    monolith: 'MIRAGE SPLIT',
+    carrier: b.isFinalPhase ? 'CARPET BOMBING' : 'LASER GATE DEPLOY',
+    eclipse: 'SOLAR CORONA BEAMS',
+    kraken: b.isFinalPhase ? 'ABYSSAL FRENZY' : b.phase === 3 ? 'CLUSTER DELUGE' : 'TENTACLE LASH',
+    seraph: b.isFinalPhase ? 'REVERSING HALO' : b.phase === 3 ? 'SERAPHIC FEATHERSTORM' : 'X-HALO CATHEDRAL',
+    leviathan: b.isFinalPhase ? 'ABYSSAL SURGE' : 'TIDAL SLALOM',
+    hive: b.isFinalPhase ? 'BROOD OVERLOAD' : 'HONEYCOMB BARRAGE',
+  };
+  return map[b.chassis] || (b.isFinalPhase ? 'FINAL BAR — ENRAGED!' : 'ARMOR BAR BROKEN');
 }
 
 export function syncBossParts(b) {
@@ -594,9 +627,14 @@ export function advanceArmor(b) {
   b.beamWarn = 0;
   b.beamActive = 0;
   b.crossBeam = false;
+  b.coronaBeam = false;
+  b.beamReverseAt = 0;
+  b.mirages = [];
+  b.carpetLanes = null;
+  b.overheated = 0;
   b.ringQueue = 0;
-  b.launchIn = 0.65;
-  b.fireIn = 0.9;
+  b.launchIn = 0.75;
+  b.fireIn = 0.85;
   return true;
 }
 
@@ -667,13 +705,17 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   const amplitude = Math.max(0, Math.min(w * 0.31, w / 2 - 72));
 
   let goalX, goalY;
-  if (b.moveStyle === 'figure8') {
-    goalX = w / 2 + Math.sin(t * 0.8) * amplitude;
-    goalY = baseY + Math.cos(t * 1.6) * h * 0.065;
+  if (b.moveStyle === 'center') {
+    const centerY = b.phase >= 2 ? Math.max(142, h * 0.27) : baseY;
+    goalX = w / 2 + Math.sin(t * 0.62) * amplitude * 0.45;
+    goalY = centerY + Math.cos(t * 0.9) * 14;
+  } else if (b.moveStyle === 'figure8') {
+    goalX = w / 2 + Math.sin(t * 0.85) * amplitude * 1.05;
+    goalY = baseY + Math.cos(t * 1.7) * h * 0.075;
   } else if (b.moveStyle === 'stalker') {
-    const track = Math.max(w * 0.2, Math.min(w * 0.8, player.x));
-    goalX = track * 0.55 + (w / 2 + Math.sin(t * 0.65) * amplitude * 0.6) * 0.45;
-    goalY = baseY + Math.sin(t * 1.1) * 16;
+    const track = Math.max(w * 0.16, Math.min(w * 0.84, player.x));
+    goalX = track * 0.68 + (w / 2 + Math.sin(t * 0.8) * amplitude * 0.5) * 0.32;
+    goalY = baseY + Math.sin(t * 1.4) * 24;
   } else if (b.moveStyle === 'pendulum') {
     goalX = w / 2 + Math.tanh(2.4 * Math.sin(t * 0.46)) * amplitude * 0.8;
     goalY = baseY + Math.sin(t * 0.9) * 12;
@@ -686,6 +728,67 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   }
 
   b.exposedFor = Math.max(0, b.exposedFor - dt);
+
+  // Scythe Exhaustion / Overheat Stun Window after Triple-Slash!
+  if (b.overheated > 0) {
+    b.overheated = Math.max(0, b.overheated - dt);
+    b.exposedFor = Math.max(b.exposedFor, 0.15);
+    b.x += (w * 0.5 - b.x) * (1 - Math.exp(-dt * 1.4));
+    b.y += (baseY - b.y) * (1 - Math.exp(-dt * 1.6));
+    syncBossParts(b);
+    return;
+  }
+
+  // Monolith Holographic Mirage Clones (telegraph converging sniper rails, then fire & dissolve!)
+  if (b.mirages && b.mirages.length > 0) {
+    for (const m of b.mirages) {
+      m.t += dt;
+      if (!m.fired && m.t >= 0.95) {
+        m.fired = true;
+        const aim = Math.atan2(player.x - m.x, Math.max(60, player.y - m.y));
+        const spd = Math.min(390, 315 + b.rank * 10);
+        for (const off of [-0.14, 0, 0.14]) {
+          shots.push({
+            x: m.x,
+            y: m.y + 14,
+            r: 4.3,
+            vx: Math.sin(aim + off) * spd,
+            vy: Math.cos(aim + off) * spd,
+            hostile: true,
+            color: '#d8b4ff',
+          });
+        }
+        sound.effect('dash');
+      }
+    }
+    b.mirages = b.mirages.filter((m) => m.t < 1.35);
+  }
+
+  // Carrier Carpet-Bomb Vertical Lanes (telegraphs columns with wide safe lanes, then drops rolling ordnance!)
+  if (b.carpetLanes) {
+    const cl = b.carpetLanes;
+    cl.t += dt;
+    if (cl.t >= cl.warn && !cl.dropped) {
+      cl.dropped = true;
+      sound.effect('cluster');
+      for (let i = 0; i < cl.cols; i++) {
+        if (cl.safeCols.includes(i)) continue;
+        const lx = ((i + 0.5) / cl.cols) * w;
+        for (let row = 0; row < 3; row++) {
+          shots.push({
+            x: lx + (row % 2 ? -8 : 8),
+            y: b.y + 18 - row * 28,
+            r: 5.2,
+            vx: 0,
+            vy: 235 + row * 18,
+            hostile: true,
+            color: '#ffaa54',
+          });
+        }
+      }
+    }
+    if (cl.t >= cl.warn + 0.45) b.carpetLanes = null;
+  }
 
   if (b.ringQueue > 0) {
     b.ringTimer -= dt;
@@ -803,8 +906,13 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
 
   if (b.beamActive > 0) {
     b.beamActive = Math.max(0, b.beamActive - dt);
-    if (b.crossBeam) {
-      // Seraph 4-way rotating X-Halo beams!
+    if (b.beamReverseAt > 0 && b.beamActive <= b.beamReverseAt) {
+      b.beamReverseAt = 0;
+      b.beamSweep = -(b.beamSweep || 0.8);
+      sound.effect('warning');
+    }
+    if (b.crossBeam || b.coronaBeam) {
+      // Seraph 4-way X-Halo OR Eclipse 3-spoke Solar Corona beams!
       b.beamAngle = (b.beamAngle || 0) + (b.beamSweep || 0.72) * dt;
     } else if (b.twinBeam) {
       // Counter-rotating twin scissor beams opening/closing all the way to horizontal!
@@ -822,7 +930,8 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     b.x += (goalX - b.x) * (1 - Math.exp(-dt * 1.2));
     syncBossParts(b);
     if (b.beamWarn <= 0) {
-      b.beamActive = b.crossBeam ? 2.0 : b.twinBeam ? 1.55 : 1.75;
+      b.beamActive = b.crossBeam ? 2.4 : b.coronaBeam ? 2.2 : b.twinBeam ? 1.55 : 1.75;
+      if (b.crossBeam && b.isFinalPhase) b.beamReverseAt = 1.15;
       sound.effect('beam');
     }
     return;
@@ -831,8 +940,8 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
   if (b.dive) {
     const dive = b.dive;
     dive.time += dt;
-    const telegraph = b.isFinalPhase ? 0.62 : 0.78;
-    const progress = Math.min(1, Math.max(0, (dive.time - telegraph) / (b.isFinalPhase ? 0.54 : 0.68)));
+    const telegraph = b.isFinalPhase ? 0.56 : 0.74;
+    const progress = Math.min(1, Math.max(0, (dive.time - telegraph) / (b.isFinalPhase ? 0.48 : 0.64)));
     const eased = progress * progress * (3 - 2 * progress);
     b.x = w * (dive.fromX + (dive.toX - dive.fromX) * eased);
     b.y = h * (dive.fromY + (dive.toY - dive.fromY) * eased);
@@ -840,16 +949,16 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     if (progress > 0.08 && progress < 0.94 && b.chassis === 'scythe') {
       b.diveWakeTick -= dt;
       if (b.diveWakeTick <= 0) {
-        b.diveWakeTick = 0.11;
+        b.diveWakeTick = 0.1;
         for (const side of [-1, 1]) {
           shots.push({
             x: b.x,
             y: b.y,
             r: 4,
-            vx: side * 72,
-            vy: 115,
+            vx: side * 84,
+            vy: 122,
             hostile: true,
-            color: b.palette.light,
+            color: '#7ef2e6',
           });
         }
       }
@@ -862,36 +971,107 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
           time: 0,
           fromX: b.x / w,
           fromY: b.y / h,
-          toX: Math.max(0.16, Math.min(0.84, player.x / w)),
-          toY: Math.max(0.2, Math.min(0.62, b.y > h * 0.4 ? 0.22 : player.y / h)),
+          toX: Math.max(0.14, Math.min(0.86, b.x < w * 0.5 ? 0.76 + Math.random() * 0.1 : 0.14 + Math.random() * 0.1)),
+          toY: Math.max(0.2, Math.min(0.64, b.y > h * 0.42 ? 0.22 : Math.min(0.64, player.y / h))),
         };
         sound.effect('dash');
       } else {
         b.dive = null;
+        if (b.chassis === 'scythe' && b.isFinalPhase) {
+          // Reward surviving Scythe's Triple-Slash with a crisp Overheat Punish Window!
+          b.overheated = 1.65;
+          b.exposedFor = 1.65;
+        }
       }
     }
     return;
   }
 
-  b.launchIn -= dt;
-  const activeMines = enemies.filter((m) => m.kind === 'mine' && !m.dead).length;
-  if (b.launchIn <= 0 && activeMines <= 1) {
-    b.launchIn = launchWing(b, enemies, w, h) ? Math.max(7.5, 10.5 - pressure * 0.5) : 0.9;
+  // Only Carrier (while Hangar Bays are alive!) launches generic escort wings — every other boss uses its OWN unique kit!
+  if (b.chassis === 'carrier' && liveParts.some((p) => p.role === 'bay')) {
+    b.launchIn -= dt;
+    const activeMines = enemies.filter((m) => m.kind === 'mine' && !m.dead).length;
+    if (b.launchIn <= 0 && activeMines <= 1) {
+      b.launchIn = launchWing(b, enemies, w, h) ? Math.max(6.2, 8.8 - pressure * 0.7) : 0.9;
+    }
   }
+  const activeMines = enemies.filter((m) => m.kind === 'mine' && !m.dead).length;
 
-  b.x += (goalX - b.x) * (1 - Math.exp(-dt * 1.8));
-  b.y += (goalY - b.y) * (1 - Math.exp(-dt * 1.7));
+  b.x += (goalX - b.x) * (1 - Math.exp(-dt * 1.9));
+  b.y += (goalY - b.y) * (1 - Math.exp(-dt * 1.8));
   syncBossParts(b);
 
   b.fireIn -= dt;
   if (b.fireIn > 0.5) b.aim = Math.atan2(player.x - b.x, Math.max(45, player.y - b.y));
   if (b.fireIn > 0) return;
 
-  const specialCycle = b.isFinalPhase ? 3 : 4;
+  const specialCycle = b.isFinalPhase ? 2 : 3;
   if ((b.volley + 1) % specialCycle === 0) {
     b.volley++;
-    const useSecondary = b.secondarySpecial && b.phase >= 2 && b.volley % 3 === 0;
+    const useSecondary = b.secondarySpecial && b.phase >= 2 && b.volley % 2 === 0;
     const spec = useSecondary ? b.secondarySpecial : b.primarySpecial;
+
+    if (spec === 'mirage') {
+      // Monolith Phase 2: Mirage Split — boss blinks & spawns 2 holographic decoy projections firing converging rails!
+      const lanes = [0.2, 0.5, 0.8];
+      const realIdx = Math.floor(Math.random() * 3);
+      b.x = w * lanes[realIdx];
+      b.y = Math.max(96, h * 0.22);
+      b.mirages = lanes
+        .filter((_, i) => i !== realIdx)
+        .map((lx) => ({ x: w * lx, y: b.y + 12, t: 0, fired: false }));
+      sound.effect('blink');
+      b.fireIn = 1.65;
+      return;
+    }
+    if (spec === 'carpetBomb') {
+      // Carrier Phase 3: Vertical Carpet-Bombing Lanes with 2 wide safe corridors!
+      const cols = w < 520 ? 5 : 7;
+      const safe1 = Math.floor(Math.random() * cols);
+      const safe2 = (safe1 + Math.max(2, Math.floor(cols / 2))) % cols;
+      b.carpetLanes = { t: 0, warn: 1.05, dropped: false, cols, safeCols: [safe1, safe2] };
+      sound.effect('warning');
+      b.fireIn = 1.85;
+      return;
+    }
+    if (spec === 'coronaBeam') {
+      // Eclipse Phase 2: 3-Spoke Rotating Golden Solar Corona Beams!
+      b.coronaBeam = true;
+      b.crossBeam = false;
+      b.twinBeam = false;
+      b.beamAngle = b.age * 0.7;
+      b.beamSweep = (b.volley % 2 ? 1 : -1) * (b.isFinalPhase ? 0.92 : 0.68);
+      b.beamWarn = 1.05;
+      b.fireIn = 1.95;
+      return;
+    }
+    if (spec === 'honeycomb') {
+      // Hive Signature: Expanding Hexagonal Honeycomb Bullet Grid (clean geometric walls with corner gaps!)
+      const spd = Math.min(195, 138 + b.rank * 5);
+      const rot = b.volley * 0.35;
+      for (let sideIdx = 0; sideIdx < 6; sideIdx++) {
+        const a0 = rot + (sideIdx * TAU) / 6;
+        const a1 = rot + ((sideIdx + 1) * TAU) / 6;
+        const steps = b.isFinalPhase ? 3 : 2;
+        for (let k = 0; k < steps; k++) {
+          const frac = (k + 0.5) / steps;
+          const vx = (Math.sin(a0) * (1 - frac) + Math.sin(a1) * frac) * spd;
+          const vy = (Math.cos(a0) * (1 - frac) + Math.cos(a1) * frac) * spd;
+          shots.push({
+            x: b.x + vx * 0.08,
+            y: b.y + vy * 0.08,
+            r: 4.3,
+            vx,
+            vy,
+            hostile: true,
+            color: '#9effc8',
+          });
+        }
+      }
+      sound.effect('volley');
+      b.fireIn = 1.45;
+      return;
+    }
 
     if (spec === 'blink') {
       b.blink = {
@@ -1013,15 +1193,18 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
         toX: Math.max(0.14, Math.min(0.86, player.x / w)),
         toY: Math.max(0.42, Math.min(0.68, player.y / h)),
       };
-      b.diveChain = b.isFinalPhase ? 1 : 0;
+      // Scythe Phase 2 unleashes a fierce 3-hit Zig-Zag Blade Frenzy!
+      b.diveChain = b.chassis === 'scythe' && b.isFinalPhase ? 2 : b.isFinalPhase ? 1 : 0;
       b.diveWakeTick = 0.08;
-      b.fireIn = 1.65;
+      b.fireIn = 1.55;
       sound.effect('dash');
       return;
     }
     if (spec === 'beam') {
       b.crossBeam = false;
-      b.twinBeam = b.phase >= 2 && (b.rank >= 2 || b.volley % 2 === 0 || b.isFinalPhase);
+      b.coronaBeam = false;
+      const hasBothPods = liveParts.filter((p) => p.role === 'turret').length >= 2;
+      b.twinBeam = b.phase >= 2 && (hasBothPods || b.isFinalPhase);
       if (b.twinBeam) {
         // Twin scissor beams: either sweep inward from full horizontal flanks or outward to horizontal!
         const inward = b.volley % 2 === 0;
@@ -1095,53 +1278,111 @@ export function flyBoss(b, dt, w, h, player, shots, sound, enemies) {
     });
   }
 
-  if (b.volleyStyle === 'aimed') {
-    const spreadCount = 1 + Math.min(2, pressure);
-    for (let i = -spreadCount; i <= spreadCount; i++) fire(b.x, b.y + 20, b.aim + i * 0.19);
-  } else if (b.volleyStyle === 'fan') {
-    const width = 2 + Math.min(2, pressure);
-    for (let i = -width; i <= width; i++) fire(b.x, b.y + 18, i * 0.24 + (b.volley % 2 ? 0.11 : -0.11));
-  } else if (b.volleyStyle === 'spiral') {
-    const petals = Math.min(15, 10 + pressure * 2);
-    const opening = Math.sin(b.volley * 0.72) * (b.phase === 2 ? -0.82 : 0.82);
+  // 10 Bespoke Archetype Primary Volleys (color-coded: cyan/teal = geometric fixed pattern, crimson/gold = aimed threat!)
+  if (b.chassis === 'catamaran') {
+    // Fortress broadside: alternating twin pontoon plasma walls + central aimed lance
+    for (const side of [-1, 1]) {
+      for (let k = -1; k <= 1; k++) {
+        fire(b.x + side * 34, b.y + 22, k * 0.22 + side * 0.06, velocity * 0.9, '#7ef2e6');
+      }
+    }
+    fire(b.x, b.y + 14, b.aim, velocity * 1.15, '#ff8a5c');
+  } else if (b.chassis === 'scythe') {
+    // Aggressive dogfighter: fast aimed V-saber burst + flanking wing darts
+    for (const off of [-0.28, -0.1, 0.1, 0.28]) {
+      fire(b.x, b.y + 18, b.aim + off, velocity * (Math.abs(off) < 0.15 ? 1.16 : 0.96), '#ff6e7a');
+    }
+  } else if (b.chassis === 'citadel') {
+    // Geometric Danmaku: counter-rotating dual-color flower spiral + aimed center pulse
+    const petals = Math.min(16, 10 + pressure * 2);
+    const dir = b.volley % 2 === 0 ? 1 : -1;
+    const opening = Math.sin(b.volley * 0.72) * 0.82 * dir;
     for (let i = 0; i < petals; i++) {
-      const angle = (i / petals - 0.5) * TAU + (b.volley % 2 ? 0.12 : -0.12);
-      if (Math.abs(angle - opening) > 0.42) fire(b.x, b.y + 12, angle, velocity * 0.94);
+      const angle = (i / petals - 0.5) * TAU + dir * b.volley * 0.14;
+      if (Math.abs(angle - opening) > 0.42) fire(b.x, b.y + 10, angle, velocity * 0.88, '#7ef2e6');
     }
-  } else if (b.volleyStyle === 'helix') {
-    const arms = 2 + pressure;
-    for (let i = 0; i < arms; i++) {
-      const a = b.aim + (i - (arms - 1) / 2) * 0.3 + Math.sin(b.volley * 0.9) * 0.16;
-      fire(b.x, b.y + 18, a, velocity * 1.02);
+    fire(b.x, b.y + 14, b.aim, velocity * 1.12, '#ffbe78');
+  } else if (b.chassis === 'monolith') {
+    // Precision geometric prism triangulations: fast 3-shot aimed burst + side prism splits
+    for (const k of [0.92, 1.08]) {
+      fire(b.x, b.y + 24, b.aim - 0.18, velocity * k, '#cfa6ff');
+      fire(b.x, b.y + 24, b.aim, velocity * (k + 0.08), '#fff0c2');
+      fire(b.x, b.y + 24, b.aim + 0.18, velocity * k, '#cfa6ff');
     }
-  } else if (b.volleyStyle === 'burst') {
-    for (let k = 0; k < 2; k++) {
-      const s = velocity * (0.86 + k * 0.16);
-      fire(b.x, b.y + 20, b.aim - 0.16, s);
-      fire(b.x, b.y + 20, b.aim, s * 1.05, b.palette.light);
-      fire(b.x, b.y + 20, b.aim + 0.16, s);
+  } else if (b.chassis === 'carrier') {
+    // Rolling flak broadside across flight deck
+    const cols = 5 + Math.min(2, pressure);
+    for (let i = 0; i < cols; i++) {
+      const lx = b.x + ((i / (cols - 1)) - 0.5) * 94;
+      fire(lx, b.y + 22, ((i / (cols - 1)) - 0.5) * 0.34, velocity * (0.82 + (i % 2) * 0.14), '#ffca6b');
     }
-  } else if (b.volleyStyle === 'wave') {
-    const count = 4 + (b.isFinalPhase ? 2 : 0);
+  } else if (b.chassis === 'eclipse') {
+    // Collapsing Star-Ring: bullets fly out, pause briefly mid-air, then surge toward player!
+    const count = 8 + pressure * 2;
     for (let i = 0; i < count; i++) {
-      const off = (i - (count - 1) / 2) * 0.24;
+      const a = (i / count) * TAU + b.volley * 0.25;
       shots.push({
-        x: b.x + off * 70,
+        x: b.x + Math.sin(a) * 18,
+        y: b.y + Math.cos(a) * 18,
+        r: 4.5,
+        vx: Math.sin(a) * 115,
+        vy: Math.cos(a) * 115,
+        starPause: 0.55,
+        starHold: 0.42,
+        starSpeed: velocity * 1.05,
+        hostile: true,
+        color: '#ffe18c',
+      });
+    }
+  } else if (b.chassis === 'kraken') {
+    // Whipping tentacle cross-stream from live tentacles + core ink spray
+    const liveArms = liveParts.filter((p) => p.tentacle);
+    for (const arm of liveArms) {
+      const a = Math.atan2(player.x - arm.x, Math.max(70, player.y - arm.y));
+      fire(arm.x, arm.y + 8, a, velocity * 0.96, '#ff9866');
+    }
+    for (const off of [-0.36, 0, 0.36]) fire(b.x, b.y + 22, off, velocity * 0.88, '#7ef2e6');
+  } else if (b.chassis === 'seraph') {
+    // Graceful curving angelic feather arcs from both wings!
+    const feathers = 4 + Math.min(2, pressure);
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < feathers; i++) {
+        const a = side * (0.28 + i * 0.16);
+        shots.push({
+          x: b.x + side * 26,
+          y: b.y + 8,
+          r: 4.2,
+          vx: Math.sin(a) * velocity * 0.88,
+          vy: Math.cos(a) * velocity * 0.88,
+          curveRate: -side * 0.52,
+          hostile: true,
+          color: i % 2 === 0 ? '#ffe89c' : '#9effef',
+        });
+      }
+    }
+  } else if (b.chassis === 'leviathan') {
+    // Dual opposing undulating sine-wave ocean currents!
+    const count = 5 + (b.isFinalPhase ? 2 : 0);
+    for (let i = 0; i < count; i++) {
+      const off = (i - (count - 1) / 2) * 0.25;
+      shots.push({
+        x: b.x + off * 78,
         y: b.y + 18,
-        r: 4.3,
-        vx: Math.sin(off) * velocity * 0.35,
-        vy: velocity * 0.92,
-        waveAmp: 66,
-        waveFreq: 4.8,
-        wavePhase: i * 1.1 + b.volley,
+        r: 4.4,
+        vx: Math.sin(off) * velocity * 0.32,
+        vy: velocity * 0.9,
+        waveAmp: 74,
+        waveFreq: 5.0,
+        wavePhase: i * 1.05 + b.volley,
         age: 0,
         hostile: true,
-        color: bulletColor,
+        color: i % 2 === 0 ? '#7ef2e6' : '#c8a6ff',
       });
     }
   } else {
-    for (let i = -2; i <= 2; i++) fire(b.x, b.y + 18, i * 0.28, velocity * 0.92);
-    fire(b.x, b.y + 20, b.aim, velocity * 1.12, '#fff0c2');
+    // Hive Brood: alternating bio-cluster fan + swarm pod hatchlings
+    for (let i = -2; i <= 2; i++) fire(b.x, b.y + 18, i * 0.26 + Math.sin(b.volley) * 0.1, velocity * 0.92, '#9effc8');
+    fire(b.x, b.y + 20, b.aim, velocity * 1.1, '#ffb06b');
   }
 
   // Subsystems take turns firing (staggered by volley index) so patterns stay clean & readable!
@@ -1617,14 +1858,75 @@ export function drawBoss(ctx, b, w, h) {
     ctx.restore();
   }
 
-  // Dive telegraph
-  if (b.dive && b.dive.time < (b.isFinalPhase ? 0.62 : 0.78)) {
+  // Carrier Carpet-Bomb vertical danger lanes telegraph!
+  if (b.carpetLanes) {
+    const cl = b.carpetLanes;
+    const p = Math.min(1, cl.t / cl.warn);
+    const colW = w / cl.cols;
+    ctx.save();
+    ctx.translate(-b.x, -b.y);
+    for (let i = 0; i < cl.cols; i++) {
+      if (cl.safeCols.includes(i)) continue;
+      const lx = i * colW;
+      ctx.fillStyle = `rgba(255, 132, 64, ${0.06 + p * 0.16})`;
+      ctx.fillRect(lx + 4, b.y + 16, colW - 8, h - b.y);
+      ctx.strokeStyle = `rgba(255, 186, 98, ${0.28 + p * 0.56})`;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(lx + colW / 2, b.y + 16);
+      ctx.lineTo(lx + colW / 2, h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+  }
+
+  // Monolith Holographic Mirage Clones!
+  if (b.mirages && b.mirages.length > 0) {
+    for (const m of b.mirages) {
+      const alpha = m.fired ? Math.max(0, 1 - (m.t - 0.95) / 0.4) : 0.45 + 0.25 * Math.sin(b.age * 32);
+      ctx.save();
+      ctx.translate(m.x - b.x, m.y - b.y);
+      if (!m.fired) {
+        const p = Math.min(1, m.t / 0.95);
+        ctx.strokeStyle = `rgba(214, 158, 255, ${0.35 + p * 0.6})`;
+        ctx.lineWidth = 1.4 + p * 1.4;
+        ctx.setLineDash([7, 6]);
+        ctx.beginPath();
+        ctx.moveTo(0, 20);
+        ctx.lineTo(0, h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.globalAlpha = alpha * 0.72;
+      ctx.scale(b.scale * 0.92, b.scale * 0.92);
+      drawChassisBody(ctx, b, 0.7);
+      ctx.restore();
+    }
+  }
+
+  // Dive / Scythe Blade Slash-Corridor telegraph!
+  if (b.dive && b.dive.time < (b.isFinalPhase ? 0.56 : 0.74)) {
     const tx = b.dive.toX * w - b.x;
     const ty = b.dive.toY * h - b.y;
-    const maxT = b.isFinalPhase ? 0.62 : 0.78;
+    const maxT = b.isFinalPhase ? 0.56 : 0.74;
+    const p = Math.min(1, b.dive.time / maxT);
     ctx.save();
+    if (b.chassis === 'scythe') {
+      const ang = Math.atan2(ty, tx);
+      const len = Math.hypot(tx, ty);
+      ctx.save();
+      ctx.rotate(ang);
+      ctx.fillStyle = `rgba(255, 72, 92, ${0.12 + p * 0.22})`;
+      ctx.fillRect(0, -b.r * 0.85, len, b.r * 1.7);
+      ctx.strokeStyle = `rgba(255, 166, 138, ${0.45 + p * 0.5})`;
+      ctx.lineWidth = 1.6;
+      ctx.strokeRect(0, -b.r * 0.85, len, b.r * 1.7);
+      ctx.restore();
+    }
     ctx.strokeStyle = '#ffbc91';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.6;
     ctx.setLineDash([7, 7]);
     ctx.beginPath();
     ctx.moveTo(0, 0);
@@ -1632,12 +1934,12 @@ export function drawBoss(ctx, b, w, h) {
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.arc(tx, ty, 12 + 20 * (1 - b.dive.time / maxT), 0, TAU);
+    ctx.arc(tx, ty, 12 + 20 * (1 - p), 0, TAU);
     ctx.stroke();
     ctx.restore();
   }
 
-  // Full-horizon sweeping thermal beams (Single, Twin Scissor, OR Seraph 4-way X-Cross Halo!)
+  // Full-horizon sweeping thermal beams (Single, Twin Scissor, Seraph 4-way X-Cross Halo, OR Eclipse 3-Spoke Solar Corona!)
   if (b.beamWarn > 0 || b.beamActive > 0) {
     const beamLen = Math.hypot(w, h) + 140;
     const angles = b.crossBeam
@@ -1647,27 +1949,36 @@ export function drawBoss(ctx, b, w, h) {
           (b.beamAngle || 0) + Math.PI,
           (b.beamAngle || 0) + (Math.PI * 3) / 2,
         ]
-      : b.twinBeam
-        ? [-(b.beamSpread || 0.35), b.beamSpread || 0.35]
-        : [b.beamAngle || 0];
+      : b.coronaBeam
+        ? [
+            b.beamAngle || 0,
+            (b.beamAngle || 0) + TAU / 3,
+            (b.beamAngle || 0) + (TAU * 2) / 3,
+          ]
+        : b.twinBeam
+          ? [-(b.beamSpread || 0.35), b.beamSpread || 0.35]
+          : [b.beamAngle || 0];
     for (const ang of angles) {
       ctx.save();
       ctx.rotate(ang);
       if (b.beamActive > 0) {
         const pulse = 0.84 + 0.16 * Math.sin(b.age * 48);
         ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = b.crossBeam ? 'rgba(255, 214, 108, 0.26)' : 'rgba(220, 146, 255, 0.26)';
+        ctx.fillStyle =
+          b.crossBeam || b.coronaBeam ? 'rgba(255, 214, 108, 0.28)' : 'rgba(220, 146, 255, 0.26)';
         ctx.fillRect(-18 * pulse, 18, 36 * pulse, beamLen);
-        ctx.fillStyle = b.crossBeam ? 'rgba(255, 240, 182, 0.78)' : 'rgba(246, 210, 255, 0.76)';
+        ctx.fillStyle =
+          b.crossBeam || b.coronaBeam ? 'rgba(255, 240, 182, 0.8)' : 'rgba(246, 210, 255, 0.76)';
         ctx.fillRect(-7 * pulse, 18, 14 * pulse, beamLen);
         ctx.fillStyle = '#fff9f2';
         ctx.fillRect(-2.6, 18, 5.2, beamLen);
         ctx.globalCompositeOperation = 'source-over';
       } else {
         const p = 1 - b.beamWarn / 1.05;
-        ctx.strokeStyle = b.crossBeam
-          ? `rgba(255, 224, 138, ${0.32 + p * 0.65})`
-          : `rgba(232, 180, 255, ${0.3 + p * 0.65})`;
+        ctx.strokeStyle =
+          b.crossBeam || b.coronaBeam
+            ? `rgba(255, 224, 138, ${0.32 + p * 0.65})`
+            : `rgba(232, 180, 255, ${0.3 + p * 0.65})`;
         ctx.lineWidth = 1.2 + p * 2.6;
         ctx.setLineDash([10, 8]);
         ctx.beginPath();
@@ -1679,7 +1990,7 @@ export function drawBoss(ctx, b, w, h) {
       ctx.restore();
     }
     // Curved sweep-direction telegraph arc so player clearly reads horizontal/rotational sweep direction!
-    if (b.beamWarn > 0 && !b.crossBeam) {
+    if (b.beamWarn > 0 && !b.crossBeam && !b.coronaBeam) {
       const p = 1 - b.beamWarn / 1.05;
       ctx.save();
       ctx.strokeStyle = `rgba(255, 210, 140, ${0.3 + p * 0.55})`;
@@ -1730,17 +2041,17 @@ export function drawBoss(ctx, b, w, h) {
   ctx.scale(b.scale, b.scale);
   drawChassisBody(ctx, b, charging);
 
-  if (b.exposedFor > 0) {
+  if (b.exposedFor > 0 || b.overheated > 0) {
     ctx.save();
-    ctx.strokeStyle = 'rgba(152, 255, 220, 0.78)';
-    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = b.overheated > 0 ? 'rgba(255, 198, 112, 0.85)' : 'rgba(152, 255, 220, 0.78)';
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
     ctx.arc(0, 0, 42 + Math.sin(b.age * 16) * 2, 0, TAU);
     ctx.stroke();
-    ctx.fillStyle = '#b6ffe9';
+    ctx.fillStyle = b.overheated > 0 ? '#ffe49e' : '#b6ffe9';
     ctx.textAlign = 'center';
     ctx.font = '700 9px ui-monospace, monospace';
-    ctx.fillText('CORE EXPOSED ×2', 0, -44);
+    ctx.fillText(b.overheated > 0 ? 'OVERHEATED — PUNISH ×2' : 'CORE EXPOSED ×2', 0, -44);
     ctx.restore();
   }
   ctx.restore();

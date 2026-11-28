@@ -667,6 +667,44 @@ const foes = {
     ['#1d4a3b', 'M-10 -6 10 -6 10 6 -10 6Z'],
     ['#c8ffdf', 'M-3 -9 3 -9 3 -3 9 -3 9 3 3 3 3 9 -3 9 -3 3 -9 3 -9 -3 -3 -3Z'],
   ]),
+  ace: plates([
+    [ink, 'M0 26 L9 10 26 2 22 -14 10 -8 6 -24 0 -18 -6 -24 -10 -8 -22 -14 -26 2 -9 10Z'],
+    ['#d93b4f', 'M0 21 L7 8 21 1 18 -10 8 -5 4 -19 0 -14 -4 -19 -8 -5 -18 -10 -21 1 -7 8Z'],
+    ['#ffd56b', 'M-18 -6 -10 -4 -13 3 -20 0Z M18 -6 10 -4 13 3 20 0Z M0 16 -4 4 0 -10 4 4Z'],
+    ['#361424', 'M0 10 -4 1 0 -8 4 1Z'],
+    ['#fff6d6', 'M0 6 -2 1 0 -5 2 1Z'],
+  ]),
+  dreadcourier: plates([
+    [ink, 'M-26 -14 -14 -22 14 -22 26 -14 26 12 14 22 -14 22 -26 12Z'],
+    ['#e8b948', 'M-22 -11 -12 -18 12 -18 22 -11 22 10 12 18 -12 18 -22 10Z'],
+    ['#523819', 'M-16 -7 16 -7 16 9 -16 9Z'],
+    ['#fff1b5', 'M-12 -13 12 -13 10 -9 -10 -9Z M-12 12 12 12 10 15 -10 15Z'],
+    [teal, 'M0 -5 8 1 0 7 -8 1Z'],
+  ]),
+  volatile: plates([
+    [ink, 'M-15 -12 -8 -18 8 -18 15 -12 15 12 8 18 -8 18 -15 12Z'],
+    ['#544038', 'M-12 -9 -6 -14 6 -14 12 -9 12 9 6 14 -6 14 -12 9Z'],
+    ['#ff883d', 'M-9 -5 9 -5 9 5 -9 5Z'],
+    ['#fff1b8', 'M-5 -2 5 -2 5 2 -5 2Z'],
+  ]),
+  shieldgen: plates([
+    [ink, 'M0 -22 18 -12 22 0 18 12 0 22 -18 12 -22 0 -18 -12Z'],
+    ['#2b6e82', 'M0 -18 14 -9 18 0 14 9 0 18 -14 9 -18 0 -14 -9Z'],
+    ['#163847', 'M0 -12 10 -6 10 6 0 12 -10 6 -10 -6Z'],
+    ['#8cf7ff', 'M0 -8 7 0 0 8 -7 0Z'],
+  ]),
+  gravmine: plates([
+    [ink, 'M0 -18 13 -13 18 0 13 13 0 18 -13 13 -18 0 -13 -13Z'],
+    ['#4f3478', 'M0 -14 10 -10 14 0 10 10 0 14 -10 10 -14 0 -10 -10Z'],
+    ['#201238', 'M0 -9 9 0 0 9 -9 0Z'],
+    ['#d89eff', 'M0 -5 5 0 0 5 -5 0Z'],
+  ]),
+  turretbarge: plates([
+    [ink, 'M-26 -14 26 -14 28 10 18 20 -18 20 -28 10Z'],
+    ['#687c91', 'M-22 -10 22 -10 24 8 15 16 -15 16 -24 8Z'],
+    ['#303e52', 'M-16 -6 16 -6 16 10 -16 10Z'],
+    ['#ffad6b', 'M-20 -2 -15 -2 -15 6 -20 6Z M15 -2 20 -2 20 6 15 6Z'],
+  ]),
 };
 
 const SECTOR_FOE_TINTS = [
@@ -764,11 +802,30 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.restore();
   }
 
+  if (e.kind === 'ace' && e.dashTelegraph > 0 && e.dashTargetX !== undefined) {
+    ctx.save();
+    const dx = e.dashTargetX - e.x;
+    const dy = (e.dashTargetY ?? e.y) - e.y;
+    const p = 1 - Math.min(1, e.dashTelegraph / 0.55);
+    ctx.strokeStyle = `rgba(255, 92, 102, ${0.35 + p * 0.6})`;
+    ctx.lineWidth = 2 + p * 1.5;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(dx, dy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(dx, dy, 16 + (1 - p) * 14, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   const punch = e.hitPunch || 0;
   if (punch > 0.01) {
     ctx.translate((e.hitKickX || 0) * punch, (e.hitKickY || 0) * punch);
   }
-  ctx.rotate(e.kind === 'orbiter' ? (e.age || 0) * 3.4 : e.tilt || 0);
+  ctx.rotate(e.kind === 'orbiter' ? (e.age || 0) * 3.4 : e.kind === 'volatile' ? (e.age || 0) * 0.85 : e.tilt || 0);
   const scale = e.r / 18;
   ctx.scale(scale * (1 + punch * 0.16), scale * (1 - punch * 0.14));
 
@@ -776,14 +833,76 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.globalAlpha = 0.42 + 0.35 * Math.sin((e.age || 0) * 36);
   }
 
-  if (e.kind !== 'prism' && e.kind !== 'courier' && e.kind !== 'orbiter' && e.kind !== 'healer') {
+  if (e.kind !== 'prism' && e.kind !== 'courier' && e.kind !== 'dreadcourier' && e.kind !== 'orbiter' && e.kind !== 'healer' && e.kind !== 'volatile' && e.kind !== 'shieldgen' && e.kind !== 'gravmine' && e.kind !== 'turretbarge') {
     const flick = 0.75 + 0.25 * Math.sin((e.age || 0) * 28);
-    ctx.fillStyle = e.kind === 'lancer' && e.fireIn <= 0 ? '#ffe7b3' : '#ff8c5990';
+    ctx.fillStyle = e.kind === 'ace' ? '#ffd56b' : e.kind === 'lancer' && e.fireIn <= 0 ? '#ffe7b3' : '#ff8c5990';
     ctx.beginPath();
     ctx.moveTo(-4, -14);
-    ctx.lineTo(0, -21 - flick * (e.kind === 'lancer' && e.fireIn <= 0 ? 18 : 6));
+    ctx.lineTo(0, -21 - flick * (e.kind === 'ace' ? 14 : e.kind === 'lancer' && e.fireIn <= 0 ? 18 : 6));
     ctx.lineTo(4, -14);
     ctx.fill();
+  }
+
+  if (e.kind === 'shieldgen') {
+    const pulse = 0.6 + 0.4 * Math.sin((e.age || 0) * 7.5);
+    ctx.save();
+    ctx.strokeStyle = `rgba(128, 244, 255, ${0.42 + pulse * 0.42})`;
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([7, 5]);
+    ctx.rotate(-(e.age || 0) * 1.4);
+    ctx.beginPath();
+    ctx.arc(0, 0, 25 + pulse * 2.5, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  if (e.kind === 'gravmine') {
+    const pulse = 0.55 + 0.45 * Math.sin((e.age || 0) * 9);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, 6, 0, 0, 52);
+    g.addColorStop(0, 'rgba(196, 134, 255, 0.28)');
+    g.addColorStop(0.6, 'rgba(130, 72, 224, 0.1)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, 52, 0, TAU);
+    ctx.fill();
+    ctx.rotate((e.age || 0) * 2.2);
+    ctx.strokeStyle = `rgba(210, 156, 255, ${0.35 + pulse * 0.4})`;
+    ctx.lineWidth = 1.3;
+    ctx.setLineDash([10, 8]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 36, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  if (e.kind === 'ace') {
+    const pulse = 0.65 + 0.35 * Math.sin((e.age || 0) * 10);
+    ctx.save();
+    ctx.strokeStyle = `rgba(255, 213, 107, ${0.4 + pulse * 0.38})`;
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([8, 6]);
+    ctx.rotate((e.age || 0) * 1.6);
+    ctx.beginPath();
+    ctx.arc(0, 0, 27, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  if (e.kind === 'volatile') {
+    const pulse = 0.5 + 0.5 * Math.sin((e.age || 0) * 12);
+    ctx.save();
+    ctx.strokeStyle = `rgba(255, 148, 68, ${0.32 + pulse * 0.48})`;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(0, 0, 20 + pulse * 4, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
   }
 
   if (e.kind === 'healer') {
@@ -826,14 +945,14 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
     ctx.restore();
   }
 
-  if (e.kind === 'courier') {
+  if (e.kind === 'courier' || e.kind === 'dreadcourier') {
     ctx.save();
-    ctx.rotate((e.age || 0) * 1.8);
-    ctx.strokeStyle = 'rgba(121, 227, 213, 0.52)';
-    ctx.lineWidth = 1.2;
+    ctx.rotate((e.age || 0) * (e.kind === 'dreadcourier' ? 2.4 : 1.8));
+    ctx.strokeStyle = e.kind === 'dreadcourier' ? 'rgba(255, 224, 118, 0.78)' : 'rgba(121, 227, 213, 0.52)';
+    ctx.lineWidth = e.kind === 'dreadcourier' ? 1.8 : 1.2;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.arc(0, 0, 23, 0, TAU);
+    ctx.arc(0, 0, e.kind === 'dreadcourier' ? 27 : 23, 0, TAU);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
@@ -842,10 +961,63 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
   print(
     ctx,
     foes[e.kind] || foes.raider,
-    e.kind === 'courier' || e.kind === 'healer' || e.kind === 'phantom'
+    e.kind === 'courier' || e.kind === 'dreadcourier' || e.kind === 'healer' || e.kind === 'phantom' || e.kind === 'ace' || e.kind === 'volatile' || e.kind === 'shieldgen' || e.kind === 'gravmine'
       ? null
       : SECTOR_FOE_TINTS[sectorIndex % SECTOR_FOE_TINTS.length],
   );
+
+  // Rotating dual cannon barrel mounted on Turret Barge (shows aiming direction & blind spot!)
+  if (e.kind === 'turretbarge') {
+    ctx.save();
+    ctx.rotate(-(e.turretAngle || 0));
+    ctx.fillStyle = '#0d1422';
+    ctx.fillRect(-7.5, -4, 5, 22);
+    ctx.fillRect(2.5, -4, 5, 22);
+    ctx.fillStyle = '#c8d6e2';
+    ctx.fillRect(-6.2, -2, 2.6, 18);
+    ctx.fillRect(3.6, -2, 2.6, 18);
+    ctx.fillStyle = '#ff9d5c';
+    ctx.beginPath();
+    ctx.arc(0, 0, 7.5, 0, TAU);
+    ctx.fill();
+    ctx.strokeStyle = '#0d1422';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Hard-light cyan barrier bubble projected by an active Shield Generator!
+  if (e.shieldedBy && !e.shieldedBy.dead) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(130, 246, 255, 0.86)';
+    ctx.fillStyle = 'rgba(121, 227, 213, 0.14)';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 24, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (e.frozen > 0) {
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = 'rgba(168, 238, 255, 0.85)';
+    ctx.fillStyle = 'rgba(148, 228, 255, 0.22)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i * TAU) / 6;
+      const rx = Math.cos(a) * 21;
+      const ry = Math.sin(a) * 21;
+      if (i === 0) ctx.moveTo(rx, ry);
+      else ctx.lineTo(rx, ry);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
 
   if (e.flash > 0) {
     const f = Math.min(1, e.flash / 0.13);
@@ -889,19 +1061,28 @@ export function drawFoe(ctx, e, sectorIndex = 0) {
 
   ctx.restore();
 
-  if (e.maxHp > 1 && e.hp < e.maxHp && e.hp > 0) {
-    const bw = Math.max(24, e.r * 1.45);
+  if (e.maxHp > 1 && (e.hp < e.maxHp || e.kind === 'ace' || e.kind === 'dreadcourier') && e.hp > 0) {
+    const bw = e.kind === 'ace' || e.kind === 'dreadcourier' ? Math.max(46, e.r * 1.9) : Math.max(24, e.r * 1.45);
     const bx = e.x - bw / 2;
-    const by = e.y - e.r - 9;
-    ctx.fillStyle = 'rgba(13, 20, 34, 0.82)';
-    ctx.fillRect(bx - 1, by - 1, bw + 2, 4.8);
+    const by = e.y - e.r - (e.kind === 'ace' || e.kind === 'dreadcourier' ? 13 : 9);
+    ctx.fillStyle = 'rgba(13, 20, 34, 0.85)';
+    ctx.fillRect(bx - 1, by - 1, bw + 2, e.kind === 'ace' || e.kind === 'dreadcourier' ? 6 : 4.8);
     const trailHp = Math.max(e.hp, e.hpTrail ?? e.hp);
     if (trailHp > e.hp + 0.02) {
       ctx.fillStyle = 'rgba(255, 244, 218, 0.9)';
-      ctx.fillRect(bx, by, bw * Math.min(1, trailHp / e.maxHp), 2.8);
+      ctx.fillRect(bx, by, bw * Math.min(1, trailHp / e.maxHp), e.kind === 'ace' || e.kind === 'dreadcourier' ? 4 : 2.8);
     }
-    ctx.fillStyle = e.flash > 0 ? '#fff6e0' : e.kind === 'courier' ? teal : amber;
-    ctx.fillRect(bx, by, bw * (e.hp / e.maxHp), 2.8);
+    ctx.fillStyle =
+      e.flash > 0
+        ? '#fff6e0'
+        : e.kind === 'ace'
+          ? '#ff5a6c'
+          : e.kind === 'dreadcourier'
+            ? gold
+            : e.kind === 'courier'
+              ? teal
+              : amber;
+    ctx.fillRect(bx, by, bw * (e.hp / e.maxHp), e.kind === 'ace' || e.kind === 'dreadcourier' ? 4 : 2.8);
   }
 }
 
@@ -1173,14 +1354,14 @@ export function drawPickup(ctx, p) {
 export const SECTORS = [
   {
     name: 'PELAGIC RIM',
-    skyTop: '#060c18',
-    skyBottom: '#0b1829',
-    veilA: 'rgba(34, 118, 138, 0.22)',
-    veilB: 'rgba(26, 62, 118, 0.24)',
-    veilC: 'rgba(116, 224, 210, 0.11)',
+    skyTop: '#050d1c',
+    skyBottom: '#0c2036',
+    veilA: 'rgba(34, 156, 174, 0.26)',
+    veilB: 'rgba(26, 76, 146, 0.28)',
+    veilC: 'rgba(116, 234, 216, 0.14)',
     starTint: '#d8f4ff',
     starAccent: '#ffe2c2',
-    arcColor: 'rgba(121, 227, 213, 0.08)',
+    arcColor: 'rgba(121, 227, 213, 0.11)',
     warpColor: '#9af5ec',
     lane: 0.74,
     width: 0.46,
@@ -1189,18 +1370,19 @@ export const SECTORS = [
     bands: 6,
     ring: false,
     eclipse: false,
+    dimension: 'shipyard',
     seed: 17,
   },
   {
     name: 'CALDERA BELT',
-    skyTop: '#12080d',
-    skyBottom: '#231015',
-    veilA: 'rgba(186, 74, 48, 0.24)',
-    veilB: 'rgba(110, 34, 52, 0.24)',
-    veilC: 'rgba(255, 178, 108, 0.12)',
+    skyTop: '#16070c',
+    skyBottom: '#2d1114',
+    veilA: 'rgba(218, 78, 44, 0.28)',
+    veilB: 'rgba(136, 36, 48, 0.26)',
+    veilC: 'rgba(255, 178, 96, 0.16)',
     starTint: '#ffe8d6',
-    starAccent: '#ffb380',
-    arcColor: 'rgba(255, 170, 112, 0.09)',
+    starAccent: '#ffaa6b',
+    arcColor: 'rgba(255, 166, 98, 0.12)',
     warpColor: '#ffbe82',
     lane: 0.22,
     width: 0.38,
@@ -1210,18 +1392,19 @@ export const SECTORS = [
     ring: false,
     eclipse: false,
     fissures: true,
+    dimension: 'caldera',
     seed: 43,
   },
   {
     name: 'OPAL EXPANSE',
-    skyTop: '#0b0817',
-    skyBottom: '#1a1332',
-    veilA: 'rgba(124, 86, 198, 0.24)',
-    veilB: 'rgba(184, 88, 146, 0.18)',
-    veilC: 'rgba(156, 218, 255, 0.11)',
+    skyTop: '#0b071c',
+    skyBottom: '#1f123d',
+    veilA: 'rgba(142, 88, 226, 0.28)',
+    veilB: 'rgba(206, 86, 164, 0.22)',
+    veilC: 'rgba(134, 232, 255, 0.16)',
     starTint: '#ece2ff',
-    starAccent: '#ffc2e0',
-    arcColor: 'rgba(200, 176, 255, 0.09)',
+    starAccent: '#ffb8df',
+    arcColor: 'rgba(200, 176, 255, 0.12)',
     warpColor: '#d2b8ff',
     lane: 0.7,
     width: 0.56,
@@ -1230,18 +1413,19 @@ export const SECTORS = [
     bands: 9,
     ring: true,
     eclipse: false,
+    dimension: 'aurora',
     seed: 79,
   },
   {
     name: 'ECLIPSE CORONA',
-    skyTop: '#08090f',
-    skyBottom: '#191418',
-    veilA: 'rgba(220, 134, 62, 0.2)',
-    veilB: 'rgba(148, 42, 54, 0.2)',
-    veilC: 'rgba(255, 222, 138, 0.11)',
+    skyTop: '#0a080d',
+    skyBottom: '#241612',
+    veilA: 'rgba(242, 146, 58, 0.26)',
+    veilB: 'rgba(176, 52, 48, 0.24)',
+    veilC: 'rgba(255, 224, 134, 0.16)',
     starTint: '#fff2d8',
     starAccent: '#ff9c70',
-    arcColor: 'rgba(255, 206, 130, 0.09)',
+    arcColor: 'rgba(255, 206, 130, 0.12)',
     warpColor: '#ffe099',
     lane: 0.28,
     width: 0.44,
@@ -1250,6 +1434,7 @@ export const SECTORS = [
     bands: 0,
     ring: false,
     eclipse: true,
+    dimension: 'corona',
     seed: 109,
   },
   {
@@ -1520,14 +1705,14 @@ export function getSector(index) {
 
 export function getSectorHazard(index) {
   const hazards = [
-    'STANDARD ORBIT',
-    'MOLTEN ASTEROIDS',
-    'ION CURRENT DRIFT',
-    'SOLAR SURGE',
-    'GRAVITY ANOMALY // +NOVA',
-    'SUB-ZERO // +35% COOLING',
-    'EMP PULSE STORMS',
-    'SINGULARITY // +25% SCORE',
+    'ORBITAL SHIPYARD // BOOST GATES',
+    'MAGMA METEORS // VOLCANIC FORGE',
+    'ION DRIFT // PRISM BOOST GATES',
+    'METEOR STORM // SOLAR ECLIPSE',
+    'GRAVITY ANOMALY // +NOVA RIFT',
+    'SUB-ZERO +40% COOL // CRYO SHATTER',
+    'EMP BARRIERS // VOLATILE CORES',
+    'EVENT HORIZON // +25% SCORE',
   ];
   return hazards[Math.max(0, index) % hazards.length];
 }
@@ -1603,16 +1788,133 @@ export function drawSpaceBackdrop(ctx, w, h, travel, pan, sectorIndex, warpFacto
   }
   ctx.restore();
 
-  // Subtle editorial orbital telemetry arcs + bespoke dimension architecture!
+  // Subtle editorial orbital telemetry arcs + bespoke dimension architecture for ALL 8 sectors!
   const arcOffset = (travel * 0.09) % (h * 1.6);
   ctx.save();
   ctx.strokeStyle = spec.arcColor;
   ctx.lineWidth = 1;
-  if (spec.dimension === 'rift') {
-    // Astral Rift: hyper-dimensional perspective neon warp grid!
-    const gridSpacing = 54;
-    const gOff = (travel * 0.55) % gridSpacing;
-    ctx.strokeStyle = 'rgba(104, 245, 224, 0.08)';
+  if (spec.dimension === 'shipyard') {
+    // Pelagic Rim: drifting orbital shipyard solar arrays & distant docking ring stations (clean, zero vertical beams!)
+    const stY = ((travel * 0.09) % (h + 340)) - 170;
+    const stX = w * 0.84 - pan * 16;
+    ctx.save();
+    ctx.translate(stX, stY);
+    ctx.rotate(-0.18);
+    ctx.fillStyle = 'rgba(10, 24, 42, 0.56)';
+    ctx.strokeStyle = 'rgba(121, 227, 213, 0.24)';
+    ctx.fillRect(-58, -14, 116, 28);
+    ctx.strokeRect(-58, -14, 116, 28);
+    for (let gx = -44; gx <= 44; gx += 16) {
+      ctx.beginPath();
+      ctx.moveTo(gx, -14);
+      ctx.lineTo(gx, 14);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#8ceee0';
+    ctx.globalAlpha = 0.45 + 0.35 * Math.sin(travel * 0.04);
+    ctx.fillRect(-62, -2, 4, 4);
+    ctx.fillRect(58, -2, 4, 4);
+    ctx.restore();
+
+    const dockY = ((travel * 0.065 + h * 0.55) % (h + 380)) - 190;
+    const dockX = w * 0.18 - pan * 12;
+    ctx.save();
+    ctx.translate(dockX, dockY);
+    ctx.rotate(0.24);
+    ctx.strokeStyle = 'rgba(121, 227, 213, 0.18)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(0, 0, 38, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 52, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  } else if (spec.dimension === 'caldera') {
+    // Caldera Belt: glowing volcanic magma cracks + rising glowing embers across deep forge space
+    const riftSpan = h + 320;
+    for (let i = 0; i < 3; i++) {
+      const ry = ((travel * (0.12 + i * 0.04) + i * (riftSpan / 3)) % riftSpan) - 160;
+      const rx = w * (i % 2 === 0 ? 0.16 : 0.82) - pan * (18 + i * 6);
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.rotate(i % 2 === 0 ? 0.35 : -0.4);
+      ctx.fillStyle = 'rgba(28, 12, 16, 0.62)';
+      ctx.beginPath();
+      ctx.moveTo(-48, -32);
+      ctx.lineTo(42, -18);
+      ctx.lineTo(54, 24);
+      ctx.lineTo(-26, 40);
+      ctx.lineTo(-56, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 134, 68, 0.38)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-36, -12);
+      ctx.lineTo(-4, 4);
+      ctx.lineTo(36, -4);
+      ctx.moveTo(-4, 4);
+      ctx.lineTo(14, 28);
+      ctx.stroke();
+      ctx.restore();
+    }
+    // Glowing volcanic embers drifting diagonally
+    ctx.fillStyle = 'rgba(255, 174, 92, 0.36)';
+    for (let i = 0; i < 16; i++) {
+      const ex = (((i * 0.173 + travel * 0.00035) % 1) + 1) % 1 * w;
+      const ey = ((h - ((travel * (0.28 + (i % 3) * 0.1) + i * 87) % h)) + h) % h;
+      ctx.fillRect(ex, ey, 2.4, 2.4);
+    }
+  } else if (spec.dimension === 'aurora') {
+    // Opal Expanse: drifting translucent space-crystal clusters & bioluminescent prismatic dust!
+    ctx.strokeStyle = 'rgba(216, 196, 255, 0.26)';
+    ctx.fillStyle = 'rgba(176, 136, 255, 0.06)';
+    ctx.lineWidth = 1.3;
+    for (let i = 0; i < 9; i++) {
+      const cx = (((i * 0.17 + 0.08 - pan * 0.05) % 1) + 1) % 1 * w;
+      const cy = ((travel * (0.14 + (i % 3) * 0.05) + i * 125) % (h + 120)) - 60;
+      const sz = 11 + (i % 3) * 7;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - sz);
+      ctx.lineTo(cx + sz * 0.65, cy);
+      ctx.lineTo(cx, cy + sz);
+      ctx.lineTo(cx - sz * 0.65, cy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(190, 232, 255, 0.32)';
+    for (let i = 0; i < 18; i++) {
+      const dx = (((i * 0.21 + travel * 0.0002) % 1) + 1) % 1 * w;
+      const dy = ((travel * (0.22 + (i % 4) * 0.05) + i * 91) % h);
+      ctx.fillRect(dx, dy, 2, 2);
+    }
+  } else if (spec.dimension === 'corona') {
+    // Eclipse Corona: blazing distant corona plasma rings & golden solar ember field (zero top-down sunbeam strips!)
+    ctx.strokeStyle = 'rgba(255, 194, 112, 0.18)';
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 3; i++) {
+      const cy = ((travel * (0.08 + i * 0.03) + i * (h * 0.45)) % (h + 260)) - 130;
+      const cx = w * (i % 2 === 0 ? 0.24 : 0.76) - pan * 16;
+      const r = 44 + i * 18;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, -0.5, 1.4);
+      ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(255, 204, 122, 0.34)';
+    for (let i = 0; i < 20; i++) {
+      const ex = (((i * 0.137 + travel * 0.0005) % 1) + 1) % 1 * w;
+      const ey = ((travel * (0.3 + (i % 3) * 0.08) + i * 73) % h);
+      ctx.fillRect(ex, ey, 2.2, 2.2);
+    }
+  } else if (spec.dimension === 'rift') {
+    // Astral Rift: vivid hyper-dimensional perspective neon warp grid + floating diamond portals!
+    const gridSpacing = 52;
+    const gOff = (travel * 0.58) % gridSpacing;
+    ctx.strokeStyle = 'rgba(104, 245, 224, 0.14)';
     for (let y = gOff; y < h; y += gridSpacing) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -1623,47 +1925,85 @@ export function drawSpaceBackdrop(ctx, w, h, travel, pan, sectorIndex, warpFacto
     for (let i = 0; i <= cols; i++) {
       const gx = (i / cols) * w - pan * 36;
       ctx.beginPath();
-      ctx.moveTo(w * 0.5 + (gx - w * 0.5) * 0.55, 0);
+      ctx.moveTo(w * 0.5 + (gx - w * 0.5) * 0.52, 0);
       ctx.lineTo(gx, h);
       ctx.stroke();
     }
+    // Pulsing rift portal diamonds
+    ctx.strokeStyle = 'rgba(196, 136, 255, 0.24)';
+    ctx.lineWidth = 1.6;
+    for (let i = 0; i < 3; i++) {
+      const py = ((travel * 0.15 + i * (h / 2.2)) % (h + 180)) - 90;
+      const px = w * (0.2 + i * 0.3) - pan * 14;
+      const pr = 24 + Math.sin(travel * 0.03 + i) * 5;
+      ctx.beginPath();
+      ctx.moveTo(px, py - pr);
+      ctx.lineTo(px + pr * 0.72, py);
+      ctx.lineTo(px, py + pr);
+      ctx.lineTo(px - pr * 0.72, py);
+      ctx.closePath();
+      ctx.stroke();
+    }
   } else if (spec.dimension === 'cryo') {
-    // Cryo Nebula: drifting hexagonal frost crystal filaments
-    ctx.strokeStyle = 'rgba(196, 240, 255, 0.1)';
-    for (let i = 0; i < 6; i++) {
-      const hx = (((i * 0.21 + 0.1 - pan * 0.06) % 1) + 1) % 1 * w;
-      const hy = ((travel * (0.14 + (i % 3) * 0.05) + i * 165) % (h + 120)) - 60;
-      const hr = 18 + (i % 3) * 14;
+    // Cryo Nebula: drifting faceted ice crystals + diagonal freezing mist streaks
+    ctx.strokeStyle = 'rgba(196, 242, 255, 0.18)';
+    ctx.fillStyle = 'rgba(148, 224, 255, 0.05)';
+    for (let i = 0; i < 8; i++) {
+      const hx = (((i * 0.19 + 0.07 - pan * 0.06) % 1) + 1) % 1 * w;
+      const hy = ((travel * (0.16 + (i % 3) * 0.06) + i * 145) % (h + 140)) - 70;
+      const hr = 18 + (i % 3) * 16;
       ctx.beginPath();
       for (let k = 0; k < 6; k++) {
-        const a = (k * TAU) / 6 + travel * 0.002 * (i % 2 ? 1 : -1);
+        const a = (k * TAU) / 6 + travel * 0.0022 * (i % 2 ? 1 : -1);
         if (k === 0) ctx.moveTo(hx + Math.cos(a) * hr, hy + Math.sin(a) * hr);
         else ctx.lineTo(hx + Math.cos(a) * hr, hy + Math.sin(a) * hr);
       }
       ctx.closePath();
+      ctx.fill();
       ctx.stroke();
     }
   } else if (spec.dimension === 'graveyard') {
-    // Iron Graveyard: colossal broken orbital girder struts spanning deep space
-    ctx.strokeStyle = 'rgba(224, 170, 112, 0.12)';
-    ctx.lineWidth = 2;
-    const beamY = ((travel * 0.08) % (h + 360)) - 180;
+    // Iron Graveyard: colossal broken orbital girder struts + shattered derelict rib cages!
+    ctx.strokeStyle = 'rgba(232, 174, 114, 0.2)';
+    ctx.lineWidth = 2.2;
+    const beamY = ((travel * 0.09) % (h + 380)) - 190;
     ctx.beginPath();
     ctx.moveTo(-20, beamY);
     ctx.lineTo(w + 20, beamY + 130);
-    ctx.moveTo(-20, beamY + 18);
-    ctx.lineTo(w + 20, beamY + 148);
+    ctx.moveTo(-20, beamY + 20);
+    ctx.lineTo(w + 20, beamY + 150);
     ctx.stroke();
-    ctx.lineWidth = 1;
-  } else if (spec.dimension === 'singularity') {
-    // Event Horizon: naturally scrolling relativistic stardust lensing arcs (no static center black hole!)
-    const lensSpan = h + 280;
-    ctx.strokeStyle = 'rgba(255, 146, 108, 0.14)';
-    ctx.lineWidth = 1.4;
-    for (let i = 0; i < 3; i++) {
-      const ly = ((travel * (0.11 + i * 0.03) + i * (lensSpan / 3)) % lensSpan) - 140;
+    // Cross-trusses along the giant girder
+    ctx.lineWidth = 1.2;
+    for (let t = 0.08; t < 0.96; t += 0.11) {
+      const gx = -20 + (w + 40) * t;
+      const gy = beamY + 130 * t;
       ctx.beginPath();
-      ctx.ellipse(w * 0.5 - pan * (14 + i * 5), ly, w * (0.48 + i * 0.1), 54 + i * 18, -0.14, 0, TAU);
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx + 16, gy + 22);
+      ctx.stroke();
+    }
+    // Second opposing broken hull wreck rib
+    const ribY = ((travel * 0.06 + h * 0.5) % (h + 420)) - 210;
+    ctx.fillStyle = 'rgba(24, 18, 16, 0.62)';
+    ctx.strokeStyle = 'rgba(224, 162, 102, 0.24)';
+    ctx.beginPath();
+    ctx.moveTo(w * 0.72, ribY - 46);
+    ctx.lineTo(w * 0.94, ribY - 12);
+    ctx.lineTo(w * 0.88, ribY + 52);
+    ctx.lineTo(w * 0.66, ribY + 24);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  } else if (spec.dimension === 'singularity') {
+    // Event Horizon: dramatic relativistic lensing arcs + stretched crimson-gold accretion bands
+    const lensSpan = h + 280;
+    ctx.lineWidth = 1.8;
+    for (let i = 0; i < 4; i++) {
+      const ly = ((travel * (0.12 + i * 0.035) + i * (lensSpan / 4)) % lensSpan) - 140;
+      ctx.strokeStyle = i % 2 === 0 ? 'rgba(255, 128, 118, 0.22)' : 'rgba(182, 110, 255, 0.18)';
+      ctx.beginPath();
+      ctx.ellipse(w * 0.5 - pan * (14 + i * 5), ly, w * (0.46 + i * 0.09), 48 + i * 18, -0.14, 0, TAU);
       ctx.stroke();
     }
     ctx.lineWidth = 1;
