@@ -452,6 +452,9 @@ summary {
   color: var(--ink);
   font-size: 15px;
 }
+.weapon-badges {
+  display: contents;
+}
 .mode-tag {
   padding: 3px 8px;
   font-size: 9.5px;
@@ -2674,7 +2677,7 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
   .overshield-badge {
     bottom: calc(100% + 46px);
   }
-  #hud:has(#rapid-badge:not([hidden])) .overshield-badge {
+  #hud:has(.weapon-badges :is(.focus-on, .overdrive-on, #rapid-badge:not([hidden]))) .overshield-badge {
     bottom: calc(100% + 72px);
   }
   .vitals {
@@ -2709,14 +2712,22 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
     clip-path: var(--chamfer-sm);
     pointer-events: none;
   }
-  .hud-bottom-left #rapid-badge {
+  .hud-bottom-left .weapon-badges {
     position: absolute;
     bottom: calc(100% + 6px);
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     white-space: nowrap;
-    padding: 4px 10px;
+    pointer-events: none;
+  }
+  .hud-bottom-left .weapon-badges > :is(.mode-tag, #rapid-badge) {
+    padding: 4px 9px;
     clip-path: var(--chamfer-sm);
+    font-weight: 700;
   }
   .hud-bottom-left .weapon-head {
     flex: none;
