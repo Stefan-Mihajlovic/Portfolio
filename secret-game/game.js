@@ -39,11 +39,9 @@ import {
   flyEscort,
 } from './bosses.js';
 import {
-  getAugmentById,
-  pickAugmentDraft,
   pickSectorMutator,
   rollContract,
-  rollDilemmaPair,
+  pickCreativeDrop,
 } from './augments.js';
 import { createFlightAudio } from './audio.js';
 
@@ -445,14 +443,10 @@ const contractHud = document.querySelector('#contract-hud');
 const contractTextEl = document.querySelector('#contract-text');
 const contractProgEl = document.querySelector('#contract-prog');
 const contractFillEl = document.querySelector('#contract-fill');
-const pauseAugmentsEl = document.querySelector('#pause-augments');
-const augmentDraftEl = document.querySelector('#augment-draft');
-const draftKickerEl = document.querySelector('#draft-kicker');
-const draftSubEl = document.querySelector('#draft-sub');
-const draftCardsEl = document.querySelector('#draft-cards');
 const weaponTierEl = document.querySelector('#weapon-tier');
 const fireModeEl = document.querySelector('#fire-mode');
 const rapidBadgeEl = document.querySelector('#rapid-badge');
+const creativeBadgeEl = document.querySelector('#creative-badge');
 const heatLabelEl = document.querySelector('#heat-label');
 const heatBlockEl = document.querySelector('#heat-block');
 const heatFillEl = document.querySelector('#heat-fill');
@@ -590,21 +584,18 @@ let empWave = null;
 let empTimer = 5.5;
 let boostRing = null;
 let boostRingTimer = 5.2;
-let runAugments = {};
-let draftActive = false;
-let draftChoices = [];
 let sectorMutator = null;
 let activeContract = null;
-let dilemmaGate = null;
-let dilemmaSpawnedThisSector = false;
 let lightningArcs = [];
-let augmentHitCounter = 0;
-let siphonKills = 0;
+let arcHitCounter = 0;
+let droneTime = 0;
+let droneCount = 0;
 let droneTimer = 0;
-let microMissileTimer = 0;
-let staticOrbs = [0, 0];
-
-const hasAug = (id) => runAugments[id] || 0;
+let teslaTime = 0;
+let ricochetTime = 0;
+let cryoShotTime = 0;
+let aegisOrbCount = 0;
+let playerBlackHole = null;
 let runCoins = 0;
 let missileTimer = 0;
 let weaponHeat = 0;
@@ -655,8 +646,7 @@ function getMultiplier() {
 function addScore(base, x, y, showPopup = false, color = PALETTE.paper) {
   const dimBonus = sectorIndex % 8 === 7 ? 1.25 : 1;
   const mutBonus = sectorMutator?.scoreMult || 1;
-  const augBonus = hasAug('greed') ? 1.15 : 1;
-  const mult = getMultiplier() * (meta.overclock ? 1.35 : 1) * dimBonus * mutBonus * augBonus;
+  const mult = getMultiplier() * (meta.overclock ? 1.35 : 1) * dimBonus * mutBonus;
   const gained = Math.round(base * mult);
   score += gained;
   if (showPopup && x !== undefined) {
@@ -1218,37 +1208,39 @@ function draw() {
     ctx.fillText('BOOST GATE', boostRing.x, boostRing.y - boostRing.r - 6);
     ctx.restore();
   }
-  if (dilemmaGate && !dilemmaGate.resolved && mode === 'playing') {
-    for (const [gx, opt] of [
-      [dilemmaGate.leftX, dilemmaGate.left],
-      [dilemmaGate.rightX, dilemmaGate.right],
-    ]) {
-      const hw = dilemmaGate.halfW;
-      const hh = dilemmaGate.h * 0.5;
-      ctx.save();
-      ctx.translate(gx, dilemmaGate.y);
-      ctx.fillStyle = 'rgba(8, 16, 28, 0.78)';
-      ctx.strokeStyle = opt.color;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-hw + 8, -hh);
-      ctx.lineTo(hw, -hh);
-      ctx.lineTo(hw, hh - 8);
-      ctx.lineTo(hw - 8, hh);
-      ctx.lineTo(-hw, hh);
-      ctx.lineTo(-hw, -hh + 8);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = opt.color;
-      ctx.font = '800 10px ui-monospace, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(opt.title, 0, -2);
-      ctx.fillStyle = '#e8f1f5';
-      ctx.font = '600 8.5px ui-monospace, monospace';
-      ctx.fillText(opt.sub, 0, 10);
-      ctx.restore();
-    }
+  if (playerBlackHole && mode === 'playing') {
+    const bh = playerBlackHole;
+    const fade = Math.min(1, bh.life * 2.5, (bh.maxLife - bh.life) * 4);
+    ctx.save();
+    ctx.translate(bh.x, bh.y);
+    ctx.globalAlpha = fade;
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, 8, 0, 0, bh.r);
+    g.addColorStop(0, 'rgba(255, 224, 152, 0.72)');
+    g.addColorStop(0.28, 'rgba(196, 118, 255, 0.44)');
+    g.addColorStop(0.68, 'rgba(110, 48, 210, 0.16)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, bh.r, 0, TAU);
+    ctx.fill();
+    ctx.rotate(-time * 5.2);
+    ctx.strokeStyle = 'rgba(226, 178, 255, 0.75)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([14, 10]);
+    ctx.beginPath();
+    ctx.arc(0, 0, bh.r * 0.56, 0, TAU);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#090612';
+    ctx.strokeStyle = '#ffd996';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 14 + Math.sin(time * 24) * 2, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
   }
 
   // Dimension Hazards: Astral Rift Gravity Anomaly + Iron Graveyard EMP Pulse Storm!
@@ -1519,55 +1511,47 @@ function draw() {
     ctx.restore();
   }
   if (mode === 'playing' && hull > 0 && playerDying <= 0 && !warp) {
-    const droneCount = hasAug('drone');
-    for (let i = 0; i < droneCount; i++) {
-      const ang = time * 2.4 + i * Math.PI;
-      const dx = player.x + Math.cos(ang) * 42;
-      const dy = player.y + Math.sin(ang) * 28;
-      ctx.save();
-      ctx.translate(dx, dy);
-      ctx.fillStyle = '#0d1422';
-      ctx.strokeStyle = '#79e3d5';
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.moveTo(0, -8);
-      ctx.lineTo(6.5, 4);
-      ctx.lineTo(0, 1.5);
-      ctx.lineTo(-6.5, 4);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#e8fffb';
-      ctx.beginPath();
-      ctx.arc(0, -1, 2.2, 0, TAU);
-      ctx.fill();
-      ctx.restore();
+    if (droneTime > 0 && droneCount > 0) {
+      for (let i = 0; i < droneCount; i++) {
+        const ang = time * 2.5 + i * Math.PI;
+        const dx = player.x + Math.cos(ang) * 42;
+        const dy = player.y + Math.sin(ang) * 28;
+        ctx.save();
+        ctx.translate(dx, dy);
+        ctx.fillStyle = '#0d1422';
+        ctx.strokeStyle = '#6effe6';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, -8);
+        ctx.lineTo(6.5, 4);
+        ctx.lineTo(0, 1.5);
+        ctx.lineTo(-6.5, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#e8fffb';
+        ctx.beginPath();
+        ctx.arc(0, -1, 2.2, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+      }
     }
-    if (hasAug('staticOrb')) {
-      for (let i = 0; i < 2; i++) {
-        const ang = -time * 3.1 + i * Math.PI;
+    if (aegisOrbCount > 0) {
+      for (let i = 0; i < aegisOrbCount; i++) {
+        const ang = -time * 3.2 + (i * TAU) / Math.max(1, aegisOrbCount);
         const ox = player.x + Math.cos(ang) * 34;
         const oy = player.y + Math.sin(ang) * 34;
-        const ready = staticOrbs[i] <= 0;
         ctx.save();
         ctx.translate(ox, oy);
-        if (ready) {
-          ctx.globalCompositeOperation = 'lighter';
-          ctx.fillStyle = 'rgba(136, 240, 255, 0.34)';
-          ctx.beginPath();
-          ctx.arc(0, 0, 11, 0, TAU);
-          ctx.fill();
-          ctx.fillStyle = '#e6fdff';
-          ctx.beginPath();
-          ctx.arc(0, 0, 5.2, 0, TAU);
-          ctx.fill();
-        } else {
-          ctx.strokeStyle = 'rgba(136, 240, 255, 0.32)';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.arc(0, 0, 5, 0, TAU);
-          ctx.stroke();
-        }
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255, 224, 130, 0.36)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = '#fff5d4';
+        ctx.beginPath();
+        ctx.arc(0, 0, 5.2, 0, TAU);
+        ctx.fill();
         ctx.restore();
       }
     }
@@ -2190,17 +2174,19 @@ function dropTacticalCell(x, y, forcedKind = null) {
   let kind = forcedKind;
   if (!kind) {
     const roll = Math.random();
-    // Rarer MK weapon progression: diminishing chance per MK tier + pacing cooldown between W+ cells!
     const canDropWeapon = weaponLevel < 7 && weaponDropCooldown <= 0;
-    const weaponChance = weaponLevel <= 2 ? 0.3 : weaponLevel <= 4 ? 0.22 : 0.16;
+    const weaponChance = weaponLevel <= 2 ? 0.24 : weaponLevel <= 4 ? 0.18 : 0.13;
     if (canDropWeapon && roll < weaponChance) {
       kind = 'weapon';
       weaponDropCooldown = 12 + weaponLevel * 3.5;
     } else if (roll < 0.56) {
+      // Creative arcade power-up drops! (Wingman Drone, Tesla Arc, Ricochet, Cryo, Aegis Orbs, Singularity Bomb)
+      kind = pickCreativeDrop(Math.random());
+    } else if (roll < 0.72) {
       kind = 'rapid';
-    } else if (roll < 0.74) {
+    } else if (roll < 0.84) {
       kind = 'overshield';
-    } else if (shields < maxShields && roll < 0.9) {
+    } else if (shields < maxShields && roll < 0.94) {
       kind = 'shield';
     } else {
       kind = 'nova';
@@ -2244,23 +2230,6 @@ function triggerPhaseDash() {
   immune = Math.max(immune, 0.26);
   sound.effect('phaseDash');
   impacts.push({ x: player.x, y: player.y, radius: 14, color: getRigAccent(selectedRig), life: 0.3, maxLife: 0.3 });
-
-  // Phase Wake Augment: fires a 3-bolt piercing plasma wake on dash!
-  if (hasAug('phaseSlash')) {
-    for (const off of [-0.26, 0, 0.26]) {
-      shots.push({
-        x: player.x,
-        y: player.y - 8,
-        r: 4.8,
-        vx: Math.sin(off) * 520,
-        vy: -Math.cos(off) * 520,
-        dmg: 2.2,
-        hostile: false,
-        pierce: 2,
-        hitIds: new Set(),
-      });
-    }
-  }
 
   // Falcon / Ion Afterburner Signature Perk: Phase Dash triggers 0.6s Bullet-Time + fires a 4-missile micro-seeker burst!
   if (rig.perk === 'falcon') {
@@ -2550,8 +2519,9 @@ function finishBossCollapse(b) {
   shockwaves.push({ x: b.x, y: b.y, radius: 280, color: '#ffe5a3', life: 0.6, maxLife: 0.6 });
   dropShards(b.x, b.y, 14, true);
   dropCoins(b.x, b.y, 14 + b.rank * 4);
-  dropTacticalCell(b.x - 26, b.y, weaponLevel < 7 ? 'weapon' : 'overshield');
-  if (shields < maxShields) dropTacticalCell(b.x + 26, b.y, 'shield');
+  dropTacticalCell(b.x - 28, b.y, weaponLevel < 7 ? 'weapon' : 'overshield');
+  dropTacticalCell(b.x + 28, b.y, pickCreativeDrop(runSeed + b.rank * 3.7));
+  if (shields < maxShields) dropTacticalCell(b.x, b.y + 18, 'shield');
   addScore(b.points, b.x, b.y, true, PALETTE.gold);
   kills++;
   bumpCombo(6);
@@ -2739,32 +2709,17 @@ function killEnemy(e) {
       }
     }
   }
-  // Thermal Detonator Augment OR Volatile Hulls Sector Mutator: foes detonate on death!
-  const burstStacks = hasAug('novaBurst') + (sectorMutator?.explodeOnDeath ? 1 : 0);
-  if (burstStacks > 0 && !isRock && e.kind !== 'mine' && e.kind !== 'volatile' && !e._chained) {
-    const rad = 64 + burstStacks * 18;
-    const blastDmg = 2.4 * burstStacks;
+  // Volatile Hulls Sector Mutator: foes detonate on death!
+  if (sectorMutator?.explodeOnDeath && !isRock && e.kind !== 'mine' && e.kind !== 'volatile' && !e._chained) {
+    const rad = 76;
     shockwaves.push({ x: e.x, y: e.y, radius: rad, color: '#ff9c63', life: 0.24, maxLife: 0.24 });
     for (const foe of enemies) {
       if (foe === e || foe.dead || foe.kind === 'boss') continue;
       if (Math.hypot(foe.x - e.x, foe.y - e.y) < rad + foe.r) {
         foe._chained = true;
-        foe.hp -= blastDmg;
+        foe.hp -= 2.6;
         foe.flash = 0.12;
         if (foe.hp <= 0) killEnemy(foe);
-      }
-    }
-  }
-  // Shield Siphon Augment: every 18 kills restores +1 Shield!
-  if (!isRock && e.kind !== 'mine' && hasAug('siphon')) {
-    siphonKills++;
-    if (siphonKills >= 18) {
-      siphonKills = 0;
-      if (shields < maxShields) {
-        shields++;
-        renderVitals();
-        popups.push({ x: player.x, y: player.y - 26, text: 'SIPHON +1 SHIELD', color: '#99dcff', life: 1.0, maxLife: 1.0, size: 12 });
-        sound.effect('upgrade');
       }
     }
   }
@@ -2822,17 +2777,17 @@ function killEnemy(e) {
     p.linkPartner = null;
   }
 
-  // Supply courier, Dread-Courier & Elite Ace guarantee high-value tactical drops!
+  // Supply courier, Dread-Courier & Elite Ace guarantee creative & tactical drops!
   if (e.kind === 'dreadcourier') {
     dropTacticalCell(e.x - 18, e.y, weaponLevel < 7 ? 'weapon' : 'overshield');
-    dropTacticalCell(e.x + 18, e.y, 'rapid');
+    dropTacticalCell(e.x + 18, e.y, pickCreativeDrop(Math.random()));
   } else if (e.kind === 'ace') {
-    dropTacticalCell(e.x, e.y, weaponLevel < 7 ? 'weapon' : 'overshield');
+    dropTacticalCell(e.x, e.y, pickCreativeDrop(Math.random()));
   } else if (e.kind === 'courier') {
     dropTacticalCell(e.x, e.y);
   } else if (e.kind === 'healer' && Math.random() < 0.34) {
     dropTacticalCell(e.x, e.y, 'shield');
-  } else if (heavy && Math.random() < 0.12) {
+  } else if (heavy && Math.random() < 0.16) {
     dropTacticalCell(e.x, e.y);
   }
 
@@ -2910,6 +2865,31 @@ function updateHud() {
   fireModeEl.classList.toggle('overdrive-on', overdriveTime > 0 && !weaponOverheated);
   rapidBadgeEl.hidden = rapidFireTime <= 0;
   if (rapidFireTime > 0) rapidBadgeEl.textContent = `RAPID ${rapidFireTime.toFixed(1)}s`;
+  if (creativeBadgeEl) {
+    if (teslaTime > 0) {
+      creativeBadgeEl.hidden = false;
+      creativeBadgeEl.dataset.tone = 'tesla';
+      creativeBadgeEl.textContent = `TESLA ${teslaTime.toFixed(1)}s`;
+    } else if (ricochetTime > 0) {
+      creativeBadgeEl.hidden = false;
+      creativeBadgeEl.dataset.tone = 'ricochet';
+      creativeBadgeEl.textContent = `RICOCHET ${ricochetTime.toFixed(1)}s`;
+    } else if (cryoShotTime > 0) {
+      creativeBadgeEl.hidden = false;
+      creativeBadgeEl.dataset.tone = 'cryo';
+      creativeBadgeEl.textContent = `CRYO ${cryoShotTime.toFixed(1)}s`;
+    } else if (droneTime > 0 && droneCount > 0) {
+      creativeBadgeEl.hidden = false;
+      creativeBadgeEl.dataset.tone = 'drone';
+      creativeBadgeEl.textContent = `WINGMAN${droneCount > 1 ? ' ×2' : ''} ${droneTime.toFixed(0)}s`;
+    } else if (aegisOrbCount > 0) {
+      creativeBadgeEl.hidden = false;
+      creativeBadgeEl.dataset.tone = 'orbs';
+      creativeBadgeEl.textContent = `ORBS ×${aegisOrbCount}`;
+    } else {
+      creativeBadgeEl.hidden = true;
+    }
+  }
   focusChip.dataset.active = String(focused);
   autofireBtn.setAttribute('aria-pressed', String(autoFire));
 
@@ -3040,7 +3020,6 @@ function setMode(next) {
     document.querySelector('#action-text').textContent = lost ? 'Play again' : 'Resume';
     syncMetaUi();
     syncSettingsUi();
-    renderPauseAugments();
     updateContractHud();
     action.focus({ preventScroll: true });
     if (lost && runIsNewBest && Math.floor(score) > 0) {
@@ -3052,24 +3031,6 @@ function setMode(next) {
     }
   }
   draw();
-}
-
-function renderPauseAugments() {
-  if (!pauseAugmentsEl) return;
-  const entries = Object.entries(runAugments).filter(([, count]) => count > 0);
-  if (!entries.length || (mode !== 'paused' && mode !== 'over')) {
-    pauseAugmentsEl.hidden = true;
-    pauseAugmentsEl.innerHTML = '';
-    return;
-  }
-  pauseAugmentsEl.hidden = false;
-  pauseAugmentsEl.innerHTML = entries
-    .map(([id, count]) => {
-      const aug = getAugmentById(id);
-      if (!aug) return '';
-      return `<span class="aug-chip" data-rarity="${aug.rarity}">${aug.name}${count > 1 ? ` ×${count}` : ''}</span>`;
-    })
-    .join('');
 }
 
 function updateContractHud() {
@@ -3108,121 +3069,6 @@ function completeContract() {
   showBanner('CONTRACT COMPLETE', `${c.text} // ${c.rewardLabel}`, 'gold', 2.0);
   sound.effect('victory');
   updateContractHud();
-}
-
-function openAugmentDraft() {
-  const choices = pickAugmentDraft(runAugments, runSeed * 97 + sectorIndex * 31 + nextBossRank * 17);
-  if (!choices.length) return false;
-  draftActive = true;
-  draftChoices = choices;
-  const totalInstalled = Object.values(runAugments).reduce((a, b) => a + b, 0);
-  draftKickerEl.textContent = `SECTOR ${String(sectorIndex + 1).padStart(2, '0')} CLEARED // FLAGSHIP SALVAGE`;
-  draftSubEl.textContent =
-    totalInstalled > 0
-      ? `${totalInstalled} Augment${totalInstalled > 1 ? 's' : ''} installed — stack synergies for Sector ${String(sectorIndex + 2).padStart(2, '0')}.`
-      : 'Permanent upgrade for this run — stack synergies across sectors.';
-  draftCardsEl.innerHTML = choices
-    .map(
-      (aug, i) => `
-      <button type="button" class="draft-card" data-draft-idx="${i}" data-rarity="${aug.rarity}">
-        <div class="draft-card-top">
-          <span class="draft-rarity">${aug.rarity}</span>
-          <span class="draft-key">${i + 1}</span>
-        </div>
-        <span class="draft-ico-wrap" aria-hidden="true">${aug.icon}</span>
-        <strong>${aug.name}</strong>
-        <p>${aug.desc}</p>
-        <span class="draft-tag">${aug.tag}</span>
-      </button>`,
-    )
-    .join('');
-  draftCardsEl.querySelectorAll('.draft-card').forEach((btn) => {
-    btn.addEventListener('click', () => chooseAugment(Number(btn.dataset.draftIdx)));
-  });
-  augmentDraftEl.hidden = false;
-  keys.clear();
-  pointer = null;
-  sound.effect('upgrade');
-  return true;
-}
-
-function chooseAugment(idx) {
-  if (!draftActive || !draftChoices[idx]) return;
-  const aug = draftChoices[idx];
-  runAugments[aug.id] = (runAugments[aug.id] || 0) + 1;
-  if (aug.id === 'glassCannon') {
-    maxShields = Math.max(1, maxShields - 1);
-    shields = Math.min(shields, maxShields);
-    renderVitals();
-  } else if (aug.id === 'staticOrb') {
-    staticOrbs = [0, 0];
-  }
-  draftActive = false;
-  draftChoices = [];
-  augmentDraftEl.hidden = true;
-  sound.effect('nova');
-  popups.push({
-    x: player.x,
-    y: player.y - 30,
-    text: `INSTALLED: ${aug.name.toUpperCase()}`,
-    color: aug.rarity === 'omega' ? '#ff9ab5' : aug.rarity === 'prototype' ? '#ffd66b' : '#79e3d5',
-    life: 1.4,
-    maxLife: 1.4,
-    size: 13,
-  });
-  renderPauseAugments();
-}
-
-function resolveDilemma(opt) {
-  if (!dilemmaGate || dilemmaGate.resolved) return;
-  dilemmaGate.resolved = true;
-  shockwaves.push({ x: player.x, y: player.y, radius: 115, color: opt.color, life: 0.34, maxLife: 0.34 });
-  sound.effect('upgrade');
-  if (opt.id === 'rapid') {
-    rapidFireTime = Math.min(12, rapidFireTime + 9);
-    weaponHeat = 0;
-    weaponOverheated = false;
-  } else if (opt.id === 'repair') {
-    shields = Math.min(maxShields, shields + 1);
-    weaponHeat = 0;
-    weaponOverheated = false;
-    renderVitals();
-  } else if (opt.id === 'bountyAce') {
-    const ace = createEnemy('ace', -42, h * 0.22, currentWave + 1, {
-      overclock: meta.overclock,
-      sectorIndex,
-      flank: { fromSide: -1, wait: 0.5, baseY: h * 0.22, amp: 16, freq: 2, speedX: 210 },
-      dashCd: 1.8,
-      fireIn: 1.1,
-    });
-    enemies.push(ace);
-    dropCoins(player.x, Math.max(50, player.y - 90), 8);
-  } else if (opt.id === 'overshield') {
-    overshieldTime = Math.max(overshieldTime, 7.0);
-  } else if (opt.id === 'novaFull') {
-    novaCharge = 100;
-  } else if (opt.id === 'weaponUp') {
-    if (weaponLevel < 7) weaponLevel++;
-    else addScore(500, player.x, player.y - 28, true, PALETTE.gold);
-  } else if (opt.id === 'greedBurst') {
-    runCoins += 55;
-    meta.coins += 55;
-    saveMeta();
-    weaponHeat = 0;
-    weaponOverheated = false;
-  } else if (opt.id === 'overdrive') {
-    overdriveTime = Math.max(overdriveTime, 7.0);
-  }
-  popups.push({
-    x: player.x,
-    y: player.y - 28,
-    text: `${opt.title} // ${opt.sub}`,
-    color: opt.color,
-    life: 1.25,
-    maxLife: 1.25,
-    size: 13,
-  });
-  dilemmaGate = null;
 }
 
 function launch() {
@@ -3267,22 +3113,19 @@ function launch() {
   empTimer = 5.5;
   boostRing = null;
   boostRingTimer = 4.8;
-  runAugments = {};
-  draftActive = false;
-  draftChoices = [];
   sectorMutator = null;
   activeContract = null;
-  dilemmaGate = null;
-  dilemmaSpawnedThisSector = false;
   lightningArcs = [];
-  augmentHitCounter = 0;
-  siphonKills = 0;
+  arcHitCounter = 0;
+  droneTime = 0;
+  droneCount = 0;
   droneTimer = 0;
-  microMissileTimer = 0;
-  staticOrbs = [0, 0];
-  if (augmentDraftEl) augmentDraftEl.hidden = true;
+  teslaTime = 0;
+  ricochetTime = 0;
+  cryoShotTime = 0;
+  aegisOrbCount = 0;
+  playerBlackHole = null;
   if (contractHud) contractHud.hidden = true;
-  renderPauseAugments();
   overclockHudBadge.hidden = !meta.overclock;
   weaponLevel = rig.startWeapon;
   maxHull = rig.hull;
@@ -3463,12 +3306,7 @@ function firePlayerWeapons(focused) {
   const vb = ventBoostTime > 0;
   // Clean, measured damage scaling across MK I–VII (evolves bolts instead of flooding the screen!)
   const tierScale = 1 + (weaponLevel - 1) * 0.08;
-  const dmgBoost =
-    (focused ? 1.24 : 1) *
-    (od ? 1.2 : 1) *
-    (vb ? 1.2 : 1) *
-    (hasAug('glassCannon') ? 1.45 : 1) *
-    tierScale;
+  const dmgBoost = (focused ? 1.24 : 1) * (od ? 1.2 : 1) * (vb ? 1.2 : 1) * tierScale;
 
   function shoot(ox, oy, angle, speed, dmg, opts = {}) {
     shots.push({
@@ -3482,7 +3320,7 @@ function firePlayerWeapons(focused) {
       focused,
       overdrive: od,
       pierce: opts.pierce || 0,
-      bouncesLeft: hasAug('ricochet') && !opts.homing ? 1 : 0,
+      bouncesLeft: ricochetTime > 0 && !opts.homing ? 1 : 0,
       hitIds: opts.pierce ? new Set() : null,
       ...opts,
     });
@@ -3586,7 +3424,7 @@ function firePlayerWeapons(focused) {
     const expMult = Math.pow(1.135, weaponLevel - 1);
     const touchEase = pointer?.isTouch ? 0.88 : 1;
     const rfEase = rf ? 0.78 : 1;
-    const partHeat = (rig.heatMult || 1) * (hasAug('glassCannon') ? 0.7 : 1) * (sectorMutator?.heatMult || 1);
+    const partHeat = (rig.heatMult || 1) * (sectorMutator?.heatMult || 1) * (cryoShotTime > 0 ? 0.35 : 1);
     weaponHeat = Math.min(100, weaponHeat + baseHeat * expMult * rig.heatScale * partHeat * touchEase * rfEase);
     heatCoolDelay = 0.15;
 
@@ -3595,17 +3433,6 @@ function firePlayerWeapons(focused) {
       ventAttempted = false;
       sound.effect('overheat');
       addShake(5);
-      if (hasAug('ventNova')) {
-        // Thermal Purge Augment: overheating clears nearby enemy fire with a protective shockwave!
-        shockwaves.push({ x: player.x, y: player.y, radius: 155, color: '#ff9c63', life: 0.34, maxLife: 0.34 });
-        for (const round of shots) {
-          if (round.hostile && Math.hypot(round.x - player.x, round.y - player.y) < 155) {
-            round.dead = true;
-            dropShards(round.x, round.y, 1, true);
-          }
-        }
-        popups.push({ x: player.x, y: player.y - 40, text: 'THERMAL PURGE!', color: '#ffb478', life: 0.9, maxLife: 0.9, size: 12 });
-      }
       popups.push({
         x: player.x,
         y: player.y - 26,
@@ -3724,8 +3551,6 @@ function update(dt) {
     return;
   }
 
-  if (draftActive) return;
-
   time += dt;
   immune = Math.max(0, immune - dt);
   hitFlash = Math.max(0, hitFlash - dt);
@@ -3816,18 +3641,59 @@ function update(dt) {
       enemies.push(m);
     }
   }
-  // In-Arena Risk/Reward Dilemma Gate drift & choice check
-  if (dilemmaGate && !dilemmaGate.resolved && !warp && !boss) {
-    dilemmaGate.y += 96 * worldDt;
-    const dy = Math.abs(player.y - dilemmaGate.y);
-    if (dy < dilemmaGate.h * 0.5 + player.r * 0.7) {
-      if (Math.abs(player.x - dilemmaGate.leftX) < dilemmaGate.halfW) {
-        resolveDilemma(dilemmaGate.left);
-      } else if (Math.abs(player.x - dilemmaGate.rightX) < dilemmaGate.halfW) {
-        resolveDilemma(dilemmaGate.right);
+  // Active Creative Drop timers & Singularity Bomb Vortex!
+  if (teslaTime > 0) teslaTime = Math.max(0, teslaTime - dt);
+  if (ricochetTime > 0) ricochetTime = Math.max(0, ricochetTime - dt);
+  if (cryoShotTime > 0) cryoShotTime = Math.max(0, cryoShotTime - dt);
+  if (droneTime > 0) {
+    droneTime = Math.max(0, droneTime - dt);
+    if (droneTime <= 0) droneCount = 0;
+  }
+  if (playerBlackHole) {
+    const bh = playerBlackHole;
+    bh.life -= dt;
+    bh.y = Math.max(h * 0.22, bh.y - 52 * dt);
+    // Vaporize enemy bullets caught in the player's Singularity Vortex!
+    for (const s of shots) {
+      if (s.hostile && !s.dead && Math.hypot(s.x - bh.x, s.y - bh.y) < bh.r) {
+        s.dead = true;
+        dropShards(s.x, s.y, 1, true);
       }
-    } else if (dilemmaGate.y > h + 50) {
-      dilemmaGate = null;
+    }
+    // Pull & crush nearby enemies continuously!
+    for (const e of enemies) {
+      if (e.dead || e === boss) continue;
+      const dx = bh.x - e.x;
+      const dy = bh.y - e.y;
+      const d = Math.hypot(dx, dy) || 1;
+      if (d < bh.r * 1.15) {
+        e.x += (dx / d) * 165 * dt;
+        e.y += (dy / d) * 165 * dt;
+        e.hp -= 5.8 * dt;
+        e.flash = 0.08;
+        if (e.hp <= 0) killEnemy(e);
+      }
+    }
+    if (boss && !boss.dead && boss.entering <= 0 && Math.hypot(boss.x - bh.x, boss.y - bh.y) < bh.r + boss.r) {
+      damageBossCore(boss, 5.5 * dt);
+    }
+    if (bh.life <= 0) {
+      // Final Singularity Collapse Detonation!
+      shockwaves.push({ x: bh.x, y: bh.y, radius: bh.r * 1.45, color: '#d094ff', life: 0.45, maxLife: 0.45 });
+      burst({ x: bh.x, y: bh.y, r: 34 }, '#ffd996', true);
+      sound.effect('nova');
+      addShake(11);
+      for (const e of enemies) {
+        if (e.dead || e === boss) continue;
+        if (Math.hypot(e.x - bh.x, e.y - bh.y) < bh.r * 1.35 + e.r) {
+          e.hp -= 10;
+          if (e.hp <= 0) killEnemy(e);
+        }
+      }
+      if (boss && !boss.dead && boss.entering <= 0 && Math.hypot(boss.x - bh.x, boss.y - bh.y) < bh.r * 1.35 + boss.r) {
+        damageBossCore(boss, 14);
+      }
+      playerBlackHole = null;
     }
   }
   // Active Gravity Mine enemies pull player slightly off-course until popped!
@@ -3842,66 +3708,40 @@ function update(dt) {
       }
     }
   }
-  // Active Augment Systems: Orbital Wingman Drones, Micro-Missile Pod, Aegis Shield Orbs, Lightning Arcs
+  // Active Lightning Arcs + Orbital Wingman Drones auto-fire
   for (const arc of lightningArcs) arc.life -= dt;
   lightningArcs = lightningArcs.filter((a) => a.life > 0);
-  if (hasAug('staticOrb')) {
-    for (let i = 0; i < 2; i++) if (staticOrbs[i] > 0) staticOrbs[i] = Math.max(0, staticOrbs[i] - dt);
-  }
-  if (!warp && hull > 0 && playerDying <= 0) {
-    const droneCount = hasAug('drone');
-    if (droneCount > 0) {
-      droneTimer -= dt;
-      if (droneTimer <= 0) {
-        let target = null;
-        let bestD = Infinity;
-        for (const e of enemies) {
-          if (e.dead || e.y < 8 || e.x < 0 || e.x > w || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
-          const d = Math.hypot(e.x - player.x, e.y - player.y);
-          if (d < bestD) {
-            bestD = d;
-            target = e;
-          }
-        }
-        if (target) {
-          droneTimer = 0.52;
-          for (let i = 0; i < droneCount; i++) {
-            const ang = time * 2.4 + i * Math.PI;
-            const dx = player.x + Math.cos(ang) * 42;
-            const dy = player.y + Math.sin(ang) * 28;
-            const aim = Math.atan2(target.x - dx, target.y - dy);
-            shots.push({
-              x: dx,
-              y: dy,
-              r: 3.6,
-              vx: Math.sin(aim) * 560,
-              vy: Math.cos(aim) * 560,
-              dmg: 1.05,
-              hostile: false,
-            });
-          }
+  if (!warp && hull > 0 && playerDying <= 0 && droneTime > 0 && droneCount > 0) {
+    droneTimer -= dt;
+    if (droneTimer <= 0) {
+      let target = null;
+      let bestD = Infinity;
+      for (const e of enemies) {
+        if (e.dead || e.y < 8 || e.x < 0 || e.x > w || (e === boss && (e.entering > 0 || e.dying > 0))) continue;
+        const d = Math.hypot(e.x - player.x, e.y - player.y);
+        if (d < bestD) {
+          bestD = d;
+          target = e;
         }
       }
-    }
-    const microStacks = hasAug('splitSeeker');
-    if (microStacks > 0) {
-      microMissileTimer -= dt;
-      if (microMissileTimer <= 0 && enemies.some((e) => !e.dead && e.y > 10 && e.x > 0 && e.x < w)) {
-        microMissileTimer = microStacks >= 2 ? 1.45 : 2.2;
-        for (const ox of [-14, 14]) {
+      if (target) {
+        droneTimer = 0.44;
+        for (let i = 0; i < droneCount; i++) {
+          const ang = time * 2.5 + i * Math.PI;
+          const dx = player.x + Math.cos(ang) * 42;
+          const dy = player.y + Math.sin(ang) * 28;
+          const aim = Math.atan2(target.x - dx, target.y - dy);
           shots.push({
-            x: player.x + ox,
-            y: player.y - 4,
-            r: 4.0,
-            vx: Math.sign(ox) * 145,
-            vy: -175,
+            x: dx,
+            y: dy,
+            r: 3.6,
+            vx: Math.sin(aim) * 580,
+            vy: Math.cos(aim) * 580,
             dmg: 1.15,
             hostile: false,
-            homing: true,
-            age: 0,
+            bouncesLeft: ricochetTime > 0 ? 1 : 0,
           });
         }
-        sound.effect('missile');
       }
     }
   }
@@ -3995,10 +3835,6 @@ function update(dt) {
       // Auto-vacuum all boss drops while player can still steer briefly
       for (const p of pickups) p.magnet = true;
       if (warp.t >= (shortMotion ? 0.45 : 0.9)) {
-        if (!warp.draftOffered) {
-          warp.draftOffered = true;
-          if (openAugmentDraft()) return;
-        }
         warp.phase = 'depart';
         warp.t = 0;
         warp.startX = player.x;
@@ -4058,7 +3894,6 @@ function update(dt) {
         player.y = targetY;
         player.vy = 0;
         spawnIn = 0.8;
-        dilemmaSpawnedThisSector = false;
         sectorMutator = pickSectorMutator(sectorIndex, runSeed);
         const secNum = String(sectorIndex + 1).padStart(2, '0');
         if (sectorIndex + 1 > meta.records.bestSector) {
@@ -4173,7 +4008,7 @@ function update(dt) {
     weaponOverheated = false;
     weaponHeat = Math.max(0, weaponHeat - dt * 140);
   } else if (weaponOverheated) {
-    weaponHeat = Math.max(0, weaponHeat - dt * 44 * rig.coolScale * cryoCoolBonus * (hasAug('ventNova') ? 2 : 1));
+    weaponHeat = Math.max(0, weaponHeat - dt * 44 * rig.coolScale * cryoCoolBonus);
     if (Math.random() < dt * 22) {
       smoke.push({
         x: player.x + (Math.random() < 0.5 ? -10 : 10),
@@ -4292,11 +4127,6 @@ function update(dt) {
             activeContract = null;
           }
           updateContractHud();
-        }
-        // Spawn an In-Arena Risk/Reward Dilemma Gate once per sector on beat 3!
-        if (beat === 3 && !dilemmaSpawnedThisSector && !dilemmaGate) {
-          dilemmaSpawnedThisSector = true;
-          dilemmaGate = rollDilemmaPair(runSeed + wave * 19 + sectorIndex * 7, w);
         }
         const first = enemies.length;
         spawnFormation(enemies, w, wave, beat, player.x, { overclock: meta.overclock, sectorIndex, runSeed, h });
@@ -4659,30 +4489,24 @@ function update(dt) {
     }
 
     if (s.hostile) {
-      // Aegis Shield Orbs Augment: orbiting spheres intercept & erase hostile bullets!
-      if (hasAug('staticOrb')) {
+      // Aegis Shield Orbs Drop: orbiting spheres intercept & vaporize incoming hostile bullets!
+      if (aegisOrbCount > 0) {
         let blockedByOrb = false;
-        for (let i = 0; i < 2; i++) {
-          if (staticOrbs[i] > 0) continue;
-          const ang = -time * 3.1 + i * Math.PI;
+        for (let i = 0; i < aegisOrbCount; i++) {
+          const ang = -time * 3.2 + (i * TAU) / Math.max(1, aegisOrbCount);
           const ox = player.x + Math.cos(ang) * 34;
           const oy = player.y + Math.sin(ang) * 34;
-          if (Math.hypot(s.x - ox, s.y - oy) < 12 + s.r) {
+          if (Math.hypot(s.x - ox, s.y - oy) < 13 + s.r) {
             s.dead = true;
-            staticOrbs[i] = 5.5;
-            impacts.push({ x: ox, y: oy, radius: 14, color: '#9bf3f7', life: 0.22, maxLife: 0.22 });
-            sound.effect('graze', 6);
+            aegisOrbCount = Math.max(0, aegisOrbCount - 1);
+            impacts.push({ x: ox, y: oy, radius: 16, color: '#ffe082', life: 0.24, maxLife: 0.24 });
+            dropShards(ox, oy, 1, true);
+            sound.effect('graze', 7);
             blockedByOrb = true;
             break;
           }
         }
         if (blockedByOrb) continue;
-      }
-      // Phase Wake Augment: dashing vaporizes enemy bullets along your path!
-      if (hasAug('phaseSlash') && player.dashTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 42 + s.r) {
-        s.dead = true;
-        dropShards(s.x, s.y, 1, true);
-        continue;
       }
       // Aegis Signature Perk: Reflective Mirror bounces enemy bullets right back at them!
       if (reflectShieldTime > 0 && Math.hypot(s.x - player.x, s.y - player.y) < 37 + s.r) {
@@ -4726,27 +4550,13 @@ function update(dt) {
         if (dx * dx + dy * dy < grazeR * grazeR) {
           s.grazed = true;
           grazes++;
-          const gMult = (hasAug('grazeAmp') ? 2 : 1) * (sectorMutator?.grazeMult || 1);
+          const gMult = sectorMutator?.grazeMult || 1;
           novaCharge = Math.min(100, novaCharge + 3.2 * gMult);
-          // Graze cools weapon barrels (-8% heat, -14% with Graze Reactor!) for high-skill risk/reward!
-          weaponHeat = Math.max(0, weaponHeat - (hasAug('grazeAmp') ? 14 : 8));
+          weaponHeat = Math.max(0, weaponHeat - 8);
           bumpCombo(1);
           addScore(15, player.x, player.y - 12, false);
           impacts.push({ x: player.x, y: player.y, radius: 10, color: '#9df4df', life: 0.3, maxLife: 0.3 });
           sound.effect('graze', Math.min(8, combo / 3));
-          if (hasAug('grazeAmp')) {
-            shots.push({
-              x: player.x,
-              y: player.y - 8,
-              r: 4.0,
-              vx: between(-120, 120),
-              vy: -240,
-              dmg: 1.6,
-              hostile: false,
-              homing: true,
-              age: 0,
-            });
-          }
           if (activeContract && activeContract.id === 'graze' && !activeContract.done && !activeContract.failed) {
             activeContract.progress++;
             if (activeContract.progress >= activeContract.target) completeContract();
@@ -4828,8 +4638,7 @@ function update(dt) {
           const coreHitR = liveBossParts.length > 0 ? boss.r * 0.8 : boss.r;
           if (!aimingAtPartAhead && Math.hypot(s.x - boss.x, s.y - boss.y) < s.r + coreHitR) {
             s.dead = true;
-            const execMult = hasAug('execute') && boss.hp / boss.maxHp < 0.45 ? 1.6 : 1;
-            damageBossCore(boss, (s.dmg || 1) * execMult, s);
+            damageBossCore(boss, s.dmg || 1, s);
             hitSomething = true;
           }
         }
@@ -4876,28 +4685,26 @@ function update(dt) {
         }
         if (e.hpTrail === undefined) e.hpTrail = e.hp;
         const shieldedMult = e.shieldedBy && !e.shieldedBy.dead ? 0.25 : 1;
-        const execMult = hasAug('execute') && e.maxHp >= 6 && e.hp / e.maxHp < 0.45 ? 1.6 : 1;
-        e.hp = Math.max(0, e.hp - (s.dmg || 1) * shieldedMult * execMult);
+        e.hp = Math.max(0, e.hp - (s.dmg || 1) * shieldedMult);
         e.flash = 0.13;
-        if (hasAug('cryoShot') && e.kind !== 'rock' && e.kind !== 'mine') {
-          e.frozen = Math.max(e.frozen || 0, 1.6);
+        if (cryoShotTime > 0 && e.kind !== 'rock' && e.kind !== 'mine') {
+          e.frozen = Math.max(e.frozen || 0, 1.8);
         }
-        // Chain Lightning Augment: every 4th hit arcs jagged lightning to nearby foes!
-        const arcStacks = hasAug('arc');
-        if (arcStacks > 0) {
-          augmentHitCounter++;
-          if (augmentHitCounter >= 4) {
-            augmentHitCounter = 0;
+        // Tesla Chain Coil Drop: every 2nd hit arcs jagged cyan lightning to 2 nearby foes!
+        if (teslaTime > 0) {
+          arcHitCounter++;
+          if (arcHitCounter >= 2) {
+            arcHitCounter = 0;
             let chained = 0;
             for (const other of enemies) {
               if (other === e || other.dead || other === boss || other.kind === 'mine') continue;
-              if (Math.hypot(other.x - e.x, other.y - e.y) < 165) {
+              if (Math.hypot(other.x - e.x, other.y - e.y) < 175) {
                 lightningArcs.push({ x1: e.x, y1: e.y, x2: other.x, y2: other.y, life: 0.18, maxLife: 0.18 });
-                other.hp -= 1.35 * arcStacks;
+                other.hp -= 1.6;
                 other.flash = 0.12;
                 if (other.hp <= 0) killEnemy(other);
                 chained++;
-                if (chained >= 1 + arcStacks) break;
+                if (chained >= 2) break;
               }
             }
           }
@@ -4966,9 +4773,7 @@ function update(dt) {
 
   // Salvage, Coin & Pickup physics + smart magnet vacuum
   const magnetRadius =
-    (overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 225 : 120) *
-    rig.magnetScale *
-    (hasAug('greed') ? 2 : 1);
+    (overdriveTime > 0 ? 520 : player.dashTime > 0 ? 280 : !isFiring ? 225 : 120) * rig.magnetScale;
   for (const p of pickups) {
     p.age += dt;
     const dx = player.x - p.x;
@@ -4996,10 +4801,7 @@ function update(dt) {
         sound.effect('shard', Math.min(10, Math.floor(combo / 2)));
       } else if (p.kind === 'coin') {
         const baseVal = 2 + sectorIndex;
-        const mult =
-          (meta.overclock ? 1.6 : 1) *
-          (hasAug('greed') ? 1.5 : 1) *
-          (sectorMutator?.coinMult || 1);
+        const mult = (meta.overclock ? 1.6 : 1) * (sectorMutator?.coinMult || 1);
         const value = Math.max(1, Math.round(baseVal * mult));
         runCoins += value;
         meta.coins += value;
@@ -5084,6 +4886,48 @@ function update(dt) {
           size: 14,
         });
         sound.effect('upgrade');
+      } else if (p.kind === 'drone') {
+        droneCount = Math.min(2, droneCount + 1);
+        droneTime = Math.min(28, droneTime + 20);
+        shockwaves.push({ x: player.x, y: player.y, radius: 100, color: '#6effe6', life: 0.32, maxLife: 0.32 });
+        popups.push({ x: player.x, y: player.y - 26, text: droneCount > 1 ? 'TWIN WINGMAN DRONES!' : 'WINGMAN DRONE!', color: '#6effe6', life: 1.1, maxLife: 1.1, size: 14 });
+        sound.effect('upgrade');
+      } else if (p.kind === 'lightning') {
+        teslaTime = Math.min(20, teslaTime + 14);
+        shockwaves.push({ x: player.x, y: player.y, radius: 110, color: '#88d8ff', life: 0.32, maxLife: 0.32 });
+        popups.push({ x: player.x, y: player.y - 26, text: 'TESLA CHAIN COIL!', color: '#88d8ff', life: 1.1, maxLife: 1.1, size: 14 });
+        sound.effect('rapidFire');
+      } else if (p.kind === 'ricochet') {
+        ricochetTime = Math.min(20, ricochetTime + 14);
+        shockwaves.push({ x: player.x, y: player.y, radius: 110, color: '#ff8ce6', life: 0.32, maxLife: 0.32 });
+        popups.push({ x: player.x, y: player.y - 26, text: 'PRISM RICOCHET!', color: '#ff8ce6', life: 1.1, maxLife: 1.1, size: 14 });
+        sound.effect('rapidFire');
+      } else if (p.kind === 'cryo') {
+        cryoShotTime = Math.min(20, cryoShotTime + 14);
+        weaponHeat = 0;
+        weaponOverheated = false;
+        shockwaves.push({ x: player.x, y: player.y, radius: 175, color: '#b8f2ff', life: 0.36, maxLife: 0.36 });
+        for (const foe of enemies) {
+          if (!foe.dead && foe !== boss && foe.kind !== 'rock') foe.frozen = Math.max(foe.frozen || 0, 2.4);
+        }
+        popups.push({ x: player.x, y: player.y - 26, text: 'CRYO PAYLOAD + COOL!', color: '#b8f2ff', life: 1.1, maxLife: 1.1, size: 14 });
+        sound.effect('coolReady');
+      } else if (p.kind === 'aegisOrbs') {
+        aegisOrbCount = 3;
+        shockwaves.push({ x: player.x, y: player.y, radius: 115, color: '#ffe082', life: 0.34, maxLife: 0.34 });
+        popups.push({ x: player.x, y: player.y - 26, text: 'AEGIS ORBS ×3!', color: '#ffe082', life: 1.1, maxLife: 1.1, size: 14 });
+        sound.effect('overshield');
+      } else if (p.kind === 'blackhole') {
+        playerBlackHole = {
+          x: clamp(player.x, 70, w - 70),
+          y: Math.max(h * 0.28, player.y - 140),
+          r: 128,
+          life: 3.8,
+          maxLife: 3.8,
+        };
+        shockwaves.push({ x: playerBlackHole.x, y: playerBlackHole.y, radius: 130, color: '#d094ff', life: 0.36, maxLife: 0.36 });
+        popups.push({ x: player.x, y: player.y - 26, text: 'SINGULARITY DEPLOYED!', color: '#d094ff', life: 1.2, maxLife: 1.2, size: 14 });
+        sound.effect('gravity');
       }
     }
   }
@@ -5427,12 +5271,6 @@ const controls = new Set([
 ]);
 
 window.addEventListener('keydown', (e) => {
-  if (draftActive) {
-    if (e.code === 'Digit1') { e.preventDefault(); chooseAugment(0); }
-    else if (e.code === 'Digit2') { e.preventDefault(); chooseAugment(1); }
-    else if (e.code === 'Digit3') { e.preventDefault(); chooseAugment(2); }
-    return;
-  }
   if (manual.open || hangar.open || leaderboardDialog.open || recordDialog.open || unsavedDialog.open || settingsDialog.open) return;
   if (forgeActive) {
     if (e.code === 'Escape') {

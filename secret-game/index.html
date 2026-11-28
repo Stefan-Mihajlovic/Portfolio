@@ -55,6 +55,7 @@
               <div class="weapon-badges">
                 <span id="fire-mode" class="mode-tag">WIDE</span>
                 <span id="rapid-badge" class="rapid-badge" hidden>RAPID 7.5s</span>
+                <span id="creative-badge" class="creative-badge" hidden>TESLA 12.0s</span>
               </div>
               <span id="heat-label" class="heat-label">HEAT</span>
             </div>
@@ -262,8 +263,6 @@
             </div>
           </fieldset>
 
-          <div id="pause-augments" class="pause-augments" hidden aria-label="Active run augments"></div>
-
           <div id="pause-quick-bar" class="pause-quick-bar" hidden>
             <button id="pause-music-btn" class="pause-quick-btn" type="button" aria-pressed="true">
               <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -460,18 +459,6 @@
             <button id="forge-equip" type="button" class="forge-equip-btn">▶ FLY CUSTOM</button>
           </div>
           <p id="forge-status" class="forge-status" aria-live="polite"></p>
-        </div>
-      </section>
-
-      <section id="augment-draft" class="augment-draft" aria-labelledby="draft-title" hidden>
-        <div class="draft-shell">
-          <div class="draft-head">
-            <span id="draft-kicker" class="draft-kicker">FLAGSHIP SALVAGE // SECTOR MUTATION</span>
-            <h2 id="draft-title">Install 1 Tactical Augment</h2>
-            <p id="draft-sub" class="draft-sub">Permanent upgrade for this run — stack synergies across sectors.</p>
-          </div>
-          <div id="draft-cards" class="draft-cards" role="group" aria-label="Augment choices"></div>
-          <p class="draft-hint">Click or press <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to install</p>
         </div>
       </section>
 

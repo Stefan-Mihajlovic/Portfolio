@@ -1286,27 +1286,28 @@ export function drawPickup(ctx, p) {
   }
 
   const palette = {
-    weapon: { rim: '#88f0de', core: '#16343d', label: 'W+' },
-    rapid: { rim: '#8eff85', core: '#163826', label: 'RF' },
-    shield: { rim: '#99dcff', core: '#172d44', label: '+S' },
-    nova: { rim: '#ffd485', core: '#3c2918', label: 'NV' },
-    overshield: { rim: '#ffe27a', core: '#3a224d', label: 'OS' },
-  }[p.kind] || { rim: teal, core: '#16343d', label: '+' };
+    weapon: { rim: '#88f0de', core: '#16343d', label: 'W+', glow: null },
+    rapid: { rim: '#8eff85', core: '#163826', label: 'RF', glow: 'rgba(142, 255, 133, 0.44)' },
+    shield: { rim: '#99dcff', core: '#172d44', label: '+S', glow: null },
+    nova: { rim: '#ffd485', core: '#3c2918', label: 'NV', glow: null },
+    overshield: { rim: '#ffe27a', core: '#3a224d', label: 'OS', glow: 'rgba(255, 230, 130, 0.48)' },
+    drone: { rim: '#6effe6', core: '#0f383a', label: 'DR', glow: 'rgba(110, 255, 230, 0.45)' },
+    lightning: { rim: '#88d8ff', core: '#192a54', label: 'ARC', glow: 'rgba(136, 216, 255, 0.48)' },
+    ricochet: { rim: '#ff8ce6', core: '#42163c', label: 'RIC', glow: 'rgba(255, 140, 230, 0.46)' },
+    cryo: { rim: '#b8f2ff', core: '#14344d', label: 'ICE', glow: 'rgba(168, 238, 255, 0.46)' },
+    aegisOrbs: { rim: '#ffe082', core: '#263848', label: 'ORB', glow: 'rgba(255, 224, 130, 0.45)' },
+    blackhole: { rim: '#d094ff', core: '#26103c', label: 'BH', glow: 'rgba(208, 148, 255, 0.54)' },
+  }[p.kind] || { rim: teal, core: '#16343d', label: '+', glow: null };
 
   const scale = 1 + bob;
   ctx.scale(scale, scale);
 
-  if (p.kind === 'overshield' || p.kind === 'rapid') {
+  if (palette.glow) {
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     const g = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
-    if (p.kind === 'rapid') {
-      g.addColorStop(0, 'rgba(142, 255, 133, 0.45)');
-      g.addColorStop(1, 'rgba(84, 224, 175, 0)');
-    } else {
-      g.addColorStop(0, 'rgba(255, 230, 130, 0.48)');
-      g.addColorStop(1, 'rgba(180, 120, 255, 0)');
-    }
+    g.addColorStop(0, palette.glow);
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = g;
     ctx.beginPath();
     ctx.arc(0, 0, 22, 0, TAU);
@@ -1314,10 +1315,11 @@ export function drawPickup(ctx, p) {
     ctx.restore();
   }
 
+  const isSpecial = Boolean(palette.glow);
   ctx.save();
-  ctx.rotate(p.age * (p.kind === 'overshield' ? 2.4 : 1.4));
+  ctx.rotate(p.age * (isSpecial ? 2.4 : 1.4));
   ctx.strokeStyle = palette.rim;
-  ctx.lineWidth = p.kind === 'overshield' ? 2 : 1.5;
+  ctx.lineWidth = isSpecial ? 2 : 1.5;
   for (let i = 0; i < 4; i++) {
     ctx.rotate(Math.PI / 2);
     ctx.beginPath();
@@ -1342,7 +1344,7 @@ export function drawPickup(ctx, p) {
   ctx.stroke();
 
   ctx.fillStyle = paper;
-  ctx.font = '700 9px ui-monospace, monospace';
+  ctx.font = palette.label.length >= 3 ? '800 7.5px ui-monospace, monospace' : '700 9px ui-monospace, monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(palette.label, 0, 0.5);
