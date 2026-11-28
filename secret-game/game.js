@@ -1660,6 +1660,16 @@ function draw() {
       ctx.beginPath();
       ctx.arc(0, 0, s.r + 5.5, -Math.PI / 2, -Math.PI / 2 + TAU * prog);
       ctx.stroke();
+
+      // Mini HP bar once chipped by player fire so it clearly reads as shootable/destructible!
+      if (s.clusterMaxHp && s.clusterHp < s.clusterMaxHp) {
+        const bw = 20;
+        const hpFrac = clamp(s.clusterHp / s.clusterMaxHp, 0, 1);
+        ctx.fillStyle = 'rgba(10, 14, 24, 0.82)';
+        ctx.fillRect(-bw * 0.5, -s.r - 12, bw, 3.2);
+        ctx.fillStyle = '#ffe08a';
+        ctx.fillRect(-bw * 0.5, -s.r - 12, bw * hpFrac, 3.2);
+      }
       ctx.restore();
     }
     ctx.fillStyle = '#0e0814';
@@ -1667,7 +1677,7 @@ function draw() {
     ctx.arc(0, 0, s.r + 2.0, 0, TAU);
     ctx.fill();
 
-    ctx.fillStyle = s.color || '#ff7d52';
+    ctx.fillStyle = s.flash > 0 ? '#ffffff' : s.color || '#ff7d52';
     ctx.beginPath();
     ctx.arc(0, 0, s.r + 0.6, 0, TAU);
     ctx.fill();
@@ -3671,6 +3681,11 @@ function update(dt) {
     if (s.hostile && s.cluster) {
       if (s.clusterAngle === undefined) s.clusterAngle = Math.atan2(s.vx, s.vy);
       if (s.clusterMaxFuse === undefined) s.clusterMaxFuse = Math.max(0.1, s.clusterFuse || 1.25);
+      if (s.clusterHp === undefined) {
+        s.clusterMaxHp = 3.0;
+        s.clusterHp = s.clusterMaxHp;
+      }
+      if (s.flash > 0) s.flash = Math.max(0, s.flash - stepDt);
       s.clusterFuse -= stepDt;
       if (s.clusterFuse <= 0) {
         s.dead = true;
@@ -3749,6 +3764,59 @@ function update(dt) {
         }
       }
     } else {
+      // Allow player shots to shoot down & defuse hostile cluster bombs before they split!
+      const clusterOrb = shots.find(
+        (c) =>
+          c.hostile &&
+          c.cluster &&
+          !c.dead &&
+          !s.hitIds?.has(c) &&
+          Math.hypot(s.x - c.x, s.y - c.y) < s.r + c.r + 5,
+      );
+      if (clusterOrb) {
+        if (clusterOrb.clusterHp === undefined) {
+          clusterOrb.clusterMaxHp = 3.0;
+          clusterOrb.clusterHp = clusterOrb.clusterMaxHp;
+        }
+        clusterOrb.clusterHp -= s.dmg || 1;
+        clusterOrb.flash = 0.12;
+        if (s.pierce > 0) {
+          s.pierce--;
+          s.hitIds?.add(clusterOrb);
+          if (s.pierce <= 0) s.dead = true;
+        } else {
+          s.dead = true;
+        }
+        if (clusterOrb.clusterHp <= 0) {
+          clusterOrb.dead = true;
+          burst({ x: clusterOrb.x, y: clusterOrb.y, r: 14 }, '#ffd18a', false);
+          impacts.push({
+            x: clusterOrb.x,
+            y: clusterOrb.y,
+            radius: 20,
+            color: '#98ffdc',
+            life: 0.28,
+            maxLife: 0.28,
+          });
+          bumpCombo(1);
+          addScore(120, clusterOrb.x, clusterOrb.y - 14, true, '#98ffdc');
+          sound.effect('burst');
+        } else {
+          sound.effect('impact');
+          for (let k = 0; k < 3; k++) {
+            sparks.push({
+              x: s.x,
+              y: s.y,
+              vx: between(-110, 110),
+              vy: between(-90, 90),
+              life: 0.16,
+              color: '#ffe29c',
+            });
+          }
+        }
+        if (s.dead) continue;
+      }
+
       // Check boss subsystems first so wing turrets / shield pylons intercept cleanly
       let hitSomething = false;
       if (boss && !boss.dead && boss.entering <= 0 && boss.dying <= 0) {
@@ -3914,12 +3982,17 @@ function update(dt) {
         saveMeta();
         sound.effect('coin');
       } else if (p.kind === 'rapid') {
+        const cooled = weaponOverheated || weaponHeat >= 15;
         rapidFireTime = Math.min(11, rapidFireTime + 7.5);
+        weaponHeat = 0;
+        weaponOverheated = false;
+        heatCoolDelay = 0;
+        ventAttempted = false;
         shockwaves.push({ x: player.x, y: player.y, radius: 105, color: '#8eff85', life: 0.32, maxLife: 0.32 });
         popups.push({
           x: player.x,
           y: player.y - 26,
-          text: 'RAPID FIRE!',
+          text: cooled ? 'RAPID FIRE + COOLED!' : 'RAPID FIRE!',
           color: '#8eff85',
           life: 1.0,
           maxLife: 1.0,
