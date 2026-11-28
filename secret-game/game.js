@@ -804,7 +804,7 @@ function draw() {
     const accent = getRigAccent(selectedRig);
     const desktopForge = w >= 860;
     const baseSize = Math.min(w * (w < h ? 0.14 : 0.085), h * 0.125, 84);
-    const forgeSize = desktopForge ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.3, 108);
+    const forgeSize = desktopForge ? Math.min(w * 0.16, h * 0.27, 174) : Math.min(w * 0.32, h * 0.19, 126);
     const size = baseSize + (forgeSize - baseSize) * forgeBlend;
 
     // Sweeping wingtip contrails (fade gently as the ship settles into holographic inspection dock)
@@ -928,8 +928,8 @@ function draw() {
       recoil: introShip.recoil,
     });
 
-    // Progressive glowing schematic leader lines radiating OUT FROM THE SHIP to visible callout cards!
-    if (forgeBlend > 0.08 && desktopForge && forgeNodesEl) {
+    // Progressive glowing schematic leader lines radiating OUT FROM THE SHIP to visible callout cards (desktop & mobile!)
+    if (forgeBlend > 0.08 && forgeNodesEl) {
       const cRect = canvas.getBoundingClientRect();
       const sx = cRect.width ? w / cRect.width : 1;
       const sy = cRect.height ? h / cRect.height : 1;
@@ -947,15 +947,30 @@ function draw() {
         const p = 1 - Math.pow(1 - rawP, 3);
 
         const isActive = slotKey === activeForgeSlot;
-        const isLeft = spec.side === 'left';
         const nRect = nodeEl.getBoundingClientRect();
+        if (!nRect.width || !nRect.height) continue;
         const x0 = introShip.x + spec.anchor[0] * size;
         const y0 = introShip.y + spec.anchor[1] * size;
-        const x2 = isLeft ? (nRect.right - cRect.left) * sx + 3 : (nRect.left - cRect.left) * sx - 3;
-        const y2 = (nRect.top - cRect.top + nRect.height * 0.5) * sy;
-        const elbowStep = Math.min(62, Math.max(24, Math.abs(y2 - y0) * 0.72));
-        const x1 = isLeft ? Math.max(x2 + 22, x0 - elbowStep - 24) : Math.min(x2 - 22, x0 + elbowStep + 24);
-        const y1 = y2;
+
+        let x1, y1, x2, y2;
+        if (desktopForge) {
+          const isLeft = spec.side === 'left';
+          x2 = isLeft ? (nRect.right - cRect.left) * sx + 3 : (nRect.left - cRect.left) * sx - 3;
+          y2 = (nRect.top - cRect.top + nRect.height * 0.5) * sy;
+          const elbowStep = Math.min(62, Math.max(24, Math.abs(y2 - y0) * 0.72));
+          x1 = isLeft ? Math.max(x2 + 22, x0 - elbowStep - 24) : Math.min(x2 - 22, x0 + elbowStep + 24);
+          y1 = y2;
+        } else {
+          // Mobile radial layout: top row cards connect on their bottom edge; bottom row / active card on top edge!
+          const isTopCard = !isActive && (slotKey === 'nose' || slotKey === 'weapon');
+          const pinFrac = isActive ? 0.28 : slotKey === 'nose' || slotKey === 'wings' ? 0.62 : 0.38;
+          x2 = (nRect.left - cRect.left + nRect.width * pinFrac) * sx;
+          y2 = isTopCard
+            ? (nRect.bottom - cRect.top) * sy + 3
+            : (nRect.top - cRect.top) * sy - 3;
+          x1 = x2;
+          y1 = y0 + (y2 - y0) * 0.52;
+        }
 
         const seg1 = Math.hypot(x1 - x0, y1 - y0);
         const seg2 = Math.hypot(x2 - x1, y2 - y1);
@@ -2583,7 +2598,7 @@ function launch() {
   hitstop = 0;
   shake = 0;
   player.x = w / 2;
-  player.y = h * 0.79;
+  player.y = h * (w < h ? 0.66 : 0.7);
   enemies = [];
   shots = [];
   pickups = [];
@@ -3160,19 +3175,20 @@ function update(dt) {
         sound.effect('warpExit');
       }
     } else if (warp.phase === 'arrive') {
-      // Ship flies smoothly in from bottom of the brand-new colored sector!
+      // Ship flies smoothly in from bottom of the brand-new colored sector to a comfortable mid-lower stance!
       const dur = shortMotion ? 0.45 : 0.95;
       const p = clamp(warp.t / dur, 0, 1);
       const easeOut = 1 - Math.pow(1 - p, 3);
+      const targetY = h * (w < h ? 0.66 : 0.7);
       player.x = w * 0.5;
-      player.y = h + 86 + (h * 0.79 - (h + 86)) * easeOut;
+      player.y = h + 86 + (targetY - (h + 86)) * easeOut;
       player.vx = 0;
       player.vy = -320 * (1 - p);
       player.bank = 0;
       distance += dt * (150 + (1 - p) * 1200);
       if (p >= 1) {
         warp = null;
-        player.y = h * 0.79;
+        player.y = targetY;
         player.vy = 0;
         spawnIn = 0.8;
         const secNum = String(sectorIndex + 1).padStart(2, '0');
@@ -4048,7 +4064,34 @@ function updateIntroFlight(dt) {
     : h * (0.2 + Math.sin(orbitA * 2) * 0.08);
   const activeSide = activeForgeSlot ? FORGE_SLOTS[activeForgeSlot]?.side : null;
   const dockX = desktopForge ? w * (activeSide === 'left' ? 0.68 : activeSide === 'right' ? 0.32 : 0.5) : w * 0.5;
-  const dockY = desktopForge ? h * 0.48 + Math.sin(introTime * 1.9) * 4.5 : h * 0.25 + Math.sin(introTime * 1.9) * 3;
+  let dockY = h * 0.48 + Math.sin(introTime * 1.9) * 4.5;
+  if (!desktopForge) {
+    // Dynamically center the live ship inside the exact open space between the mobile HUD & callout cards!
+    let centerY = h * 0.5;
+    if (forgeNodesEl) {
+      const cRect = canvas.getBoundingClientRect();
+      const sy = cRect.height ? h / cRect.height : 1;
+      const stageRect = forgeNodesEl.getBoundingClientRect();
+      if (activeForgeSlot) {
+        const activeWrap = forgeNodesEl.querySelector(`.forge-slot-wrap[data-slot="${activeForgeSlot}"]`);
+        const aRect = activeWrap ? activeWrap.getBoundingClientRect() : null;
+        if (aRect && aRect.height > 0 && stageRect.height > 0) {
+          centerY = ((stageRect.top + aRect.top) * 0.5 - cRect.top) * sy;
+        } else {
+          centerY = h * 0.34;
+        }
+      } else {
+        const topEl = forgeNodesEl.querySelector('.forge-slot-wrap[data-slot="nose"]');
+        const botEl = forgeNodesEl.querySelector('.forge-slot-wrap[data-slot="wings"]');
+        const tRect = topEl ? topEl.getBoundingClientRect() : null;
+        const bRect = botEl ? botEl.getBoundingClientRect() : null;
+        if (tRect && bRect && tRect.height > 0 && bRect.height > 0) {
+          centerY = ((tRect.bottom + bRect.top) * 0.5 - cRect.top) * sy;
+        }
+      }
+    }
+    dockY = clamp(centerY, h * 0.24, h * 0.62) + Math.sin(introTime * 1.9) * 3;
+  }
 
   const targetX = forgeActive ? dockX : orbitX;
   const targetY = forgeActive ? dockY : orbitY;

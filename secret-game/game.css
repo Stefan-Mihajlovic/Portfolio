@@ -92,7 +92,7 @@ header {
   justify-content: space-between;
   gap: 12px;
   pointer-events: none;
-  z-index: 3;
+  z-index: 12;
 }
 a,
 button,
@@ -2523,13 +2523,19 @@ body[data-mode='paused'] :is(.rig-select, #hangar-open, .overclock-row) {
   }
   .touch {
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
   }
-  .touch i {
-    width: 4px;
-    height: 4px;
-    transform: rotate(45deg);
-    background: var(--teal);
+  .touch .key-chip {
+    white-space: nowrap;
+    font-size: 10.5px;
+    gap: 6px;
+  }
+  .touch kbd {
+    padding: 4px 6px;
+    font-size: 9.5px;
   }
   .touch-pad {
     display: flex;
@@ -3633,67 +3639,197 @@ body[data-forge='true'] .forge-bottom-dock {
 }
 @media (max-width: 859px) {
   .forge-screen {
-    padding: max(54px, calc(env(safe-area-inset-top) + 42px)) 12px max(12px, env(safe-area-inset-bottom));
-    gap: 8px;
-    overflow-y: auto;
+    padding: max(52px, calc(env(safe-area-inset-top) + 42px)) 10px max(10px, env(safe-area-inset-bottom));
+    gap: 7px;
+    overflow: hidden;
   }
   body[data-forge='true'] .forge-screen {
-    pointer-events: auto;
-    touch-action: pan-y;
+    pointer-events: none;
   }
   .forge-hud-top {
     grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 6px;
+    padding: 7px 9px;
   }
   .forge-stat-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    gap: 5px;
   }
   .forge-vitals-chip {
     grid-column: 1 / -1;
+    padding: 4px 8px 5px;
   }
+  .forge-stat-chip {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+  .forge-stat-icon-wrap {
+    width: 20px;
+    height: 20px;
+  }
+  .forge-stat-ico {
+    width: 12px;
+    height: 12px;
+  }
+  .forge-stat-chip b {
+    font-size: 11px;
+  }
+  /* Mobile exploded-view radial layout: 2 cards above ship, live ship centered, 2 cards below! */
   .forge-radial-stage {
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto 1fr auto;
     gap: 8px;
-    padding-top: 170px;
+    align-items: start;
+    padding: 2px 0;
+    min-height: 0;
+    pointer-events: none;
   }
   .forge-col,
   .forge-screen[data-active-side='left'] .forge-col-left,
-  .forge-screen[data-active-side='right'] .forge-col-right {
-    width: 100%;
-    gap: 8px;
-    opacity: 1;
-    transform: none;
-    pointer-events: auto !important;
-  }
+  .forge-screen[data-active-side='right'] .forge-col-right,
   .forge-screen[data-active-side='left'] .forge-col-right,
   .forge-screen[data-active-side='right'] .forge-col-left {
+    display: contents;
+    width: auto;
     opacity: 1;
     transform: none;
-    pointer-events: auto !important;
   }
-  .forge-screen[data-active-side='left'] .forge-col-right *,
-  .forge-screen[data-active-side='right'] .forge-col-left * {
-    pointer-events: auto !important;
+  .forge-slot-wrap[data-slot='nose'] {
+    grid-column: 1;
+    grid-row: 1;
   }
-  .forge-node {
-    padding: 8px 10px;
+  .forge-slot-wrap[data-slot='weapon'] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .forge-slot-wrap[data-slot='wings'] {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: end;
+  }
+  .forge-slot-wrap[data-slot='engine'] {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+  }
+  .forge-slot-wrap[data-state='idle'] {
+    align-self: stretch;
+  }
+  .forge-slot-wrap[data-state='idle'] .forge-node {
+    height: 100%;
+  }
+  .forge-slot-wrap[data-state='hidden'] {
+    display: none;
+  }
+  .forge-slot-wrap[data-state='active'] {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    align-self: end;
+    max-height: 58dvh;
+    overflow-y: auto;
+    pointer-events: auto;
+  }
+  .forge-col-left .forge-node,
+  .forge-col-right .forge-node {
+    transform: translateY(10px);
+  }
+  body[data-forge='true'] .forge-node {
+    transform: translateY(0);
+    padding: 8px 9px;
+    gap: 2px 7px;
+  }
+  .forge-node-kicker {
+    font-size: 8px;
+    letter-spacing: 0.08em;
   }
   .forge-node strong {
-    font-size: 13px;
+    font-size: 12.5px;
+  }
+  .forge-node small {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  .forge-node-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .forge-node-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+  .forge-node-edit {
+    font-size: 7.5px;
+  }
+  .forge-slot-topbar {
+    margin-bottom: 6px;
+  }
+  .forge-slot-close {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 10.5px;
+  }
+  .forge-inline-picker {
+    padding: 8px 9px;
+    gap: 6px;
   }
   .forge-options,
   .forge-options.cols-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .forge-opt {
+    padding: 7px 8px;
+  }
+  .forge-opt strong {
+    font-size: 11.5px;
+  }
+  .forge-opt small {
+    font-size: 9px;
   }
   .forge-bottom-dock {
     justify-content: center;
-    padding: 8px;
+    padding: 7px 8px;
+    gap: 6px 8px;
+  }
+  .forge-bottom-left,
+  .forge-bottom-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+  .forge-paints {
+    padding: 4px 6px;
+    gap: 4px;
+  }
+  .forge-paint-chip {
+    width: 18px;
+    height: 12px;
+  }
+  .forge-code-pill {
+    padding: 3px 5px 3px 7px;
+    gap: 5px;
+    font-size: 10px;
+  }
+  #forge-code-val {
+    font-size: 10.5px;
+  }
+  .forge-import-form {
+    flex: 1;
+    min-width: 0;
   }
   #forge-import-input {
-    width: 138px;
+    width: 100%;
+    min-width: 0;
+    min-height: 32px;
+    font-size: 10.5px;
+    padding: 0 7px;
+  }
+  .forge-load-btn,
+  .forge-equip-btn {
+    min-height: 32px;
+    padding: 0 11px;
+    font-size: 10.5px;
   }
 }
