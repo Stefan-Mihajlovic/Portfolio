@@ -5206,11 +5206,31 @@ function renderUpgrades() {
 }
 
 // --- LIVE CENTERED EXPLODED-VIEW SHIP FORGE (SHIP IN CENTER + 4 RADIAL CALLOUTS AROUND IT!) ---
+const FORGE_STAT_ICONS = {
+  speed:
+    '<svg class="forge-stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17 11 12 5 7"/><path d="M12 17 18 12 12 7"/><path d="M19 15.5 22 12 19 8.5" opacity="0.55"/></svg>',
+  fire:
+    '<svg class="forge-stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.95" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2"/></svg>',
+  cool:
+    '<svg class="forge-stat-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5v19M3.8 7.25l16.4 9.5M20.2 7.25l-16.4 9.5"/><path d="M9.6 4.8 12 7l2.4-2.2M9.6 19.2 12 17l2.4 2.2M4.8 10.6 7.6 9.5 6.4 6.7M19.2 13.4 16.4 14.5 17.6 17.3M17.6 6.7 16.4 9.5 19.2 10.6M6.4 17.3 7.6 14.5 4.8 13.4"/></svg>',
+};
+
+const FORGE_PART_ICONS = {
+  nose:
+    '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2.5 21 12.5 19.5 23.5 14 25.5 8.5 23.5 7 12.5Z" fill="currentColor" fill-opacity="0.12"/><path d="M14 8.5 16.8 13.5 14 18.2 11.2 13.5Z" fill="currentColor" fill-opacity="0.45"/><path d="M10.2 20.5h7.6" opacity="0.65"/></svg>',
+  wings:
+    '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5.5 16.5 11v10.5L14 23l-2.5-1.5V11Z" opacity="0.55"/><path d="M11.5 11.5 2.5 18.5 3.5 22.5 11.5 19.5Z" fill="currentColor" fill-opacity="0.18"/><path d="M16.5 11.5 25.5 18.5 24.5 22.5 16.5 19.5Z" fill="currentColor" fill-opacity="0.18"/><path d="M6.2 8.2a11.5 11.5 0 0 1 15.6 0" stroke-dasharray="2.5 2.5" opacity="0.78"/></svg>',
+  weapon:
+    '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="7.5" width="4.2" height="14.5" rx="1" fill="currentColor" fill-opacity="0.16"/><rect x="17.3" y="7.5" width="4.2" height="14.5" rx="1" fill="currentColor" fill-opacity="0.16"/><path d="M10.7 15.5h6.6M8.6 3.2v2.4M19.4 3.2v2.4"/><path d="M14 9.5v4M12 11.5h4" opacity="0.72"/></svg>',
+  engine:
+    '<svg viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 4.5h9l1.8 7.5-2.3 3.5h-8L7.7 12Z" fill="currentColor" fill-opacity="0.15"/><circle cx="14" cy="10" r="2.2" fill="currentColor" fill-opacity="0.45"/><path d="M10.8 18.2 14 25.2l3.2-7" fill="currentColor" fill-opacity="0.28"/><path d="M14 18.2v3.6" opacity="0.85"/></svg>',
+};
+
 const FORGE_SLOTS = {
-  nose: { label: 'Nose / Hull', full: 'Nose / Hull Frame', items: CUSTOM_PARTS.nose, cols: 'cols-3', anchor: [0, -0.44], side: 'left' },
-  wings: { label: 'Wings / Shield', full: 'Wings / Shield Array', items: CUSTOM_PARTS.wings, cols: '', anchor: [-0.37, 0.14], side: 'left' },
-  weapon: { label: 'Weapon System', full: 'Primary Weapon System', items: CUSTOM_PARTS.weapon, cols: '', anchor: [0.24, -0.13], side: 'right' },
-  engine: { label: 'Engine / Perk', full: 'Engine Core / Perk', items: CUSTOM_PARTS.engine, cols: '', anchor: [0, 0.36], side: 'right' },
+  nose: { label: 'Nose / Hull', full: 'Nose / Hull Frame', items: CUSTOM_PARTS.nose, cols: 'cols-3', anchor: [0, -0.44], side: 'left', icon: FORGE_PART_ICONS.nose },
+  wings: { label: 'Wings / Shield', full: 'Wings / Shield Array', items: CUSTOM_PARTS.wings, cols: '', anchor: [-0.37, 0.14], side: 'left', icon: FORGE_PART_ICONS.wings },
+  weapon: { label: 'Weapon System', full: 'Primary Weapon System', items: CUSTOM_PARTS.weapon, cols: '', anchor: [0.24, -0.13], side: 'right', icon: FORGE_PART_ICONS.weapon },
+  engine: { label: 'Engine / Perk', full: 'Engine Core / Perk', items: CUSTOM_PARTS.engine, cols: '', anchor: [0, 0.36], side: 'right', icon: FORGE_PART_ICONS.engine },
 };
 let activeForgeSlot = null;
 
@@ -5279,18 +5299,35 @@ function renderForge() {
     forgePwrBars.append(seg);
   }
 
-  const statChips = [
-    { label: 'HULL', val: `${stats.hull} HP`, cls: 'hp' },
-    { label: 'SHIELD', val: `${stats.shields} SP`, cls: '' },
-    { label: 'SPEED', val: `${stats.speed}`, cls: '' },
-    { label: 'FIRE', val: `${(1 / stats.fireRate).toFixed(1)}/s`, cls: 'gold' },
-    { label: 'COOL', val: `${Math.round((1 / stats.heatMult) * 100)}%`, cls: '' },
-  ];
   forgeStatsEl.innerHTML = '';
+
+  // In-game style HULL + SHIELD vitals gauge (glowing skewed crimson & cyan pips + divider!)
+  const vitalsChip = document.createElement('div');
+  vitalsChip.className = 'forge-vitals-chip';
+  const maxHullPips = 4;
+  const maxShieldPips = 4;
+  let hullPipsHtml = '';
+  for (let i = 0; i < maxHullPips; i++) {
+    hullPipsHtml += `<i class="hull-pip${i >= stats.hull ? ' spent' : ''}"></i>`;
+  }
+  let shieldPipsHtml = '';
+  for (let i = 0; i < maxShieldPips; i++) {
+    shieldPipsHtml += `<i class="shield-pip${i >= stats.shields ? ' spent' : ''}"></i>`;
+  }
+  vitalsChip.innerHTML =
+    `<div class="forge-vitals-head"><span class="hull-stat">HULL <b>${stats.hull}</b></span><span class="shield-stat">SHIELD <b>${stats.shields}</b></span></div>` +
+    `<div class="forge-vitals-bars" aria-label="${stats.hull} hull, ${stats.shields} shield">${hullPipsHtml}<span class="vitals-sep" aria-hidden="true"></span>${shieldPipsHtml}</div>`;
+  forgeStatsEl.append(vitalsChip);
+
+  const statChips = [
+    { label: 'SPEED', val: `${stats.speed}`, cls: 'speed', icon: FORGE_STAT_ICONS.speed },
+    { label: 'FIRE', val: `${(1 / stats.fireRate).toFixed(1)}/s`, cls: 'gold', icon: FORGE_STAT_ICONS.fire },
+    { label: 'COOL', val: `${Math.round((1 / stats.heatMult) * 100)}%`, cls: 'cool', icon: FORGE_STAT_ICONS.cool },
+  ];
   for (const s of statChips) {
     const chip = document.createElement('div');
     chip.className = `forge-stat-chip ${s.cls}`.trim();
-    chip.innerHTML = `<small>${s.label}</small><b>${s.val}</b>`;
+    chip.innerHTML = `<span class="forge-stat-icon-wrap">${s.icon}</span><span class="forge-stat-text"><small>${s.label}</small><b>${s.val}</b></span>`;
     forgeStatsEl.append(chip);
   }
 
@@ -5312,7 +5349,16 @@ function renderForge() {
     wrap.querySelector('.forge-slot-topbar')?.remove();
 
     node.setAttribute('aria-pressed', String(isSelected));
-    node.innerHTML = `<span class="forge-node-left"><span class="forge-node-kicker">${spec.label}</span><strong>${part.name}</strong><small>${part.desc}</small></span><span class="forge-node-right"><span class="forge-pwr-tag">${part.pwr} PWR</span>${isSelected ? '' : '<span class="forge-node-edit">EDIT</span>'}</span>`;
+    node.innerHTML =
+      `<span class="forge-node-left">` +
+        `<span class="forge-node-head"><span class="forge-node-kicker">${spec.label}</span><span class="forge-pwr-tag">${part.pwr} PWR</span></span>` +
+        `<strong>${part.name}</strong>` +
+        `<small>${part.desc}</small>` +
+      `</span>` +
+      `<span class="forge-node-right">` +
+        `<span class="forge-node-icon" aria-hidden="true">${spec.icon}</span>` +
+        `${isSelected ? '' : '<span class="forge-node-edit">EDIT</span>'}` +
+      `</span>`;
 
     if (!isSelected) {
       picker.hidden = true;
